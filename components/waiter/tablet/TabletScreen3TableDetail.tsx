@@ -464,28 +464,13 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   <span className="font-black text-xs text-slate-900 uppercase">
                     Table {activeTable.number}: Menu Order Entry
                   </span>
-                  <div className="flex items-center gap-2">
-                    {/* Cart Icon only with proper number */}
-                    <button
-                      onClick={() => setRightPane('item_custom')}
-                      className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white hover:bg-black transition cursor-pointer"
-                      title="View Order Cart"
-                    >
-                      <ShoppingCart className="h-4 w-4 text-orange-400 stroke-[2.2]" />
-                      {draftItemCount > 0 && (
-                        <span className="absolute -top-1.5 -right-1.5 min-w-[17px] h-[17px] px-0.5 bg-orange-600 text-white text-[9px] font-black rounded-full flex items-center justify-center ring-2 ring-white animate-pulse">
-                          {draftItemCount}
-                        </span>
-                      )}
-                    </button>
-                    <button
-                      onClick={() => setRightPane('bill_summary')}
-                      className="p-1 hover:bg-slate-100 rounded text-slate-600 cursor-pointer"
-                      title="Close"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => setRightPane('bill_summary')}
+                    className="p-1 hover:bg-slate-100 rounded text-slate-600 cursor-pointer"
+                    title="Close"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
 
                 {/* Safety Check: Already ordered items lock */}
@@ -523,15 +508,31 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     ))}
                   </div>
 
-                  <div className="relative">
-                    <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400" />
-                    <input
-                      type="text"
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Search menu dishes..."
-                      className="w-full pl-8 pr-2.5 py-1 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:border-orange-500 font-mono"
-                    />
+                  <div className="flex items-center gap-1.5">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400" />
+                      <input
+                        type="text"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Search menu dishes..."
+                        className="w-full pl-8 pr-2.5 py-1 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:border-orange-500 font-mono"
+                      />
+                    </div>
+                    {/* Cart Icon only with proper number — directly after search */}
+                    <button
+                      type="button"
+                      onClick={() => setRightPane('item_custom')}
+                      className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-white hover:bg-black transition cursor-pointer"
+                      title="View Order Cart"
+                    >
+                      <ShoppingCart className="h-3.5 w-3.5 text-orange-400 stroke-[2.2]" />
+                      {draftItemCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] px-0.5 bg-orange-600 text-white text-[8.5px] font-black rounded-full flex items-center justify-center ring-2 ring-white animate-pulse">
+                          {draftItemCount}
+                        </span>
+                      )}
+                    </button>
                   </div>
                 </div>
 

@@ -8,37 +8,47 @@ import { ArrowLeft, Users, CheckCircle2, Utensils } from 'lucide-react';
 
 export const TabletScreen6MergeSplit: React.FC = () => {
   const { setCurrentScreen, selectedTableNumber } = useWaiterStore();
-  const { tables, waiterMergeTables } = useSharedBridge();
+  const { tables, waiterMergeTables, waiterUnmergeTable } = useSharedBridge();
+
+  const primary = selectedTableNumber || 'A-04';
+  const activeTable = tables.find((t) => t.number === primary) || tables[0];
+  const isAlreadyMerged = Boolean(activeTable?.mergedWith);
 
   const [selectedMergeTables, setSelectedMergeTables] = useState<string[]>([
-    selectedTableNumber || 'A-04',
-    'A-02',
+    primary,
+    activeTable?.mergedWith || 'A-02',
   ]);
-  const [mergeConfirmed, setMergeConfirmed] = useState(false);
+  const [mergeConfirmed, setMergeConfirmed] = useState<string | null>(null);
 
-  const activeTable = tables.find((t) => t.number === (selectedTableNumber || 'A-04')) || tables[0];
   const runningBill = activeTable?.currentBill || 0;
 
   const availableTables = tables
-    .filter((t) => t.number !== (selectedTableNumber || 'A-04'))
+    .filter((t) => t.number !== primary)
     .map((t) => t.number);
 
   const toggleMerge = (tableNum: string) => {
-    const primary = selectedTableNumber || 'A-04';
     if (tableNum === primary) return;
     setSelectedMergeTables((prev) =>
       prev.includes(tableNum)
-        ? prev.filter((t) => t !== tableNum && t !== primary)
-        : [...prev, tableNum]
+        ? prev.filter((t) => t !== tableNum)
+        : [...prev.filter((t) => t === primary), tableNum]
     );
   };
 
   const handleConfirmMerge = () => {
-    if (selectedMergeTables.length >= 2) {
-      waiterMergeTables(selectedMergeTables[0], selectedMergeTables[1]);
+    const secondary = selectedMergeTables.find((t) => t !== primary);
+    if (secondary) {
+      waiterMergeTables(primary, secondary);
+      setMergeConfirmed(`Table ${primary} and Table ${secondary} merged into unified bill!`);
+      setTimeout(() => setMergeConfirmed(null), 3000);
     }
-    setMergeConfirmed(true);
-    setTimeout(() => setMergeConfirmed(false), 3000);
+  };
+
+  const handleUnmerge = () => {
+    waiterUnmergeTable(primary);
+    setSelectedMergeTables([primary]);
+    setMergeConfirmed(`Table ${primary} separated back to individual table.`);
+    setTimeout(() => setMergeConfirmed(null), 3000);
   };
 
   return (
@@ -107,15 +117,15 @@ export const TabletScreen6MergeSplit: React.FC = () => {
 
               {mergeConfirmed && (
                 <div className="p-3 bg-emerald-50 border border-emerald-400 rounded-xl text-emerald-800 text-xs font-bold flex items-center justify-center gap-2">
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span>✓ Tables merged successfully — unified under Table {selectedTableNumber || 'A-04'}!</span>
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                  <span>{mergeConfirmed}</span>
                 </div>
               )}
             </div>
 
             <button
               onClick={() => setCurrentScreen(4)}
-              className="border border-slate-400 bg-white hover:bg-slate-100 text-slate-800 rounded-xl font-bold text-xs px-4 py-3.5 transition flex items-center justify-center gap-2 shadow-2xs"
+              className="border border-slate-400 bg-white hover:bg-slate-100 text-slate-800 rounded-xl font-bold text-xs px-4 py-3.5 transition flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
             >
               <Utensils className="h-4 w-4" />
               <span>Punch Order for Merged Table ➔</span>
@@ -141,14 +151,25 @@ export const TabletScreen6MergeSplit: React.FC = () => {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={handleConfirmMerge}
-              className="w-full py-4 bg-slate-900 hover:bg-black text-white rounded-xl font-black text-xs transition shadow-sm mt-auto flex items-center justify-center gap-2"
-            >
-              <Users className="h-4 w-4" />
-              <span>Confirm Table Merge ➔ Update Live State</span>
-            </button>
+            {isAlreadyMerged ? (
+              <button
+                type="button"
+                onClick={handleUnmerge}
+                className="w-full py-4 bg-rose-700 hover:bg-rose-800 text-white rounded-xl font-black text-xs transition shadow-sm mt-auto flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Users className="h-4 w-4" />
+                <span>Unmerge Table {primary} &amp; {activeTable.mergedWith}</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleConfirmMerge}
+                className="w-full py-4 bg-slate-900 hover:bg-black text-white rounded-xl font-black text-xs transition shadow-sm mt-auto flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Users className="h-4 w-4" />
+                <span>Confirm Table Merge ➔ Update Live State</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

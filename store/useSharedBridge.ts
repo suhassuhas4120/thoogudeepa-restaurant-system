@@ -353,6 +353,9 @@ interface SharedBridgeState {
   /** Waiter merges two tables — combines bills */
   waiterMergeTables: (targetTable: string, sourceTable: string) => void;
 
+  /** Waiter unmerges tables — separates merged links */
+  waiterUnmergeTable: (tableNumber: string) => void;
+
   /** Waiter resolves ping */
   waiterResolvePing: (pingId: string) => void;
 
@@ -679,6 +682,26 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
               currentBill: 0,
               guestCount: 0,
               mergedWith: targetTable,
+            };
+          }
+          return t;
+        }),
+      };
+    });
+  },
+
+  /* ─── Waiter Unmerges Tables ─────────────────────────────────── */
+  waiterUnmergeTable: (tableNumber) => {
+    set((state) => {
+      const target = state.tables.find((t) => t.number === tableNumber);
+      if (!target || !target.mergedWith) return state;
+      const partner = target.mergedWith;
+      return {
+        tables: state.tables.map((t) => {
+          if (t.number === tableNumber || t.number === partner) {
+            return {
+              ...t,
+              mergedWith: undefined,
             };
           }
           return t;

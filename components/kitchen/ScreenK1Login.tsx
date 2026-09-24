@@ -41,18 +41,18 @@ export const ScreenK1Login: React.FC = () => {
 
             {/* Hotel Name */}
             <span className="font-mono text-[10px] font-black uppercase tracking-widest text-orange-600">
-              [AUTHENTIC KARNATAKA CUISINE]
+              AUTHENTIC KARNATAKA CUISINE
             </span>
             <h1 className="mt-1.5 text-xl font-black text-slate-900 uppercase tracking-tight">
               Thoogudeepa Donne Biryani Mane
             </h1>
             <p className="mt-1 text-xs font-mono font-bold text-slate-600">
-              [KITCHEN DISPLAY SYSTEM • KDS PASS TERMINAL]
+              KITCHEN DISPLAY SYSTEM • KDS PASS TERMINAL
             </p>
 
             <div className="mt-6 flex flex-wrap justify-center gap-2">
               <span className="rounded-lg border border-slate-300 bg-stone-50 px-3 py-1 font-mono text-[10.5px] font-bold text-slate-700">
-                [MAIN PASS DISPATCH]
+                MAIN PASS DISPATCH
               </span>
               <span className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1 font-mono text-[10.5px] font-bold text-emerald-800 flex items-center gap-1">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -62,7 +62,7 @@ export const ScreenK1Login: React.FC = () => {
           </div>
 
           <div className="w-full mt-6 pt-4 border-t border-slate-200 flex items-center justify-between font-mono text-[10px] text-slate-500">
-            <span>[VENUE: THOOGUDEEPA DONNE BIRYANI MANE]</span>
+            <span>VENUE: THOOGUDEEPA DONNE BIRYANI MANE</span>
             <span className="text-emerald-600 font-bold">KDS v2.4 ONLINE</span>
           </div>
         </div>
@@ -71,7 +71,7 @@ export const ScreenK1Login: React.FC = () => {
         <div className="w-full md:w-80 bg-white rounded-3xl border-2 border-slate-900 p-6 shadow-[4px_4px_0px_#0f172a] flex flex-col justify-between min-h-[440px]">
           <div>
             <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 mb-1">
-              [STAFF AUTHENTICATION PIN]
+              STAFF AUTHENTICATION PIN
             </div>
 
             <div className="mb-3">
@@ -135,7 +135,7 @@ export const ScreenK1Login: React.FC = () => {
             onClick={handleLogin}
             className="w-full mt-4 flex items-center justify-center gap-2 rounded-xl bg-orange-600 py-3 text-xs font-black uppercase tracking-wider text-white shadow-md shadow-orange-600/30 hover:bg-orange-700 transition"
           >
-            <span>[START SHIFT &amp; ENTER KDS]</span>
+            <span>START SHIFT &amp; ENTER KDS</span>
             <ArrowRight className="h-4 w-4 stroke-[2.5]" />
           </motion.button>
         </div>

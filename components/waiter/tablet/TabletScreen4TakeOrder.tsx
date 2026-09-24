@@ -67,21 +67,9 @@ export const TabletScreen4TakeOrder: React.FC = () => {
               Table {selectedTableNumber || 'A-04'}: Menu Order Entry
             </h3>
           </div>
-
-          {/* Cart Icon only with proper number */}
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setCurrentScreen(5)}
-            className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 hover:bg-black text-white shadow-xs border border-slate-700 active:scale-95 cursor-pointer transition"
-            title="View Cart"
-          >
-            <ShoppingCart className="h-4 w-4 text-orange-400 stroke-[2.2]" />
-            {cartItemCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 min-w-[17px] h-[17px] px-1 bg-orange-600 text-white text-[9.5px] font-black rounded-full flex items-center justify-center ring-2 ring-slate-900 animate-pulse shadow-xs">
-                {cartItemCount}
-              </span>
-            )}
-          </motion.button>
+          <span className="font-mono text-xs text-slate-500 font-bold">
+            Captain Order Pass
+          </span>
         </div>
 
         {/* ORDER SAFETY BANNER: LOCKED ACTIVE ITEMS */}
@@ -101,7 +89,7 @@ export const TabletScreen4TakeOrder: React.FC = () => {
           </div>
         )}
 
-        {/* CATEGORIES & SEARCH & FILTERS */}
+        {/* CATEGORIES & SEARCH & CART ICON (AFTER SEARCH TAB ONLY) */}
         <div className="flex gap-2 flex-wrap items-center mb-3 shrink-0">
           {categories.map((cat) => (
             <button
@@ -127,6 +115,21 @@ export const TabletScreen4TakeOrder: React.FC = () => {
               className="w-full pl-9 pr-3 py-1.5 border border-slate-400 rounded-lg text-xs font-mono bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
           </div>
+
+          {/* Cart Icon only with proper number — directly after search tab */}
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setCurrentScreen(5)}
+            className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-900 hover:bg-black text-white shadow-xs border border-slate-800 transition cursor-pointer"
+            title="View Cart"
+          >
+            <ShoppingCart className="h-4 w-4 text-orange-400 stroke-[2.2]" />
+            {cartItemCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 min-w-[17px] h-[17px] px-1 bg-orange-600 text-white text-[9.5px] font-black rounded-full flex items-center justify-center ring-2 ring-slate-900 animate-pulse shadow-xs">
+                {cartItemCount}
+              </span>
+            )}
+          </motion.button>
         </div>
 
         {/* Add Notice Toast */}

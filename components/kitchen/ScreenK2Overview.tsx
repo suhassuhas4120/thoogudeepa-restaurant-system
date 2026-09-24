@@ -325,7 +325,7 @@ export const ScreenK2Overview: React.FC = () => {
         <div className="bg-white border-b-2 border-slate-900 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-1.5 overflow-x-auto">
             <span className="font-mono text-[10px] font-black uppercase text-slate-500 mr-1">
-              [CATEGORIES]:
+              Categories:
             </span>
             {['ALL CATEGORIES', 'DUM BIRYANI', 'STARTERS & KEBABS', 'CURRY & SIDES', 'BEVERAGES'].map((cat) => (
               <button
@@ -337,21 +337,21 @@ export const ScreenK2Overview: React.FC = () => {
                     : 'bg-stone-50 text-slate-700 border-slate-300 hover:bg-stone-200'
                 }`}
               >
-                [{cat}]
+                {cat}
               </button>
             ))}
           </div>
 
           <div className="flex items-center gap-2">
             <span className="font-mono text-[10px] font-bold text-slate-700 bg-stone-100 border border-slate-300 px-2 py-1 rounded">
-              [FILTER: ALL ACTIVE ORDERS]
+              Filter: All Active Orders
             </span>
             <button
               onClick={() => callFloorWaiter('CALL_WAITER', 'Kitchen requests Captain at pass')}
               className="bg-stone-100 hover:bg-orange-100 border border-slate-300 px-2.5 py-1 rounded font-mono text-[10px] font-black text-slate-900 flex items-center gap-1 transition"
             >
               <Bell className="h-3 w-3 text-orange-600" />
-              <span>[CALL WAITER]</span>
+              <span>Call Waiter</span>
             </button>
           </div>
         </div>
@@ -360,10 +360,10 @@ export const ScreenK2Overview: React.FC = () => {
         <div className="bg-stone-50 border-b-2 border-slate-900 p-3 shrink-0">
           <div className="flex items-center justify-between mb-2">
             <span className="font-mono text-[10.5px] font-black text-slate-900 uppercase">
-              [📦 BULK AGGREGATION DISPLAY — SIMILAR ITEMS ACROSS ACTIVE TABLES]
+              📦 Bulk Aggregation Display • Similar Items Across Active Tables
             </span>
             <span className="font-mono text-[10px] text-slate-600 font-bold">
-              [BULK QUEUE: 4 UNIQUE ITEMS CONSOLIDATED]
+              Bulk Queue: Consolidated Items
             </span>
           </div>
 
@@ -377,32 +377,32 @@ export const ScreenK2Overview: React.FC = () => {
                 >
                   <div className="flex items-center justify-between pb-1 border-b border-slate-200">
                     <span className="font-mono text-[11px] font-black text-slate-900 truncate" title={b.name}>
-                      [{b.name}]
+                      {b.name}
                     </span>
                     <span className="font-mono text-[10px] font-black bg-slate-900 text-white px-1.5 py-0.5 rounded ml-1 shrink-0">
                       TOTAL: {b.total}
                     </span>
                   </div>
                   <div className="font-mono text-[9px] text-slate-600 truncate">
-                    [{b.sources}]
+                    {b.sources}
                   </div>
                   <div className="flex items-center justify-between font-mono text-[9px] font-extrabold text-orange-700">
-                    <span>[STATUS]:</span>
+                    <span>Status:</span>
                     <span className="bg-orange-50 border border-orange-200 px-1.5 py-0.2 rounded text-[8.5px]">
                       {currentBulkStage === 'RECEIVED'
-                        ? `[ALL ${b.total} PENDING]`
+                        ? `All ${b.total} Pending`
                         : currentBulkStage === 'PREPARING'
-                        ? `[ALL ${b.total} COOKING]`
+                        ? `All ${b.total} Cooking`
                         : currentBulkStage === 'READY'
-                        ? `[ALL ${b.total} READY]`
-                        : `[ALL ${b.total} SERVED]`}
+                        ? `All ${b.total} Ready`
+                        : `All ${b.total} Served`}
                     </span>
                   </div>
 
                   {/* PREP MODE SELECTION BUTTONS FOR THIS BULK ORDER */}
                   <div className="pt-1.5 border-t border-slate-200/80">
                     <div className="flex items-center justify-between text-[8px] font-mono font-bold text-slate-400 mb-1 uppercase">
-                      <span>[BULK PREP MODE]:</span>
+                      <span>Bulk Stage:</span>
                       <span className="text-orange-600 font-black">
                         {currentBulkStage === 'RECEIVED'
                           ? '1.REC'
@@ -450,10 +450,10 @@ export const ScreenK2Overview: React.FC = () => {
           <div className="w-[70%] border-r-2 border-slate-900 p-3 overflow-y-auto bg-stone-100/60">
             <div className="flex items-center justify-between mb-2.5">
               <span className="font-mono text-[10.5px] font-black text-slate-900 uppercase">
-                [ALL TABLES DISPLAY (3-COLUMN MATRIX) — 70% SCREEN WIDTH]
+                All Tables Display (3-Column Matrix)
               </span>
               <span className="font-mono text-[10px] text-slate-500 font-bold">
-                [CLICK ANY TABLE BOX TO OPEN SCREEN 3 DETAIL]
+                Tap any table box to open detail view
               </span>
             </div>
 
@@ -468,7 +468,7 @@ export const ScreenK2Overview: React.FC = () => {
                     {/* Table Header */}
                     <div className="flex items-center justify-between pb-1.5 border-b-2 border-slate-900 mb-2">
                       <div className="flex items-center gap-1 font-mono text-xs font-black text-slate-900">
-                        <span>[{tbl.tableNumber}]</span>
+                        <span>Table {tbl.tableNumber}</span>
                         {tbl.isVip && <span className="text-amber-500 font-bold">★</span>}
                       </div>
                       <span className="font-mono text-[10px] font-bold text-slate-700 flex items-center gap-1">
@@ -486,10 +486,10 @@ export const ScreenK2Overview: React.FC = () => {
                         >
                           <div className="flex items-center justify-between text-xs font-mono font-black">
                             <span className="text-slate-900 truncate pr-1">
-                              {it.quantity}x [{it.name}]
+                              {it.quantity}x {it.name}
                             </span>
                             <span className="font-mono text-[8.5px] font-bold bg-white border border-slate-300 px-1.5 py-0.5 rounded text-slate-800 shrink-0">
-                              [STAGE {it.stage === 'RECEIVED' ? '1: RECEIVED' : it.stage === 'PREPARING' ? '2: PREPARING' : it.stage === 'READY' ? '3: READY' : '4: SERVED'}]
+                              Stage {it.stage === 'RECEIVED' ? '1: Received' : it.stage === 'PREPARING' ? '2: Preparing' : it.stage === 'READY' ? '3: Ready' : '4: Served'}
                             </span>
                           </div>
 
@@ -527,9 +527,9 @@ export const ScreenK2Overview: React.FC = () => {
                       e.stopPropagation();
                       handleOpenTable(tbl.tableNumber);
                     }}
-                    className="w-full mt-3 py-1.5 bg-slate-900 hover:bg-orange-600 text-white font-mono text-[10px] font-black rounded uppercase tracking-wider transition text-center shadow-xs"
+                    className="w-full mt-3 py-1.5 bg-slate-900 hover:bg-orange-600 text-white font-mono text-[10px] font-black rounded uppercase tracking-wider transition text-center shadow-xs cursor-pointer"
                   >
-                    [MANAGE {tbl.tableNumber} ➔]
+                    Manage Table {tbl.tableNumber} ➔
                   </button>
                 </div>
               ))}
@@ -541,10 +541,10 @@ export const ScreenK2Overview: React.FC = () => {
             <div>
               <div className="flex items-center justify-between pb-2 border-b-2 border-slate-900 mb-3">
                 <span className="font-mono text-[10.5px] font-black text-slate-900 uppercase">
-                  [TIME QUEUE (30% WIDTH)]
+                  Time Queue
                 </span>
                 <span className="font-mono text-[10px] text-slate-500 font-bold">
-                  [TIMED ORDERS]
+                  Timed Orders
                 </span>
               </div>
 
@@ -557,7 +557,7 @@ export const ScreenK2Overview: React.FC = () => {
                   >
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-mono text-xs font-black text-slate-900">
-                        [TICKET #{tq.ticketNum}] • [{tq.table}]
+                        Ticket #{tq.ticketNum} • Table {tq.table}
                       </span>
                       <span className="font-mono text-[10px] font-bold text-slate-500">
                         {tq.time}
@@ -578,10 +578,10 @@ export const ScreenK2Overview: React.FC = () => {
 
             <button
               onClick={() => callFloorWaiter('EXPEDITE', 'Calling floor runners to pass')}
-              className="w-full mt-4 py-2.5 rounded-xl border-2 border-slate-900 bg-stone-100 hover:bg-orange-50 font-mono text-xs font-black uppercase text-slate-900 flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_#0f172a] transition"
+              className="w-full mt-4 py-2.5 rounded-xl border-2 border-slate-900 bg-stone-100 hover:bg-orange-50 font-mono text-xs font-black uppercase text-slate-900 flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_#0f172a] transition cursor-pointer"
             >
               <Bell className="h-3.5 w-3.5 text-orange-600" />
-              <span>[CALL FLOOR RUNNER TO PASS]</span>
+              <span>Call Floor Runner to Pass</span>
             </button>
           </div>
         </div>

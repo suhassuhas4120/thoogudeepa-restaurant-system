@@ -114,19 +114,19 @@ export const ScreenK3Detail: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setCurrentScreen(2)}
-              className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-stone-50 px-3 py-1.5 text-xs font-black text-slate-700 hover:bg-stone-100 transition shadow-2xs"
+              className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-stone-50 px-3 py-1.5 text-xs font-black text-slate-700 hover:bg-stone-100 transition shadow-2xs cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span>[BACK TO ALL TABLES]</span>
+              <span>Back to All Tables</span>
             </button>
             <span className="font-mono text-sm font-black text-slate-900">
-              ACTIVE TABLE: [{currentTicket?.tableNumber ?? 'NONE'}]
+              Active Table: {currentTicket?.tableNumber ?? 'None'}
             </span>
           </div>
 
           <div className="flex items-center gap-3">
             <span className="text-xs font-mono font-bold text-slate-500">
-              SERVER: {currentTicket?.serverName ?? '—'}
+              Server: {currentTicket?.serverName ?? '—'}
             </span>
             <button
               onClick={() =>
@@ -135,10 +135,10 @@ export const ScreenK3Detail: React.FC = () => {
                   'Urgent Pickup Required for Table'
                 )
               }
-              className="flex items-center gap-1 rounded-xl border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-black text-orange-800 hover:bg-orange-100 transition shadow-2xs"
+              className="flex items-center gap-1 rounded-xl border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-black text-orange-800 hover:bg-orange-100 transition shadow-2xs cursor-pointer"
             >
               <Bell className="h-3.5 w-3.5 text-orange-600" />
-              <span>[FIRE RUNNER TO TABLE {currentTicket?.tableNumber ?? selectedTableNumber}]</span>
+              <span>Call Runner to Table {currentTicket?.tableNumber ?? selectedTableNumber}</span>
             </button>
           </div>
         </div>
@@ -153,7 +153,7 @@ export const ScreenK3Detail: React.FC = () => {
                 <div className="flex flex-col items-center justify-center h-48 text-slate-400 gap-3">
                   <CheckCircle2 className="h-12 w-12 text-slate-300" />
                   <div className="font-mono text-xs font-bold text-center">
-                    [NO ACTIVE KDS TICKETS]<br />
+                    No Active KDS Tickets<br />
                     <span className="text-[10px] font-normal">Orders will appear here when customers or waiters place them</span>
                   </div>
                 </div>
@@ -165,10 +165,10 @@ export const ScreenK3Detail: React.FC = () => {
                   <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs flex items-center justify-between">
                     <div>
                       <div className="font-mono text-[10px] font-bold text-slate-400 uppercase">
-                        [TICKET #{currentTicket?.id}]
+                        Ticket #{currentTicket?.id}
                       </div>
                       <div className="text-base font-black text-slate-900 mt-0.5">
-                        Table [{currentTicket?.tableNumber}] • {currentTicket?.items.length} Dishes
+                        Table {currentTicket?.tableNumber} • {currentTicket?.items.length} Dishes
                       </div>
                       <div className="text-[10px] font-mono text-slate-500 mt-0.5">
                         Source: {currentTicket?.source === 'CUSTOMER' ? '📱 Customer App' : '📟 Waiter Tablet'}
@@ -188,7 +188,7 @@ export const ScreenK3Detail: React.FC = () => {
                   {/* Items List */}
                   <div className="space-y-3">
                     <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      [ORDERED ITEMS &amp; PREPARATION STAGES]
+                      Ordered Items &amp; Preparation Stages
                     </div>
 
                     {currentTicket?.items.map((it) => (
@@ -227,7 +227,7 @@ export const ScreenK3Detail: React.FC = () => {
                                 : 'bg-stone-50 text-slate-600 border-slate-200'
                             }`}
                           >
-                            [{it.stage}]
+                            {it.stage}
                           </span>
                           {it.stage !== 'SERVED' && (
                             <motion.button
@@ -236,7 +236,7 @@ export const ScreenK3Detail: React.FC = () => {
                                 kitchenBumpItemStage(currentTicket.id, it.id);
                                 bumpItemStage(currentTicket.id, it.id);
                               }}
-                              className="rounded-xl bg-slate-900 px-3 py-1.5 font-mono text-xs font-black text-white hover:bg-slate-800 transition shadow-2xs"
+                              className="rounded-xl bg-slate-900 px-3 py-1.5 font-mono text-xs font-black text-white hover:bg-slate-800 transition shadow-2xs cursor-pointer"
                             >
                               BUMP STAGE ➔
                             </motion.button>
@@ -257,9 +257,9 @@ export const ScreenK3Detail: React.FC = () => {
                     kitchenBumpTable(currentTicket?.id || '');
                     bumpTable(currentTicket?.id || '');
                   }}
-                  className="flex-1 rounded-xl bg-emerald-600 py-3 text-xs font-black uppercase tracking-wider text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700 transition"
+                  className="flex-1 rounded-xl bg-emerald-600 py-3 text-xs font-black uppercase tracking-wider text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700 transition cursor-pointer"
                 >
-                  [MARK ALL DISHES PLATED &amp; READY ✓]
+                  Mark All Dishes Plated &amp; Ready ✓
                 </button>
               </div>
             )}
@@ -271,7 +271,7 @@ export const ScreenK3Detail: React.FC = () => {
             <div className="flex items-center justify-between pb-2 border-b border-slate-200">
               <div className="flex items-center gap-1.5 font-mono text-[10.5px] font-black uppercase text-slate-700">
                 <Sliders className="h-4 w-4 text-orange-600" />
-                <span>[MENU 86 / OUT-OF-STOCK &amp; PREP DELAY CONTROLLER]</span>
+                <span>Menu 86 / Out-of-Stock &amp; Prep Delay Controller</span>
               </div>
               <span className="text-[10px] font-mono font-bold text-slate-400">REAL-TIME SYNC</span>
             </div>
@@ -290,7 +290,7 @@ export const ScreenK3Detail: React.FC = () => {
                 )}
                 <div>
                   <div className="font-mono text-[10.5px] font-black text-slate-800">
-                    {inventoryLocked ? '[INVENTORY LOCKED — CLICK TO EDIT]' : '[EDITING UNLOCKED — MAKE CHANGES THEN UPDATE]'}
+                    {inventoryLocked ? 'Inventory Locked — Click to Edit' : 'Editing Unlocked — Make Changes Then Update'}
                   </div>
                   <div className="font-mono text-[10px] text-slate-500">
                     {inventoryLocked
@@ -307,7 +307,7 @@ export const ScreenK3Detail: React.FC = () => {
                     setInventoryLocked(false);
                   }
                 }}
-                className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 font-mono text-[10.5px] font-black transition ${
+                className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 font-mono text-[10.5px] font-black transition cursor-pointer ${
                   inventoryLocked
                     ? 'bg-slate-900 text-white hover:bg-black'
                     : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
@@ -374,7 +374,7 @@ export const ScreenK3Detail: React.FC = () => {
                       <div className="text-xs font-extrabold text-slate-900 truncate">
                         {item.name}
                         {hasPending && !inventoryLocked && (
-                          <span className="ml-1.5 text-orange-600 text-[10px] font-black">[PENDING]</span>
+                          <span className="ml-1.5 text-orange-600 text-[10px] font-black">Pending</span>
                         )}
                       </div>
                       <div className="text-[10px] font-mono text-slate-400 mt-0.5">
@@ -400,14 +400,14 @@ export const ScreenK3Detail: React.FC = () => {
                         <button
                           onClick={() => handlePendingDelay(item.id, -5)}
                           disabled={inventoryLocked}
-                          className="px-1.5 py-0.5 hover:bg-stone-100 rounded text-slate-600 font-bold disabled:cursor-not-allowed"
+                          className="px-1.5 py-0.5 hover:bg-stone-100 rounded text-slate-600 font-bold disabled:cursor-not-allowed cursor-pointer"
                         >
                           -5m
                         </button>
                         <button
                           onClick={() => handlePendingDelay(item.id, 5)}
                           disabled={inventoryLocked}
-                          className="px-1.5 py-0.5 hover:bg-stone-100 rounded text-slate-900 font-black disabled:cursor-not-allowed"
+                          className="px-1.5 py-0.5 hover:bg-stone-100 rounded text-slate-900 font-black disabled:cursor-not-allowed cursor-pointer"
                         >
                           +5m
                         </button>
@@ -418,7 +418,7 @@ export const ScreenK3Detail: React.FC = () => {
                         onClick={() => handlePendingToggle(item.id, item.is86)}
                         disabled={inventoryLocked}
                         title={inventoryLocked ? 'Unlock inventory to make changes' : undefined}
-                        className={`rounded-xl px-3 py-1.5 font-mono text-[10.5px] font-black uppercase transition ${
+                        className={`rounded-xl px-3 py-1.5 font-mono text-[10.5px] font-black uppercase transition cursor-pointer ${
                           inventoryLocked
                             ? 'opacity-40 cursor-not-allowed border border-slate-200 bg-stone-50 text-slate-500'
                             : effectiveIs86
@@ -426,7 +426,7 @@ export const ScreenK3Detail: React.FC = () => {
                             : 'border border-slate-300 bg-white text-emerald-700 hover:bg-emerald-50'
                         }`}
                       >
-                        {effectiveIs86 ? '[86 SOLD OUT]' : '[IN STOCK]'}
+                        {effectiveIs86 ? '86 Sold Out' : 'In Stock'}
                       </button>
                     </div>
                   </div>

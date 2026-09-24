@@ -79,28 +79,13 @@ export const WaiterTabletHousing: React.FC<WaiterTabletHousingProps> = ({
             <span className="text-slate-300">•</span>
             <span>{activeSection}</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            {cartCount > 0 && (
-              <button
-                type="button"
-                onClick={() => setCurrentScreen(5)}
-                className="relative flex h-6 w-6 items-center justify-center rounded bg-slate-900 text-white hover:bg-black transition cursor-pointer"
-                title="View Active Cart"
-              >
-                <ShoppingCart className="h-3 w-3 text-orange-400 stroke-[2.2]" />
-                <span className="absolute -top-1 -right-1 flex h-3.5 min-w-[14px] px-0.5 items-center justify-center rounded-full bg-orange-600 text-[8px] font-black text-white ring-1 ring-white animate-pulse">
-                  {cartCount}
-                </span>
-              </button>
-            )}
-            <button
-              onClick={() => callKitchenStation('KITCHEN DISPATCH HOTLINE')}
-              className="flex items-center gap-1 rounded bg-orange-600 text-white px-1.5 py-0.5 text-[9.5px] hover:bg-orange-700 transition"
-            >
-              <Flame className="h-2.5 w-2.5 fill-white" />
-              <span>KITCHEN</span>
-            </button>
-          </div>
+          <button
+            onClick={() => callKitchenStation('KITCHEN DISPATCH HOTLINE')}
+            className="flex items-center gap-1 rounded bg-orange-600 text-white px-1.5 py-0.5 text-[9.5px] hover:bg-orange-700 transition"
+          >
+            <Flame className="h-2.5 w-2.5 fill-white" />
+            <span>KITCHEN</span>
+          </button>
         </div>
 
         {/* Kitchen Hotline Toast */}

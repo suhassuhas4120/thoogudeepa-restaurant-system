@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { Wifi, Bell, Flame, ChefHat } from 'lucide-react';
@@ -70,7 +70,7 @@ export const KitchenTabletHousing: React.FC<KitchenTabletHousingProps> = ({
               className="flex items-center gap-1 rounded-lg border border-orange-200 bg-orange-50 px-2.5 py-1 text-[10.5px] font-extrabold text-orange-800 hover:bg-orange-100 transition shadow-2xs"
             >
               <Bell className="h-3 w-3 text-orange-600" />
-              <span>[CALL WAITER]</span>
+              <span>Call Waiter</span>
             </button>
             <div className="flex items-center gap-1 text-emerald-600 font-mono text-[10px] font-bold">
               <Wifi className="h-3.5 w-3.5" />
