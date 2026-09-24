@@ -41,7 +41,7 @@ export const TabletScreen2TablesFeed: React.FC = () => {
 
   const filteredTables = tables.filter((table: SharedTable) => {
     if (selectedSection === 'ALL') return true;
-    return table.section.toUpperCase().includes(selectedSection.replace('SECTION ', ''));
+    return (table.section || '').trim().toUpperCase() === selectedSection.trim().toUpperCase();
   });
 
   // Prioritize Kitchen Tickets: READY first, then PREP, then NEW

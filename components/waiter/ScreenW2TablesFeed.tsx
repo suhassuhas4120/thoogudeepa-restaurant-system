@@ -52,7 +52,7 @@ export const ScreenW2TablesFeed: React.FC = () => {
 
   const filteredTables = tables.filter((table: SharedTable) => {
     if (selectedSection === 'ALL') return true;
-    return table.section.toUpperCase().includes(selectedSection.replace('SECTION ', ''));
+    return (table.section || '').trim().toUpperCase() === selectedSection.trim().toUpperCase();
   });
 
   // Prioritize active kitchen tickets: READY first, then PREP (Cooking), then NEW (Queued)

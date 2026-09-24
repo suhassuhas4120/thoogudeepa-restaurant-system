@@ -150,7 +150,24 @@ const freshTables: SharedTable[] = [
     ],
   },
   { id: 't-7', number: 'B-03', section: 'SECTION B', capacity: 6, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Suresh', kotCount: 0 },
-  { id: 't-8', number: 'C-01', section: 'SECTION C', capacity: 8, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Vijay', kotCount: 0 },
+  {
+    id: 't-8',
+    number: 'C-01',
+    section: 'SECTION C',
+    capacity: 8,
+    status: 'OCCUPIED',
+    guestCount: 6,
+    seatedTime: '12:30 PM',
+    currentBill: 1420,
+    kotCount: 2,
+    serverName: 'Captain Vijay',
+    activeItems: [
+      { name: 'Thoogudeepa Mutton Donne Biryani', quantity: 3, status: 'Served' },
+      { name: 'Kshatriya Chicken Kebab (Crispy)', quantity: 2, status: 'Served' },
+    ],
+  },
+  { id: 't-9', number: 'C-02', section: 'SECTION C', capacity: 6, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Vijay', kotCount: 0 },
+  { id: 't-10', number: 'C-03', section: 'SECTION C', capacity: 10, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Vijay', kotCount: 0 },
 ];
 
 const freshKdsTickets: SharedKDSTicket[] = [
@@ -700,6 +717,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
   resetToFreshDemoState: () => {
     if (typeof window !== 'undefined') {
       try {
+        localStorage.removeItem('thoogudeepa_bridge_v2');
         localStorage.removeItem('thoogudeepa_bridge_v1');
       } catch {}
     }
@@ -722,10 +740,10 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
 if (typeof window !== 'undefined') {
   // 0. Rehydrate from localStorage if available
   try {
-    const saved = localStorage.getItem('thoogudeepa_bridge_v1');
+    const saved = localStorage.getItem('thoogudeepa_bridge_v2');
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (parsed && Array.isArray(parsed.tables)) {
+      if (parsed && Array.isArray(parsed.tables) && parsed.tables.length >= 10) {
         useSharedBridge.setState(parsed);
       }
     }
@@ -748,7 +766,7 @@ if (typeof window !== 'undefined') {
       // Save state to localStorage for refresh persistence
       try {
         localStorage.setItem(
-          'thoogudeepa_bridge_v1',
+          'thoogudeepa_bridge_v2',
           JSON.stringify({
             tables: state.tables,
             kdsTickets: state.kdsTickets,
