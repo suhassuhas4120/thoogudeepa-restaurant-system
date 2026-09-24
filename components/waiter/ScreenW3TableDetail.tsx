@@ -139,7 +139,12 @@ export const ScreenW3TableDetail: React.FC = () => {
               <motion.button
                 whileTap={{ scale: isPaymentDone ? 0.98 : 1 }}
                 disabled={!isPaymentDone}
-                onClick={() => isPaymentDone && waiterVacatesTable(table.number)}
+                onClick={() => {
+                  if (isPaymentDone) {
+                    waiterVacatesTable(table.number);
+                    setCurrentScreen(2);
+                  }
+                }}
                 className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-mono text-xs font-black transition shadow-xs ${
                   isPaymentDone
                     ? 'bg-rose-700 hover:bg-rose-800 text-white cursor-pointer'

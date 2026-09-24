@@ -19,6 +19,7 @@ import {
   CreditCard,
   TrendingUp,
   UtensilsCrossed,
+  Trash2,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -32,6 +33,7 @@ export const ScreenW2TablesFeed: React.FC = () => {
     waiterResolvePing,
     waiterMarkKitchenItemServed,
     waiterMarkTableFoodServed,
+    waiterVacatesTable,
   } = useSharedBridge();
 
   const [activeTab, setActiveTab] = useState<'KITCHEN_FEED' | 'PINGS'>('KITCHEN_FEED');
@@ -82,8 +84,16 @@ export const ScreenW2TablesFeed: React.FC = () => {
     }
   };
 
-  const [selectedSection, setSelectedSection] = useState<string>('ALL');
-  const sectionsList = ['ALL', 'SECTION A', 'SECTION B', 'SECTION C'];
+  const [selectedSection, setSelectedSection] = useState<string>('All');
+  const sectionsList = ['All', 'Section A', 'Section B', 'Terrace', 'Family Dining'];
+  const [vacateNotice, setVacateNotice] = useState<string | null>(null);
+
+  const matchSection = (tableSection: string, filter: string) => {
+    if (!filter || filter.toUpperCase() === 'ALL') return true;
+    const f = filter.toLowerCase().replace(/\s+/g, '');
+    const t = (tableSection || '').toLowerCase().replace(/\s+/g, '');
+    return f === t || t.includes(f) || f.includes(t);
+  };
 
   const stagePriority: Record<string, number> = {
     READY: 1,      // Urgent pass window ready
@@ -93,16 +103,16 @@ export const ScreenW2TablesFeed: React.FC = () => {
   };
 
   // Filtered tables based on section filter
-  const filteredTables = selectedSection === 'ALL'
+  const filteredTables = selectedSection === 'All'
     ? tables
-    : tables.filter((t) => t.section === selectedSection);
+    : tables.filter((t) => matchSection(t.section, selectedSection));
 
   // Filtered and sorted kitchen tickets based on stage filter & section filter
   const filteredTickets = kdsTickets
     .filter((tk) => {
-      if (selectedSection !== 'ALL') {
+      if (selectedSection !== 'All') {
         const tableForTicket = tables.find((t) => t.number === tk.tableNumber);
-        if (tableForTicket && tableForTicket.section !== selectedSection) {
+        if (tableForTicket && !matchSection(tableForTicket.section, selectedSection)) {
           return false;
         }
       }
@@ -119,21 +129,41 @@ export const ScreenW2TablesFeed: React.FC = () => {
 
   // Filtered customer pings based on section filter
   const filteredPings = pings.filter((p) => {
-    if (selectedSection !== 'ALL') {
+    if (selectedSection !== 'All') {
       const tableForPing = tables.find((t) => t.number === p.tableNumber);
-      if (tableForPing && tableForPing.section !== selectedSection) {
+      if (tableForPing && !matchSection(tableForPing.section, selectedSection)) {
         return false;
       }
     }
     return true;
   });
 
+  const handleDirectVacate = (e: React.MouseEvent, tableNumber: string) => {
+    e.stopPropagation();
+    waiterVacatesTable(tableNumber);
+    setVacateNotice(`Table ${tableNumber} is now vacant & available`);
+    setTimeout(() => setVacateNotice(null), 2500);
+  };
+
   return (
-    <WaiterTabletHousing screenNumber={2} screenTitle="FLOOR TABLES &amp; LIVE KITCHEN FEED">
+    <WaiterTabletHousing screenNumber={2} screenTitle="FLOOR TABLES & LIVE KITCHEN FEED">
       <div className="flex-1 flex flex-col p-3 space-y-3 overflow-hidden">
+        {/* Vacate Toast Notification */}
+        {vacateNotice && (
+          <div className="bg-emerald-700 text-white rounded-xl px-3 py-2 text-xs font-mono font-bold flex items-center justify-between shadow-md">
+            <span>✓ {vacateNotice}</span>
+            <button
+              onClick={() => setVacateNotice(null)}
+              className="text-white/80 hover:text-white text-xs ml-2 underline"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
         {/* Top Section: Floor Tables Grid */}
         <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-xs">
-          <div className="flex items-center justify-between mb-1.5">
+          <div className="flex items-center justify-between mb-2">
             <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-slate-500">
               FLOOR TABLES OVERVIEW
             </span>
@@ -143,14 +173,14 @@ export const ScreenW2TablesFeed: React.FC = () => {
             </span>
           </div>
 
-          {/* Section Filter Tabs: All, Section A, Section B, Section C */}
-          <div className="flex items-center gap-1 mb-2.5 overflow-x-auto pb-0.5">
+          {/* Section Filter Tabs: All, Section A, Section B, Terrace, Family Dining */}
+          <div className="flex items-center gap-1 mb-2.5 overflow-x-auto pb-1 scrollbar-none">
             {sectionsList.map((sec) => (
               <button
                 key={sec}
                 type="button"
                 onClick={() => setSelectedSection(sec)}
-                className={`py-1 px-2.5 rounded-lg text-[9.5px] font-mono font-bold border transition ${
+                className={`py-1 px-2.5 rounded-lg text-[9.5px] font-mono font-bold border transition whitespace-nowrap ${
                   selectedSection === sec
                     ? 'border-slate-900 bg-slate-900 text-white shadow-2xs'
                     : 'border-slate-200 bg-stone-50 text-slate-600 hover:bg-stone-100 hover:border-slate-300'
@@ -161,98 +191,76 @@ export const ScreenW2TablesFeed: React.FC = () => {
             ))}
           </div>
 
-          {/* Quick Jump Action Shortcuts Bar with Icons */}
-          <div className="flex items-center gap-1.5 pt-1.5 pb-2 border-t border-slate-100 overflow-x-auto scrollbar-none">
-            <span className="text-[9px] font-mono font-bold text-slate-400 uppercase shrink-0">
-              Quick:
-            </span>
-            <button
-              type="button"
-              onClick={() => setCurrentScreen(6)}
-              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 text-[9.5px] font-mono font-bold transition shadow-2xs shrink-0 cursor-pointer"
-            >
-              <GitMerge className="h-3 w-3 text-purple-600" />
-              <span>Merge Tables</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentScreen(4)}
-              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-200 text-[9.5px] font-mono font-bold transition shadow-2xs shrink-0 cursor-pointer"
-            >
-              <UtensilsCrossed className="h-3 w-3 text-orange-600" />
-              <span>Punch KOT</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentScreen(7)}
-              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-[9.5px] font-mono font-bold transition shadow-2xs shrink-0 cursor-pointer"
-            >
-              <CreditCard className="h-3 w-3 text-emerald-600" />
-              <span>Settlement</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentScreen(10)}
-              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 text-[9.5px] font-mono font-bold transition shadow-2xs shrink-0 cursor-pointer"
-            >
-              <TrendingUp className="h-3 w-3 text-slate-700" />
-              <span>Shift Stats</span>
-            </button>
-          </div>
-
           <div className="grid grid-cols-3 gap-2">
             {filteredTables.map((t) => {
               const foodStatus = getTableFoodStatus(t);
+              const canDirectVacate = t.status === 'BILLING';
 
               return (
                 <motion.div
                   key={t.id}
                   whileTap={{ scale: 0.96 }}
                   onClick={() => handleTableClick(t.number)}
-                  className="rounded-xl border border-slate-200 bg-stone-50/70 p-2 text-center cursor-pointer hover:bg-white hover:border-orange-400 transition shadow-2xs"
+                  className="rounded-xl border border-slate-200 bg-stone-50/70 p-2 text-center cursor-pointer hover:bg-white hover:border-orange-400 transition shadow-2xs flex flex-col justify-between"
                 >
-                  <div className="font-mono text-sm font-black text-slate-900">
-                    {t.mergedWith ? `${t.number}+${t.mergedWith}` : t.number}
+                  <div>
+                    <div className="font-mono text-sm font-black text-slate-900">
+                      {t.mergedWith ? `${t.number}+${t.mergedWith}` : t.number}
+                    </div>
+
+                    {/* Table Status Badge */}
+                    <div className="flex flex-col items-center gap-1 mt-1">
+                      {t.mergedWith ? (
+                        <span className="inline-block px-1.5 py-0.5 rounded text-[8.5px] font-mono font-black border bg-purple-100 text-purple-900 border-purple-300">
+                          🔗 Merged
+                        </span>
+                      ) : (
+                        <span className={`inline-block px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold border ${getStatusBadge(t.status)}`}>
+                          {t.status}
+                        </span>
+                      )}
+
+                      {/* Real-Time Food Lifecycle Badge */}
+                      {foodStatus && (
+                        <span
+                          className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-mono font-extrabold border ${
+                            foodStatus.state === 'READY'
+                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300 animate-pulse'
+                              : foodStatus.state === 'PREPARING'
+                              ? 'bg-orange-100 text-orange-800 border-orange-200'
+                              : foodStatus.state === 'PLACED'
+                              ? 'bg-amber-100 text-amber-800 border-amber-200'
+                              : 'bg-slate-100 text-slate-700 border-slate-200'
+                          }`}
+                        >
+                          {foodStatus.state === 'READY' && '● '}
+                          {foodStatus.state === 'PREPARING' && '⏳ '}
+                          {foodStatus.state === 'PLACED' && '📝 '}
+                          {foodStatus.state === 'SERVED' && '✓ '}
+                          {foodStatus.label}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Table Status Badge */}
-                  <div className="flex flex-col items-center gap-1 mt-1">
-                    {t.mergedWith ? (
-                      <span className="inline-block px-1.5 py-0.5 rounded text-[8.5px] font-mono font-black border bg-purple-100 text-purple-900 border-purple-300">
-                        🔗 Merged
-                      </span>
-                    ) : (
-                      <span className={`inline-block px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold border ${getStatusBadge(t.status)}`}>
-                        {t.status}
-                      </span>
-                    )}
+                  <div className="mt-1.5">
+                    <div className="text-[10px] font-mono text-slate-500">
+                      {t.status === 'OCCUPIED' || t.status === 'BILLING'
+                        ? `₹${t.currentBill} • ${t.seatedTime}`
+                        : `Cap: ${t.capacity}`}
+                    </div>
 
-                    {/* Real-Time Food Lifecycle Badge */}
-                    {foodStatus && (
-                      <span
-                        className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-mono font-extrabold border ${
-                          foodStatus.state === 'READY'
-                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300 animate-pulse'
-                            : foodStatus.state === 'PREPARING'
-                            ? 'bg-orange-100 text-orange-800 border-orange-200'
-                            : foodStatus.state === 'PLACED'
-                            ? 'bg-amber-100 text-amber-800 border-amber-200'
-                            : 'bg-slate-100 text-slate-700 border-slate-200'
-                        }`}
+                    {/* Direct Vacate Button on Screen 2 if Bill Settled */}
+                    {canDirectVacate && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleDirectVacate(e, t.number)}
+                        className="w-full mt-1.5 py-1 px-1 rounded-lg bg-rose-700 hover:bg-rose-800 text-white font-mono text-[9px] font-black flex items-center justify-center gap-1 shadow-2xs cursor-pointer"
                       >
-                        {foodStatus.state === 'READY' && '● '}
-                        {foodStatus.state === 'PREPARING' && '⏳ '}
-                        {foodStatus.state === 'PLACED' && '📝 '}
-                        {foodStatus.state === 'SERVED' && '✓ '}
-                        {foodStatus.label}
-                      </span>
+                        <Trash2 className="h-2.5 w-2.5" />
+                        <span>Vacate Table</span>
+                      </button>
                     )}
-                  </div>
-
-                  <div className="text-[10px] font-mono text-slate-500 mt-1">
-                    {t.status === 'OCCUPIED' || t.status === 'BILLING'
-                      ? `₹${t.currentBill} • ${t.seatedTime}`
-                      : `Cap: ${t.capacity}`}
                   </div>
                 </motion.div>
               );

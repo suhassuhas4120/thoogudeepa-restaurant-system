@@ -15,14 +15,23 @@ export const TabletScreen2TablesFeed: React.FC = () => {
     waiterResolvePing,
     waiterMarkKitchenItemServed,
     waiterMarkTableFoodServed,
+    waiterVacatesTable,
   } = useSharedBridge();
 
   const occupiedCount = tables.filter((t: { status: string }) => t.status === 'OCCUPIED').length;
   const vacantCount = tables.filter((t: { status: string }) => t.status === 'VACANT').length;
   const totalGuests = tables.reduce((acc: number, t: { guestCount?: number }) => acc + (t.guestCount || 0), 0);
 
-  const [selectedSection, setSelectedSection] = useState<string>('ALL');
-  const sectionsList = ['ALL', 'SECTION A', 'SECTION B', 'SECTION C'];
+  const [selectedSection, setSelectedSection] = useState<string>('All');
+  const sectionsList = ['All', 'Section A', 'Section B', 'Terrace', 'Family Dining'];
+  const [vacateNotice, setVacateNotice] = useState<string | null>(null);
+
+  const matchSection = (tableSection: string, filter: string) => {
+    if (!filter || filter.toUpperCase() === 'ALL') return true;
+    const f = filter.toLowerCase().replace(/\s+/g, '');
+    const t = (tableSection || '').toLowerCase().replace(/\s+/g, '');
+    return f === t || t.includes(f) || f.includes(t);
+  };
 
   const stagePriority: Record<string, number> = {
     READY: 1,      // Urgent pass window ready
@@ -31,25 +40,25 @@ export const TabletScreen2TablesFeed: React.FC = () => {
     COMPLETED: 4,  // Served
   };
 
-  const filteredTables = selectedSection === 'ALL'
+  const filteredTables = selectedSection === 'All'
     ? tables
-    : tables.filter((t) => t.section === selectedSection);
+    : tables.filter((t) => matchSection(t.section, selectedSection));
 
   const sortedAndFilteredKdsTickets = kdsTickets
     .filter((tk) => {
       if (tk.status === 'COMPLETED') return false;
-      if (selectedSection !== 'ALL') {
+      if (selectedSection !== 'All') {
         const t = tables.find((tbl) => tbl.number === tk.tableNumber);
-        if (t && t.section !== selectedSection) return false;
+        if (t && !matchSection(t.section, selectedSection)) return false;
       }
       return true;
     })
     .sort((a, b) => (stagePriority[a.status] || 99) - (stagePriority[b.status] || 99));
 
   const filteredPings = pings.filter((p) => {
-    if (selectedSection !== 'ALL') {
+    if (selectedSection !== 'All') {
       const t = tables.find((tbl) => tbl.number === p.tableNumber);
-      if (t && t.section !== selectedSection) return false;
+      if (t && !matchSection(t.section, selectedSection)) return false;
     }
     return true;
   });
@@ -61,8 +70,9 @@ export const TabletScreen2TablesFeed: React.FC = () => {
 
   const handleVacateClick = (e: React.MouseEvent, tableNumber: string) => {
     e.stopPropagation();
-    selectTable(tableNumber);
-    setCurrentScreen(9);
+    waiterVacatesTable(tableNumber);
+    setVacateNotice(`Table ${tableNumber} is now marked Vacant & Clean`);
+    setTimeout(() => setVacateNotice(null), 2500);
   };
 
   const getTableFoodStatus = (t: SharedTable) => {
@@ -136,6 +146,19 @@ export const TabletScreen2TablesFeed: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* Vacate Toast Notification Banner */}
+        {vacateNotice && (
+          <div className="bg-emerald-700 text-white px-5 py-2 text-xs font-mono font-bold flex items-center justify-between border-b border-emerald-800 shrink-0">
+            <span>✓ {vacateNotice}</span>
+            <button
+              onClick={() => setVacateNotice(null)}
+              className="text-white/80 hover:text-white underline text-xs cursor-pointer"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
 
         {/* MAIN SPLIT: LEFT 60% (TABLES MATRIX) / RIGHT 40% (DUAL LIVE NOTIFICATIONS) */}
         <div className="flex flex-1 overflow-hidden">

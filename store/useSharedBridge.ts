@@ -163,7 +163,40 @@ const freshTables: SharedTable[] = [
   },
   { id: 't-6', number: 'B-02', section: 'SECTION B', capacity: 2, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Suresh', kotCount: 0, activeItems: [] },
   { id: 't-7', number: 'B-03', section: 'SECTION B', capacity: 6, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Suresh', kotCount: 0, activeItems: [] },
-  { id: 't-8', number: 'C-01', section: 'SECTION C', capacity: 8, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Vijay', kotCount: 0, activeItems: [] },
+  {
+    id: 't-8',
+    number: 'T-01',
+    section: 'TERRACE',
+    capacity: 4,
+    status: 'OCCUPIED',
+    guestCount: 3,
+    seatedTime: '12:40 PM',
+    currentBill: 1150,
+    serverName: 'Captain Vijay',
+    kotCount: 1,
+    activeItems: [
+      { name: 'Special Chicken Donne Biryani', quantity: 2, status: 'Preparing' },
+      { name: 'Guntur Chicken Wings', quantity: 1, status: 'Ready' },
+    ],
+  },
+  { id: 't-9', number: 'T-02', section: 'TERRACE', capacity: 6, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Vijay', kotCount: 0, activeItems: [] },
+  {
+    id: 't-10',
+    number: 'FD-01',
+    section: 'FAMILY DINING',
+    capacity: 6,
+    status: 'BILLING',
+    guestCount: 5,
+    seatedTime: '12:15 PM',
+    currentBill: 2240,
+    serverName: 'Captain Ramesh',
+    kotCount: 2,
+    activeItems: [
+      { name: 'Donne Mutton Biryani', quantity: 3, status: 'Served' },
+      { name: 'Chicken Kshatriya Kebab', quantity: 2, status: 'Served' },
+    ],
+  },
+  { id: 't-11', number: 'FD-02', section: 'FAMILY DINING', capacity: 8, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Ramesh', kotCount: 0, activeItems: [] },
 ];
 
 const freshKDSTickets: SharedKDSTicket[] = [
@@ -217,6 +250,18 @@ const freshKDSTickets: SharedKDSTicket[] = [
       { id: 'ki-104-1', name: 'Mutton Chops Fry', quantity: 1, stage: 'PLATED', prepMode: 'Dine-In' },
     ],
   },
+  {
+    id: 'KDS-105',
+    tableNumber: 'T-01',
+    serverName: 'Captain Vijay',
+    timestamp: '12:40 PM',
+    elapsedMinutes: 8,
+    status: 'READY',
+    source: 'WAITER',
+    items: [
+      { id: 'ki-105-1', name: 'Guntur Chicken Wings', quantity: 1, stage: 'PLATED', prepMode: 'Dine-In' },
+    ],
+  },
 ];
 
 const freshPings: SharedPing[] = [
@@ -237,6 +282,15 @@ const freshPings: SharedPing[] = [
     timestamp: '12:38 PM',
     status: 'PENDING',
     guestName: 'Guest (Table B-01)',
+  },
+  {
+    id: 'p-3',
+    tableNumber: 'FD-01',
+    type: 'BILL',
+    message: 'Ready for bill settlement & vacate',
+    timestamp: '12:42 PM',
+    status: 'PENDING',
+    guestName: 'Guest (Table FD-01)',
   },
 ];
 
