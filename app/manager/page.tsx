@@ -46,6 +46,7 @@ export default function ManagerPortalPage() {
     setViewMode,
     activeManager,
     activeShift,
+    isAuthenticated,
     logout,
   } = useManagerStore();
 
@@ -89,6 +90,14 @@ export default function ManagerPortalPage() {
     const s = screens.find((item) => item.id === currentScreen);
     return s ? s.comp : <ScreenM1Login />;
   };
+
+  if (!isAuthenticated) {
+    return (
+      <main className="min-h-screen bg-stone-100 flex items-center justify-center">
+        <ScreenM1Login />
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-stone-100 flex flex-col font-sans">

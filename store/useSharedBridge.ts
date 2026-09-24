@@ -76,8 +76,22 @@ export interface SharedMenuItem86 {
 export interface SharedShiftStats {
   tablesServed: number;
   totalRevenue: number;
+  cashRevenue: number;
+  discounts: number;
+  taxCollected: number;
+  cashExpenses: number;
   tipsEarned: number;
   avgTurnaroundMinutes: number;
+}
+
+export interface PaymentRecord {
+  id: string;
+  tableNumber: string;
+  method: string;
+  amountTendered: number;
+  amountApplied: number;
+  changeReturned: number;
+  recordedAt: string;
 }
 
 /* ── Initial Data ───────────────────────────────────────────────── */
@@ -112,6 +126,7 @@ interface SharedBridgeState {
   pings: SharedPing[];
   inventory86: SharedMenuItem86[];
   shiftStats: SharedShiftStats;
+  paymentRecords: PaymentRecord[];
 
   // ── Customer actions ────────────────────────────────────────────
   /** Customer places order → adds KDS ticket + sets table as OCCUPIED */
@@ -155,7 +170,8 @@ interface SharedBridgeState {
   waiterResolvePing: (pingId: string) => void;
 
   /** Waiter records payment */
-  waiterRecordsPayment: (tableNumber: string, method: string, amount: number) => void;
+  waiterRecordsPayment: (tableNumber: string, method: string, amount: number, amountTendered?: number, discount?: number, tax?: number) => boolean;
+  recordCashExpense: (amount: number) => void;
 
   /** Waiter vacates table → sets to CLEANING then VACANT */
   waiterVacatesTable: (tableNumber: string) => void;
@@ -176,9 +192,14 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
   shiftStats: {
     tablesServed: 0,
     totalRevenue: 0,
+    cashRevenue: 0,
+    discounts: 0,
+    taxCollected: 0,
+    cashExpenses: 0,
     tipsEarned: 0,
     avgTurnaroundMinutes: 38,
   },
+  paymentRecords: [],
 
   /* ─── Customer Places Order ──────────────────────────────────── */
   customerPlacesOrder: (tableNumber, guestName, guestCount, items) => {
@@ -488,10 +509,17 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
   },
 
   /* ─── Waiter Records Payment ─────────────────────────────────── */
-  waiterRecordsPayment: (tableNumber, method, amount) => {
+  waiterRecordsPayment: (tableNumber, method, amount, amountTendered = amount, discount = 0, tax = 0) => {
+    if (!Number.isFinite(amount) || amount <= 0 || !Number.isFinite(amountTendered)) return false;
+    if (method === 'CASH' && amountTendered < amount) return false;
+    const existingTable = get().tables.find((table) => table.number === tableNumber);
+    if (existingTable?.status === 'BILLING') return false;
     set((state) => {
       const targetTbl = state.tables.find((t) => t.number === tableNumber);
+      const paymentId = `${tableNumber}:${amount}:${method}`;
+      if (state.paymentRecords.some((payment) => payment.id === paymentId)) return state;
       const partner = targetTbl?.mergedWith;
+      const changeReturned = method === 'CASH' ? amountTendered - amount : 0;
       return {
         tables: state.tables.map((t) =>
           t.number === tableNumber || (partner && t.number === partner)
@@ -501,10 +529,20 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
         shiftStats: {
           ...state.shiftStats,
           totalRevenue: state.shiftStats.totalRevenue + amount,
+          cashRevenue: state.shiftStats.cashRevenue + (method === 'CASH' ? amount : 0),
+          discounts: state.shiftStats.discounts + discount,
+          taxCollected: state.shiftStats.taxCollected + tax,
           tablesServed: state.shiftStats.tablesServed + 1,
         },
+        paymentRecords: [...state.paymentRecords, { id: paymentId, tableNumber, method, amountTendered, amountApplied: amount, changeReturned, recordedAt: nowTime() }],
       };
     });
+    return true;
+  },
+
+  recordCashExpense: (amount) => {
+    if (!Number.isFinite(amount) || amount <= 0) return;
+    set((state) => ({ shiftStats: { ...state.shiftStats, cashExpenses: state.shiftStats.cashExpenses + amount } }));
   },
 
   /* ─── Waiter Vacates Table ───────────────────────────────────── */
@@ -568,9 +606,14 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
       shiftStats: {
         tablesServed: 0,
         totalRevenue: 0,
+        cashRevenue: 0,
+        discounts: 0,
+        taxCollected: 0,
+        cashExpenses: 0,
         tipsEarned: 0,
         avgTurnaroundMinutes: 38,
       },
+      paymentRecords: [],
     });
   },
 }));
@@ -583,7 +626,18 @@ if (typeof window !== 'undefined') {
     if (saved) {
       const parsed = JSON.parse(saved);
       if (parsed && Array.isArray(parsed.tables)) {
-        useSharedBridge.setState(parsed);
+        useSharedBridge.setState({
+          ...parsed,
+          paymentRecords: Array.isArray(parsed.paymentRecords) ? parsed.paymentRecords : [],
+          shiftStats: {
+            ...useSharedBridge.getState().shiftStats,
+            ...(parsed.shiftStats || {}),
+            cashRevenue: parsed.shiftStats?.cashRevenue || 0,
+            discounts: parsed.shiftStats?.discounts || 0,
+            taxCollected: parsed.shiftStats?.taxCollected || 0,
+            cashExpenses: parsed.shiftStats?.cashExpenses || 0,
+          },
+        });
       }
     }
   } catch {}

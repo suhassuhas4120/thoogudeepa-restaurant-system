@@ -17,10 +17,13 @@ export function ScreenM1Login() {
     verifyPin,
     isAuthenticated,
     openingFloat,
+    verifyOpeningFloat,
     setCurrentScreen,
   } = useManagerStore();
 
   const [authError, setAuthError] = useState(false);
+  const [floatInput, setFloatInput] = useState('');
+  const [floatError, setFloatError] = useState('');
 
   const handlePress = (d: string) => {
     setAuthError(false);
@@ -28,11 +31,26 @@ export function ScreenM1Login() {
   };
 
   const handleUnlock = () => {
+    if (!openingFloat) {
+      setFloatError('Verify the opening cash float before unlocking the desk.');
+      return;
+    }
     const ok = verifyPin();
     if (!ok) {
       setAuthError(true);
       setTimeout(() => setAuthError(false), 2000);
     }
+  };
+
+  const handleVerifyFloat = () => {
+    const amount = Number(floatInput);
+    if (!floatInput.trim() || !Number.isFinite(amount) || amount < 0) {
+      setFloatError('Enter a valid non-negative opening amount.');
+      return;
+    }
+    verifyOpeningFloat(amount);
+    setFloatInput('');
+    setFloatError('');
   };
 
   return (
@@ -89,13 +107,21 @@ export function ScreenM1Login() {
         <div className="bg-white border-2 border-slate-900 rounded-xl p-4 shadow-[3px_3px_0px_#0f172a]">
           <div className="flex justify-between items-center text-xs font-mono text-slate-500">
             <span>OPENING CASH FLOAT:</span>
-            <span className="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-bold">VERIFIED</span>
+            <span className={`px-1.5 py-0.5 rounded font-bold ${openingFloat ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+              {openingFloat ? 'VERIFIED' : 'REQUIRED'}
+            </span>
           </div>
-          <div className="text-2xl font-black font-mono text-slate-900 mt-1">
-            ₹ {openingFloat.toLocaleString('en-IN')}.00
-          </div>
+          {openingFloat ? (
+            <div className="text-2xl font-black font-mono text-slate-900 mt-1">₹ {openingFloat.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+          ) : (
+            <div className="mt-2 flex gap-2">
+              <input type="number" min="0" step="0.01" value={floatInput} onChange={(e) => setFloatInput(e.target.value)} placeholder="Count till amount" className="min-w-0 flex-1 border border-slate-900 rounded-lg p-2 font-mono text-sm" />
+              <button type="button" onClick={handleVerifyFloat} className="bg-slate-900 text-white rounded-lg px-3 text-xs font-bold">VERIFY</button>
+            </div>
+          )}
+          {floatError && <p className="text-[11px] text-rose-600 font-bold mt-1">{floatError}</p>}
           <p className="text-[11px] font-mono text-slate-500 mt-1">
-            Counted in Till Safe • Ready for change distribution
+            {openingFloat ? 'Counted in Till Safe • Ready for change distribution' : 'Enter and verify the physical till count before trading'}
           </p>
         </div>
 
@@ -173,9 +199,9 @@ export function ScreenM1Login() {
             </div>
             <div className="font-mono text-xs font-bold text-slate-500">
               {authError ? (
-                <span className="text-rose-600 font-black">❌ INVALID PIN — TRY DEFAULT 1234</span>
+                <span className="text-rose-600 font-black">INVALID PIN</span>
               ) : (
-                <span>[{pinInput.length} OF 4 DIGITS ENTERED • DEFAULT PIN: 1234]</span>
+                <span>[{pinInput.length} OF 4 DIGITS ENTERED]</span>
               )}
             </div>
           </div>
@@ -215,7 +241,7 @@ export function ScreenM1Login() {
         {/* Action Button */}
         <div className="mt-6 pt-4 border-t border-slate-200 flex gap-3">
           <button
-            onClick={() => setCurrentScreen(2)}
+            onClick={handleUnlock}
             className="flex-1 bg-slate-900 text-white py-3 px-4 rounded-xl font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-[3px_3px_0px_#0f172a] hover:bg-orange-600 transition"
           >
             <Unlock className="h-4 w-4" />

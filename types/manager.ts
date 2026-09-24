@@ -66,3 +66,9 @@ export interface PromoRule {
   isActive: boolean;
   description: string;
 }
+
+export interface OpeningFloat {
+  amount: number;
+  verifiedAt: string;
+  verifiedBy: string;
+}

@@ -6,33 +6,46 @@ import { useManagerStore } from '../../store/useManagerStore';
 import { FileText, Printer, Lock, AlertTriangle, CheckCircle2, IndianRupee } from 'lucide-react';
 
 export function ScreenM16DayCloseZReport() {
-  const { shiftStats } = useSharedBridge();
+  const { shiftStats, tables, kdsTickets } = useSharedBridge();
   const { openingFloat, pettyExpenses, activeManager } = useManagerStore();
 
-  const totalPetty = pettyExpenses.reduce((acc, pe) => acc + pe.amount, 0);
-  const grossSales = Math.max(48250, shiftStats.totalRevenue);
-  const discountTotal = 1650;
-  const taxable = grossSales - discountTotal;
-  const cgst = Math.round(taxable * 0.025);
-  const sgst = Math.round(taxable * 0.025);
-  const netRevenue = taxable + cgst + sgst;
+  const totalPetty = shiftStats.cashExpenses;
+  const grossSales = shiftStats.totalRevenue - shiftStats.taxCollected + shiftStats.discounts;
+  const discountTotal = shiftStats.discounts;
+  const taxable = shiftStats.totalRevenue - shiftStats.taxCollected;
+  const taxTotal = shiftStats.taxCollected;
+  const netRevenue = taxable;
 
   // Expected cash
-  const cashSales = Math.round(grossSales * 0.26);
-  const expectedCashInTill = openingFloat + cashSales - totalPetty;
+  const cashSales = shiftStats.cashRevenue;
+  const expectedCashInTill = openingFloat ? openingFloat.amount + cashSales - totalPetty : null;
 
-  const [actualCashCounted, setActualCashCounted] = useState(String(expectedCashInTill));
+  const [actualCashCounted, setActualCashCounted] = useState('');
   const [shiftLocked, setShiftLocked] = useState(false);
+  const [closeError, setCloseError] = useState('');
 
-  const variance = (Number(actualCashCounted) || 0) - expectedCashInTill;
+  const actualCash = actualCashCounted.trim() === '' ? null : Number(actualCashCounted);
+  const variance = expectedCashInTill !== null && actualCash !== null ? actualCash - expectedCashInTill : null;
 
   const handlePrintZ = () => {
-    alert(`[MASTER Z-REPORT TAX SLIP PRINTED]\nThoogudeepa Donne Biryani Mane\nGross: ₹${grossSales}\nCGST: ₹${cgst} | SGST: ₹${sgst}\nNet: ₹${netRevenue}\nCash Expected: ₹${expectedCashInTill}\nCash Counted: ₹${actualCashCounted}\nVariance: ₹${variance}`);
+    setCloseError('Print integration requires the printer service. The report remains available on screen.');
   };
 
   const handleLockShift = () => {
+    if (openingFloat === null || expectedCashInTill === null) {
+      setCloseError('Verify the opening float before closing the shift.');
+      return;
+    }
+    if (actualCash === null || !Number.isFinite(actualCash) || actualCash < 0) {
+      setCloseError('Enter the physical cash counted before closing the shift.');
+      return;
+    }
+    if (tables.some((table) => table.status !== 'VACANT') || kdsTickets.some((ticket) => ticket.status !== 'COMPLETED')) {
+      setCloseError('Resolve unpaid tables and pending kitchen tickets before closing the shift.');
+      return;
+    }
+    setCloseError('');
     setShiftLocked(true);
-    alert('NIGHT SHIFT OFFICIALLY CLOSED & LOCKED! Master Z-Report filed.');
   };
 
   return (
@@ -68,27 +81,27 @@ export function ScreenM16DayCloseZReport() {
           </h4>
           <div className="flex justify-between py-1 border-b border-slate-100">
             <span>Gross Shift Sales:</span>
-            <span className="font-bold">₹ {grossSales.toLocaleString('en-IN')}.00</span>
+            <span className="font-bold">₹ {grossSales.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
           </div>
           <div className="flex justify-between py-1 border-b border-slate-100 text-rose-600">
             <span>Total Discounts Given:</span>
-            <span className="font-bold">- ₹ {discountTotal.toLocaleString('en-IN')}.00</span>
+            <span className="font-bold">- ₹ {discountTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
           </div>
           <div className="flex justify-between py-1 border-b border-slate-100">
             <span>Taxable Turnover:</span>
-            <span className="font-bold">₹ {taxable.toLocaleString('en-IN')}.00</span>
+            <span className="font-bold">₹ {taxable.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
           </div>
           <div className="flex justify-between py-1 border-b border-slate-100">
             <span>CGST @ 2.5%:</span>
-            <span className="font-bold">₹ {cgst.toLocaleString('en-IN')}.00</span>
+            <span className="font-bold">₹ {taxTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
           </div>
           <div className="flex justify-between py-1 border-b border-slate-100">
             <span>SGST @ 2.5%:</span>
-            <span className="font-bold">₹ {sgst.toLocaleString('en-IN')}.00</span>
+            <span className="font-bold">Included above</span>
           </div>
           <div className="flex justify-between pt-2 border-t-2 border-slate-900 text-sm font-black text-slate-900">
             <span>NET COLLECTED REVENUE:</span>
-            <span>₹ {netRevenue.toLocaleString('en-IN')}.00</span>
+            <span>₹ {netRevenue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
           </div>
         </div>
 
@@ -100,19 +113,19 @@ export function ScreenM16DayCloseZReport() {
             </h4>
             <div className="flex justify-between py-1 border-b border-slate-100">
               <span>Opening Float:</span>
-              <span className="font-bold">+ ₹ {openingFloat.toLocaleString('en-IN')}.00</span>
+              <span className="font-bold">{openingFloat ? `+ ₹ ${openingFloat.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : 'NOT VERIFIED'}</span>
             </div>
             <div className="flex justify-between py-1 border-b border-slate-100">
               <span>Shift Cash Sales:</span>
-              <span className="font-bold">+ ₹ {cashSales.toLocaleString('en-IN')}.00</span>
+              <span className="font-bold">+ ₹ {cashSales.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </div>
             <div className="flex justify-between py-1 border-b border-slate-100 text-rose-600">
               <span>Petty Cash Outflows:</span>
-              <span className="font-bold">- ₹ {totalPetty.toLocaleString('en-IN')}.00</span>
+              <span className="font-bold">- ₹ {totalPetty.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </div>
             <div className="flex justify-between pt-2 border-t border-slate-300 font-black text-slate-800">
               <span>EXPECTED CASH IN SAFE:</span>
-              <span>₹ {expectedCashInTill.toLocaleString('en-IN')}.00</span>
+              <span>{expectedCashInTill === null ? 'NOT AVAILABLE' : `₹ ${expectedCashInTill.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}</span>
             </div>
 
             <div className="mt-3 p-3 bg-stone-50 rounded-lg border border-slate-200 space-y-1">
@@ -127,13 +140,14 @@ export function ScreenM16DayCloseZReport() {
               </div>
               <div className="flex justify-between font-black pt-1 border-t border-slate-200">
                 <span>CASH VARIANCE:</span>
-                <span className={variance === 0 ? 'text-emerald-700' : 'text-rose-600'}>
-                  {variance === 0 ? '₹ 0.00 (PERFECT)' : `₹ ${variance}.00 (${variance > 0 ? 'OVER' : 'SHORT'})`}
+                  <span className={variance === 0 ? 'text-emerald-700' : 'text-rose-600'}>
+                  {variance === null ? 'COUNT REQUIRED' : variance === 0 ? '₹ 0.00 (PERFECT)' : `₹ ${variance.toFixed(2)} (${variance > 0 ? 'OVER' : 'SHORT'})`}
                 </span>
               </div>
             </div>
           </div>
 
+          {closeError && <p className="mt-3 text-xs font-bold text-rose-600">{closeError}</p>}
           <div className="mt-4 pt-3 border-t border-slate-200">
             {shiftLocked ? (
               <div className="p-3 bg-emerald-50 border-2 border-emerald-600 rounded-xl text-center font-bold text-emerald-800 flex items-center justify-center gap-2">

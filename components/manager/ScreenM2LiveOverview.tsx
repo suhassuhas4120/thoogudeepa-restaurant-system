@@ -7,7 +7,7 @@ import { IndianRupee, Users, Utensils, AlertTriangle, TrendingUp, Clock, CheckCi
 
 export function ScreenM2LiveOverview() {
   const { tables, kdsTickets, shiftStats } = useSharedBridge();
-  const { setCurrentScreen, setSelectedTableNumber } = useManagerStore();
+  const { setCurrentScreen, setSelectedTableNumber, openingFloat } = useManagerStore();
 
   const occupiedTables = tables.filter((t) => t.status === 'OCCUPIED' || t.status === 'BILLING');
   const totalSeated = occupiedTables.reduce((acc, t) => acc + (t.guestCount || 0), 0);
@@ -189,11 +189,11 @@ export function ScreenM2LiveOverview() {
             <div className="space-y-1.5 text-xs font-mono">
               <div className="flex justify-between text-slate-600">
                 <span>Opening Cash Float:</span>
-                <span className="font-bold">₹ 5,000.00</span>
+                <span className="font-bold">{openingFloat ? `₹ ${openingFloat.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : 'NOT VERIFIED'}</span>
               </div>
               <div className="flex justify-between text-slate-600">
                 <span>Cash Collected Today:</span>
-                <span className="font-bold text-emerald-700">₹ {shiftStats.totalRevenue.toLocaleString('en-IN')}.00</span>
+                <span className="font-bold text-emerald-700">₹ {shiftStats.cashRevenue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between text-slate-600">
                 <span>Total Tables Served:</span>

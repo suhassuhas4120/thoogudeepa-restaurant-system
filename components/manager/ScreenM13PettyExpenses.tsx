@@ -2,10 +2,12 @@
 
 import React, { useState } from 'react';
 import { useManagerStore } from '../../store/useManagerStore';
+import { useSharedBridge } from '../../store/useSharedBridge';
 import { Receipt, Plus, IndianRupee } from 'lucide-react';
 
 export function ScreenM13PettyExpenses() {
   const { pettyExpenses, addPettyExpense } = useManagerStore();
+  const recordCashExpense = useSharedBridge((state) => state.recordCashExpense);
 
   const [desc, setDesc] = useState('');
   const [category, setCategory] = useState<'Kitchen Supplies' | 'Dairy & Fresh' | 'Fuel/Gas' | 'Emergency Maintenance' | 'Miscellaneous'>('Kitchen Supplies');
@@ -16,8 +18,10 @@ export function ScreenM13PettyExpenses() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!desc.trim() || !amount) return;
-    addPettyExpense(desc, category, Number(amount) || 0, paidTo || 'Vendor');
+    const parsedAmount = Number(amount);
+    if (!desc.trim() || !Number.isFinite(parsedAmount) || parsedAmount <= 0) return;
+    addPettyExpense(desc.trim(), category, parsedAmount, paidTo.trim() || 'Vendor');
+    recordCashExpense(parsedAmount);
     setDesc('');
     setAmount('');
     setPaidTo('');

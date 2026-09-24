@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ManagerScreenId, ManagerProfile, ShiftInfo, QueueToken, PettyExpense, StaffRosterMember, HardwareDevice, PromoRule } from '../types/manager';
+import { ManagerScreenId, ManagerProfile, ShiftInfo, QueueToken, PettyExpense, StaffRosterMember, HardwareDevice, PromoRule, OpeningFloat } from '../types/manager';
 
 export const MANAGER_PROFILES: ManagerProfile[] = [
   { id: 'mgr-1', name: 'MANJUNATH (GENERAL MANAGER)', role: 'General Manager', pin: '1234' },
@@ -45,7 +45,7 @@ interface ManagerStoreState {
   activeShift: ShiftInfo;
   isAuthenticated: boolean;
   pinInput: string;
-  openingFloat: number;
+  openingFloat: OpeningFloat | null;
   selectedTableNumber: string;
   
   // Dynamic lists
@@ -65,6 +65,7 @@ interface ManagerStoreState {
   deletePinDigit: () => void;
   verifyPin: () => boolean;
   logout: () => void;
+  verifyOpeningFloat: (amount: number) => boolean;
   setSelectedTableNumber: (num: string) => void;
   
   // Queue actions
@@ -90,9 +91,9 @@ export const useManagerStore = create<ManagerStoreState>((set, get) => ({
   viewMode: 'single',
   activeManager: MANAGER_PROFILES[0],
   activeShift: INITIAL_SHIFTS[0],
-  isAuthenticated: true, // Default unlocked for ease of testing all screens
-  pinInput: '1234',
-  openingFloat: 5000,
+  isAuthenticated: false,
+  pinInput: '',
+  openingFloat: null,
   selectedTableNumber: 'A-01',
   
   queueTokens: [
@@ -119,13 +120,18 @@ export const useManagerStore = create<ManagerStoreState>((set, get) => ({
   deletePinDigit: () => set((s) => ({ pinInput: s.pinInput.slice(0, -1) })),
   verifyPin: () => {
     const { pinInput, activeManager } = get();
-    if (pinInput === activeManager.pin || pinInput === '1234') {
+    if (pinInput === activeManager.pin) {
       set({ isAuthenticated: true, currentScreen: 2 });
       return true;
     }
     return false;
   },
   logout: () => set({ isAuthenticated: false, pinInput: '', currentScreen: 1 }),
+  verifyOpeningFloat: (amount) => {
+    if (!Number.isFinite(amount) || amount < 0) return false;
+    set({ openingFloat: { amount, verifiedAt: new Date().toISOString(), verifiedBy: get().activeManager.id } });
+    return true;
+  },
   setSelectedTableNumber: (num) => set({ selectedTableNumber: num }),
   
   addQueueToken: (guestName, phone, pax, section) => {
@@ -176,3 +182,19 @@ export const useManagerStore = create<ManagerStoreState>((set, get) => ({
     promos: s.promos.map((p) => (p.id === id ? { ...p, isActive: !p.isActive } : p)),
   })),
 }));
+
+if (typeof window !== 'undefined') {
+  try {
+    const saved = localStorage.getItem('thoogudeepa_manager_v1');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed?.openingFloat) useManagerStore.setState({ openingFloat: parsed.openingFloat });
+    }
+  } catch {}
+
+  useManagerStore.subscribe((state) => {
+    try {
+      localStorage.setItem('thoogudeepa_manager_v1', JSON.stringify({ openingFloat: state.openingFloat }));
+    } catch {}
+  });
+}

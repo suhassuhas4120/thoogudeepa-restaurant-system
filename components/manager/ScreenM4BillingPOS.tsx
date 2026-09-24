@@ -24,18 +24,13 @@ import {
 } from 'lucide-react';
 
 export function ScreenM4BillingPOS() {
-  const { tables, waiterRecordsPayment, waiterVacatesTable } = useSharedBridge();
+  const { tables, inventory86, waiterFiresKOT, waiterRecordsPayment, waiterVacatesTable } = useSharedBridge();
   const { selectedTableNumber, setSelectedTableNumber, setCurrentScreen } = useManagerStore();
 
-  const selectedTable = tables.find((t) => t.number === selectedTableNumber) || tables[0];
+  const selectedTable = tables.find((t) => t.number === selectedTableNumber);
 
   // Editable bill items
-  const [items, setItems] = useState([
-    { id: 1, name: 'Special Chicken Donne Biryani', price: 290, qty: 2, isFree: false },
-    { id: 2, name: 'Mutton Chops Fry (Dry)', price: 340, qty: 1, isFree: false },
-    { id: 3, name: 'Guntur Chicken Wings', price: 260, qty: 1, isFree: false },
-    { id: 4, name: 'Special Filter Coffee', price: 40, qty: 2, isFree: false },
-  ]);
+  const [items, setItems] = useState<Array<{ id: string; name: string; price: number; qty: number; isFree: boolean }>>([]);
 
   // Synchronize items with selected table's real running items if present
   useEffect(() => {
@@ -44,7 +39,7 @@ export function ScreenM4BillingPOS() {
         selectedTable.activeItems.map((activeItem, idx) => {
           const menuItem = INITIAL_MENU_ITEMS.find((m) => m.name === activeItem.name);
           return {
-            id: idx + 1,
+            id: `${activeItem.name}-${idx}`,
             name: activeItem.name,
             price: menuItem ? menuItem.price : 290,
             qty: activeItem.quantity,
@@ -52,20 +47,24 @@ export function ScreenM4BillingPOS() {
           };
         })
       );
+    } else if (selectedTableNumber !== 'COUNTER') {
+      setItems([]);
     }
   }, [selectedTableNumber, selectedTable?.activeItems]);
 
   const [discountPercent, setDiscountPercent] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CARD' | 'UPI' | 'AGGREGATOR'>('UPI');
-  const [cashTendered, setCashTendered] = useState('1500');
+  const [cashTendered, setCashTendered] = useState('');
   const [settledSuccess, setSettledSuccess] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Menu items side tab state for direct counter ordering
   const [menuSearch, setMenuSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [showMenuCatalog, setShowMenuCatalog] = useState(true);
 
-  const categories = ['ALL', 'Donne Biryani', 'Starters & Kebabs', 'Sides & Desserts', 'Beverages'];
+  const categories = ['ALL', 'Rice & Bowls', 'Starters', 'Desserts'];
 
   const filteredMenuItems = INITIAL_MENU_ITEMS.filter((item) => {
     const matchesSearch = item.name.toLowerCase().includes(menuSearch.toLowerCase());
@@ -75,6 +74,7 @@ export function ScreenM4BillingPOS() {
 
   // Direct order item addition
   const handleAddDirectItem = (menuItem: typeof INITIAL_MENU_ITEMS[0]) => {
+    if (inventory86.find((stock) => stock.id === menuItem.id)?.is86) return;
     setItems((prev) => {
       const existing = prev.find((it) => it.name === menuItem.name);
       if (existing) {
@@ -85,7 +85,7 @@ export function ScreenM4BillingPOS() {
         return [
           ...prev,
           {
-            id: Date.now() + Math.floor(Math.random() * 1000),
+            id: menuItem.id,
             name: menuItem.name,
             price: menuItem.price,
             qty: 1,
@@ -98,31 +98,61 @@ export function ScreenM4BillingPOS() {
 
   // Math
   const subtotal = items.reduce((acc, item) => acc + (item.isFree ? 0 : item.price * item.qty), 0);
-  const discountAmount = Math.round((subtotal * discountPercent) / 100);
+  const discountAmount = Math.round((subtotal * discountPercent)) / 100;
   const taxableAmount = subtotal - discountAmount;
-  const cgst = Math.round(taxableAmount * 0.025);
-  const sgst = Math.round(taxableAmount * 0.025);
-  const grandTotal = taxableAmount + cgst + sgst;
-  const tenderedNum = Number(cashTendered) || 0;
-  const changeDue = Math.max(0, tenderedNum - grandTotal);
+  const cgst = Math.round(taxableAmount * 0.025 * 100) / 100;
+  const sgst = Math.round(taxableAmount * 0.025 * 100) / 100;
+  const grandTotal = Math.round((taxableAmount + cgst + sgst) * 100) / 100;
+  const tenderedNum = cashTendered.trim() === '' ? 0 : Number(cashTendered);
+  const changeDue = paymentMethod === 'CASH' && Number.isFinite(tenderedNum) ? Math.max(0, tenderedNum - grandTotal) : 0;
 
-  const updateQty = (id: number, delta: number) => {
+  const updateQty = (id: string, delta: number) => {
     setItems((prev) =>
       prev
         .map((it) => (it.id === id ? { ...it, qty: Math.max(1, it.qty + delta) } : it))
     );
   };
 
-  const removeItem = (id: number) => {
+  const removeItem = (id: string) => {
     setItems((prev) => prev.filter((it) => it.id !== id));
   };
 
   const handleSettle = () => {
-    waiterRecordsPayment(selectedTable.number, paymentMethod, grandTotal);
-    waiterVacatesTable(selectedTable.number);
+    if (isSubmitting) return;
+    setPaymentError('');
+    if (items.length === 0 || grandTotal <= 0) {
+      setPaymentError('Add at least one billable item before settlement.');
+      return;
+    }
+    if (paymentMethod === 'CASH' && (!Number.isFinite(tenderedNum) || tenderedNum <= 0 || tenderedNum < grandTotal)) {
+      setPaymentError(`Cash received must be at least ₹${grandTotal.toFixed(2)}.`);
+      return;
+    }
+    setIsSubmitting(true);
+    if (selectedTableNumber === 'COUNTER') {
+      waiterFiresKOT('COUNTER', 'Head Cashier', items.map((item) => ({
+        item: INITIAL_MENU_ITEMS.find((menuItem) => menuItem.name === item.name) || INITIAL_MENU_ITEMS[0],
+        selectedOption: '',
+        quantity: item.qty,
+      })));
+    }
+    const recorded = waiterRecordsPayment(
+      selectedTableNumber,
+      paymentMethod,
+      grandTotal,
+      paymentMethod === 'CASH' ? tenderedNum : grandTotal
+      , discountAmount, cgst + sgst
+    );
+    if (!recorded) {
+      setPaymentError('Payment could not be recorded. Review the amount and retry.');
+      setIsSubmitting(false);
+      return;
+    }
+    if (selectedTable) waiterVacatesTable(selectedTable.number);
     setSettledSuccess(true);
     setTimeout(() => {
       setSettledSuccess(false);
+      setIsSubmitting(false);
       setCurrentScreen(2); // Jump to overview
     }, 1800);
   };
@@ -208,9 +238,10 @@ export function ScreenM4BillingPOS() {
             {/* Menu Items Quick Punch Grid */}
             <div className="flex-1 overflow-y-auto space-y-2 pt-3 pr-1">
               {filteredMenuItems.map((menuItem) => (
-                <button
-                  key={menuItem.id}
-                  onClick={() => handleAddDirectItem(menuItem)}
+                  <button
+                    key={menuItem.id}
+                    onClick={() => handleAddDirectItem(menuItem)}
+                    disabled={inventory86.find((stock) => stock.id === menuItem.id)?.is86}
                   className="w-full text-left p-2.5 rounded-lg border border-slate-200 hover:border-orange-500 hover:bg-orange-50/40 bg-white transition flex items-center justify-between group shadow-2xs"
                 >
                   <div className="pr-2">
@@ -224,7 +255,7 @@ export function ScreenM4BillingPOS() {
 
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="font-mono text-xs font-black text-slate-900">
-                      ₹{menuItem.price}
+                      {inventory86.find((stock) => stock.id === menuItem.id)?.is86 ? '86' : `₹${menuItem.price}`}
                     </span>
                     <span className="h-6 w-6 rounded-md bg-slate-900 group-hover:bg-orange-600 text-white flex items-center justify-center transition">
                       <Plus className="h-3.5 w-3.5" />
