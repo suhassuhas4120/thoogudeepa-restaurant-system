@@ -8,6 +8,7 @@ interface WaiterTabletLandscapeHousingProps {
   children: React.ReactNode;
   screenNumber: number;
   screenTitle: string;
+  showKitchenHotline?: boolean;
   className?: string;
 }
 
@@ -15,6 +16,7 @@ export const WaiterTabletLandscapeHousing: React.FC<WaiterTabletLandscapeHousing
   children,
   screenNumber,
   screenTitle,
+  showKitchenHotline = screenNumber !== 1,
   className = '',
 }) => {
   const {
@@ -66,18 +68,20 @@ export const WaiterTabletLandscapeHousing: React.FC<WaiterTabletLandscapeHousing
           <div className="flex items-center gap-4 text-[11px]">
             <div className="flex items-center gap-1.5 text-slate-700">
               <UserCheck className="h-3.5 w-3.5 text-orange-600" />
-              <span className="font-bold">{activeCaptain}</span>
+              <span className="font-bold">{activeCaptain || 'Captain'}</span>
               <span className="text-slate-400">•</span>
               <span className="text-slate-500">{activeSection}</span>
             </div>
 
-            <button
-              onClick={() => callKitchenStation('KITCHEN DISPATCH HOTLINE')}
-              className="flex items-center gap-1 rounded bg-orange-600 text-white px-2.5 py-1 text-[10.5px] font-bold hover:bg-orange-700 transition shadow-xs"
-            >
-              <Flame className="h-3 w-3 fill-white" />
-              <span>KITCHEN HOTLINE</span>
-            </button>
+            {showKitchenHotline && (
+              <button
+                onClick={() => callKitchenStation('KITCHEN DISPATCH HOTLINE')}
+                className="flex items-center gap-1 rounded bg-orange-600 text-white px-2.5 py-1 text-[10.5px] font-bold hover:bg-orange-700 transition shadow-xs"
+              >
+                <Flame className="h-3 w-3 fill-white" />
+                <span>KITCHEN HOTLINE</span>
+              </button>
+            )}
 
             <div className="flex items-center gap-2 text-slate-600 border-l border-slate-300 pl-3">
               <Wifi className="h-3.5 w-3.5 text-slate-800" />
@@ -88,7 +92,7 @@ export const WaiterTabletLandscapeHousing: React.FC<WaiterTabletLandscapeHousing
         </div>
 
         {/* Kitchen Hotline Toast Alert */}
-        {kitchenCallNotice && (
+        {showKitchenHotline && kitchenCallNotice && (
           <div className="bg-slate-900 text-white text-xs font-bold px-4 py-2 flex items-center justify-between z-30 border-b border-slate-700">
             <span className="truncate">⚡ HOTLINE ALERT: {kitchenCallNotice}</span>
             <button

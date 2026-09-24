@@ -9,24 +9,37 @@ export const TabletScreen1Login: React.FC = () => {
   const { setCurrentScreen, activeCaptain, setActiveCaptain, activeSection, setActiveSection } =
     useWaiterStore();
   const [pin, setPin] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
   const sections = ['SECTION A & B', 'TERRACE ROOFTOP', 'FAMILY AC DINING', 'ALL SECTIONS'];
 
   const handleNum = (num: string) => {
-    if (pin.length < 4) setPin((p) => p + num);
+    if (pin.length < 4) {
+      const nextPin = pin + num;
+      setPin(nextPin);
+      setErrorMsg('');
+      if (nextPin.length === 4 && nextPin !== '1234') {
+        setErrorMsg('INVALID PIN: ENTER 1234');
+      }
+    }
   };
 
   const handleDel = () => {
     setPin((p) => p.slice(0, -1));
+    setErrorMsg('');
   };
 
   const handleClear = () => {
     setPin('');
+    setErrorMsg('');
   };
 
   const handleLogin = () => {
-    if (pin.length >= 4 || pin === '') {
+    if (pin === '1234') {
+      setErrorMsg('');
       setCurrentScreen(2);
+    } else {
+      setErrorMsg('ACCESS DENIED: PIN 1234 REQUIRED');
     }
   };
 
@@ -40,11 +53,12 @@ export const TabletScreen1Login: React.FC = () => {
         <div className="w-[42%] border-r-2 border-slate-800 bg-slate-100 p-8 flex flex-col justify-between select-none">
           <div>
             {/* Hotel Logo Space */}
-            <div className="w-full h-28 border-2 border-dashed border-slate-400 bg-white rounded-xl flex flex-col items-center justify-center gap-2 mb-6">
-              <span className="text-3xl">🍗</span>
-              <span className="font-mono text-xs font-black tracking-wider text-slate-700">
-                [ESTABLISHMENT LOGO SPACE]
-              </span>
+            <div className="w-full h-28 border-2 border-slate-800 bg-[#3a0d0d] rounded-xl overflow-hidden mb-5 shadow-sm flex items-center justify-center p-1.5 relative">
+              <img
+                src="/images/thoogudeepa-banner.jpg"
+                alt="Thoogudeepa Donne Biriyani Mane"
+                className="w-full h-full object-contain rounded-lg"
+              />
             </div>
 
             <h1 className="text-xl font-black tracking-tight text-slate-950 font-mono">
@@ -76,7 +90,7 @@ export const TabletScreen1Login: React.FC = () => {
           {/* Bottom Company Platform Tag */}
           <div className="border-t border-dashed border-slate-400 pt-4 text-center">
             <span className="font-mono text-[10px] text-slate-500 font-bold">
-              [POWERED BY THOOGUDEEPA RESTAURANT OS • TABLET CLIENT v2.4]
+              [POWERED BY Nelja-UrQR • TABLET CLIENT v2.4]
             </span>
           </div>
         </div>
@@ -133,16 +147,44 @@ export const TabletScreen1Login: React.FC = () => {
           <div className="max-w-[440px] mx-auto w-full">
             <div className="flex justify-between items-center mb-1.5 font-mono text-[11px]">
               <label className="font-bold text-slate-600">[NUMBER LOCK PASSWORD / PIN]:</label>
-              <span className="font-bold text-orange-600">
-                {pin.length === 4 ? '[PIN VERIFIED]' : `[${4 - pin.length} DIGITS REQUIRED]`}
-              </span>
+              {errorMsg ? (
+                <span className="font-bold text-rose-600 animate-pulse">
+                  [{errorMsg}]
+                </span>
+              ) : pin === '1234' ? (
+                <span className="font-bold text-emerald-600">
+                  [PIN VERIFIED • ACCESS GRANTED]
+                </span>
+              ) : pin.length === 4 ? (
+                <span className="font-bold text-rose-600">
+                  [INVALID PIN • ENTER 1234]
+                </span>
+              ) : (
+                <span className="font-bold text-orange-600">
+                  [{4 - pin.length} DIGITS REQUIRED • DEFAULT: 1234]
+                </span>
+              )}
             </div>
-            <div className="border-2 border-slate-800 rounded-lg p-3 flex justify-center gap-4 bg-slate-100">
+            <div
+              className={`border-2 rounded-lg p-3 flex justify-center gap-4 transition-colors ${
+                errorMsg || (pin.length === 4 && pin !== '1234')
+                  ? 'border-rose-500 bg-rose-50'
+                  : pin === '1234'
+                  ? 'border-emerald-500 bg-emerald-50'
+                  : 'border-slate-800 bg-slate-100'
+              }`}
+            >
               {[0, 1, 2, 3].map((idx) => (
                 <div
                   key={idx}
-                  className={`w-3.5 h-3.5 rounded-full border-2 border-slate-900 transition-all ${
-                    idx < pin.length ? 'bg-slate-900 scale-110' : 'bg-transparent'
+                  className={`w-3.5 h-3.5 rounded-full border-2 transition-all ${
+                    idx < pin.length
+                      ? pin === '1234'
+                        ? 'border-emerald-600 bg-emerald-600 scale-110'
+                        : pin.length === 4
+                        ? 'border-rose-600 bg-rose-600 scale-110'
+                        : 'border-slate-900 bg-slate-900 scale-110'
+                      : 'border-slate-400 bg-transparent'
                   }`}
                 />
               ))}
@@ -184,19 +226,16 @@ export const TabletScreen1Login: React.FC = () => {
             </button>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-3 max-w-[440px] mx-auto w-full">
-            <button
-              type="button"
-              onClick={() => setPin('')}
-              className="flex-1 py-3 border-2 border-slate-800 rounded-lg font-mono text-xs font-bold text-slate-800 bg-white hover:bg-slate-100 transition"
-            >
-              [RESET]
-            </button>
+          {/* Action Button (Reset removed) */}
+          <div className="max-w-[440px] mx-auto w-full">
             <button
               type="button"
               onClick={handleLogin}
-              className="flex-[2] py-3 border-2 border-slate-900 rounded-lg font-mono text-xs font-black text-white bg-slate-900 hover:bg-black transition shadow-sm flex items-center justify-center gap-2"
+              className={`w-full py-3.5 border-2 rounded-lg font-mono text-xs font-black transition shadow-sm flex items-center justify-center gap-2 ${
+                pin === '1234'
+                  ? 'border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer shadow-md'
+                  : 'border-slate-900 bg-slate-900 text-white hover:bg-black cursor-pointer'
+              }`}
             >
               <span>[GO TO DASHBOARD]</span>
               <ArrowRight className="h-4 w-4" />

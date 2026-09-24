@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { useWaiterStore } from '../../store/useWaiterStore';
@@ -10,16 +10,27 @@ export const ScreenW1Login: React.FC = () => {
   const { setCurrentScreen, activeCaptain, setActiveCaptain, activeSection, setActiveSection } =
     useWaiterStore();
   const [pin, setPin] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
   const sections = ['ALL', 'SECTION A', 'SECTION B', 'TERRACE', 'FAMILY DINING'];
 
   const handleNum = (num: string) => {
-    if (pin.length < 4) setPin((p) => p + num);
+    if (pin.length < 4) {
+      const nextPin = pin + num;
+      setPin(nextPin);
+      setErrorMsg('');
+      if (nextPin.length === 4 && nextPin !== '1234') {
+        setErrorMsg('INVALID PIN: ENTER 1234');
+      }
+    }
   };
 
   const handleLogin = () => {
-    if (pin.length >= 4 || pin === '') {
+    if (pin === '1234') {
+      setErrorMsg('');
       setCurrentScreen(2);
+    } else {
+      setErrorMsg('ACCESS DENIED: PIN 1234 REQUIRED');
     }
   };
 
@@ -27,6 +38,15 @@ export const ScreenW1Login: React.FC = () => {
     <WaiterTabletHousing screenNumber={1} screenTitle="CAPTAIN AUTH &amp; SECTION LOGIN">
       <div className="flex-1 flex flex-col justify-between p-5">
         <div>
+          {/* Establishment Logo Banner */}
+          <div className="w-full h-16 border-2 border-slate-800 bg-[#3a0d0d] rounded-xl overflow-hidden mb-3 shadow-xs flex items-center justify-center p-1">
+            <img
+              src="/images/thoogudeepa-banner.jpg"
+              alt="Thoogudeepa Donne Biriyani Mane"
+              className="w-full h-full object-contain rounded-lg"
+            />
+          </div>
+
           <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 mb-1">
             [FLOOR CAPTAIN LOGIN]
           </div>
@@ -61,15 +81,38 @@ export const ScreenW1Login: React.FC = () => {
             ))}
           </div>
 
-          <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 mb-1">
-            [PASSCODE PIN]
+          <div className="flex justify-between items-center text-[10px] font-bold font-mono mb-1">
+            <span className="uppercase tracking-wider text-slate-400">[PASSCODE PIN]:</span>
+            {errorMsg ? (
+              <span className="text-rose-600 animate-pulse">[{errorMsg}]</span>
+            ) : pin === '1234' ? (
+              <span className="text-emerald-600">[PIN VERIFIED]</span>
+            ) : pin.length === 4 ? (
+              <span className="text-rose-600">[INVALID PIN]</span>
+            ) : (
+              <span className="text-orange-500">[{4 - pin.length} DIGITS • PIN: 1234]</span>
+            )}
           </div>
-          <div className="h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center gap-3 mb-2 shadow-2xs">
+          <div
+            className={`h-10 rounded-xl border flex items-center justify-center gap-3 mb-2 shadow-2xs transition-colors ${
+              errorMsg || (pin.length === 4 && pin !== '1234')
+                ? 'border-rose-300 bg-rose-50'
+                : pin === '1234'
+                ? 'border-emerald-300 bg-emerald-50'
+                : 'border-slate-200 bg-white'
+            }`}
+          >
             {[0, 1, 2, 3].map((idx) => (
               <div
                 key={idx}
-                className={`h-3 w-3 rounded-full border-2 border-slate-900 transition ${
-                  pin.length > idx ? 'bg-slate-900' : 'bg-transparent'
+                className={`h-3 w-3 rounded-full border-2 transition ${
+                  pin.length > idx
+                    ? pin === '1234'
+                      ? 'border-emerald-600 bg-emerald-600'
+                      : pin.length === 4
+                      ? 'border-rose-600 bg-rose-600'
+                      : 'border-slate-900 bg-slate-900'
+                    : 'border-slate-300 bg-transparent'
                 }`}
               />
             ))}

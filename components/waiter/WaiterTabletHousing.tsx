@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { Wifi, Battery, Bell, UserCheck, Flame, Utensils } from 'lucide-react';
@@ -8,6 +8,7 @@ interface WaiterTabletHousingProps {
   children: React.ReactNode;
   screenNumber: number;
   screenTitle: string;
+  showKitchenHotline?: boolean;
   className?: string;
 }
 
@@ -15,6 +16,7 @@ export const WaiterTabletHousing: React.FC<WaiterTabletHousingProps> = ({
   children,
   screenNumber,
   screenTitle,
+  showKitchenHotline = screenNumber !== 1,
   className = '',
 }) => {
   const {
@@ -58,21 +60,23 @@ export const WaiterTabletHousing: React.FC<WaiterTabletHousingProps> = ({
         <div className="h-8 bg-stone-100 border-b border-slate-200 px-4 flex items-center justify-between text-[10px] font-bold font-mono text-slate-600 select-none shrink-0 z-20">
           <div className="flex items-center gap-1.5 truncate">
             <UserCheck className="h-3 w-3 text-orange-600" />
-            <span className="truncate">{activeCaptain}</span>
+            <span className="truncate">{activeCaptain || 'Captain'}</span>
             <span className="text-slate-300">•</span>
             <span>{activeSection}</span>
           </div>
-          <button
-            onClick={() => callKitchenStation('KITCHEN DISPATCH HOTLINE')}
-            className="flex items-center gap-1 rounded bg-orange-600 text-white px-1.5 py-0.5 text-[9.5px] hover:bg-orange-700 transition"
-          >
-            <Flame className="h-2.5 w-2.5 fill-white" />
-            <span>KITCHEN</span>
-          </button>
+          {showKitchenHotline && (
+            <button
+              onClick={() => callKitchenStation('KITCHEN DISPATCH HOTLINE')}
+              className="flex items-center gap-1 rounded bg-orange-600 text-white px-1.5 py-0.5 text-[9.5px] hover:bg-orange-700 transition"
+            >
+              <Flame className="h-2.5 w-2.5 fill-white" />
+              <span>KITCHEN</span>
+            </button>
+          )}
         </div>
 
         {/* Kitchen Hotline Toast */}
-        {kitchenCallNotice && (
+        {showKitchenHotline && kitchenCallNotice && (
           <div className="bg-slate-900 text-white text-[10.5px] font-bold px-3 py-1.5 flex items-center justify-between z-30 border-b border-slate-700">
             <span className="truncate">⚡ {kitchenCallNotice}</span>
             <button
