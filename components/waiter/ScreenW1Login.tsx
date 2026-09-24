@@ -114,21 +114,23 @@ export const ScreenW1Login: React.FC = () => {
             })}
           </div>
 
-          {/* Assigned Section with ALL at the first position */}
+          {/* Assigned Section: 2 in one row (Row 1: All & Section A, Row 2: Section B & Terrace, Row 3: Family Dining) */}
           <div>
-            <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-500 mb-1">
+            <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-500 mb-1.5">
               ASSIGNED FLOOR SECTION
             </div>
-            <div className="flex flex-wrap gap-1.5">
-              {sections.map((sec) => (
+            <div className="grid grid-cols-2 gap-2">
+              {sections.map((sec, idx) => (
                 <button
                   key={sec}
                   type="button"
                   onClick={() => setActiveSection(sec)}
-                  className={`py-1 px-2.5 rounded-lg border text-[10px] font-mono font-bold transition ${
+                  className={`py-2 px-3 rounded-xl border text-center text-xs font-mono font-bold transition ${
+                    idx === 4 ? 'col-span-2' : ''
+                  } ${
                     activeSection === sec
                       ? 'border-slate-900 bg-slate-900 text-white shadow-2xs'
-                      : 'border-slate-200 bg-white text-slate-700 hover:bg-stone-50'
+                      : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-stone-50'
                   }`}
                 >
                   {sec}

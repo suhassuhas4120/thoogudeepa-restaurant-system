@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useWaiterStore } from '../../../store/useWaiterStore';
 import { useSharedBridge, SharedTable, SharedPing, SharedKDSTicket } from '../../../store/useSharedBridge';
 import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
@@ -20,7 +20,39 @@ export const TabletScreen2TablesFeed: React.FC = () => {
   const occupiedCount = tables.filter((t: { status: string }) => t.status === 'OCCUPIED').length;
   const vacantCount = tables.filter((t: { status: string }) => t.status === 'VACANT').length;
   const totalGuests = tables.reduce((acc: number, t: { guestCount?: number }) => acc + (t.guestCount || 0), 0);
-  const activeKdsTickets = kdsTickets.filter((tk) => tk.status !== 'COMPLETED');
+
+  const [selectedSection, setSelectedSection] = useState<string>('ALL');
+  const sectionsList = ['ALL', 'SECTION A', 'SECTION B', 'SECTION C'];
+
+  const stagePriority: Record<string, number> = {
+    READY: 1,      // Urgent pass window ready
+    PREP: 2,       // In kitchen prep
+    NEW: 3,        // Placed in queue
+    COMPLETED: 4,  // Served
+  };
+
+  const filteredTables = selectedSection === 'ALL'
+    ? tables
+    : tables.filter((t) => t.section === selectedSection);
+
+  const sortedAndFilteredKdsTickets = kdsTickets
+    .filter((tk) => {
+      if (tk.status === 'COMPLETED') return false;
+      if (selectedSection !== 'ALL') {
+        const t = tables.find((tbl) => tbl.number === tk.tableNumber);
+        if (t && t.section !== selectedSection) return false;
+      }
+      return true;
+    })
+    .sort((a, b) => (stagePriority[a.status] || 99) - (stagePriority[b.status] || 99));
+
+  const filteredPings = pings.filter((p) => {
+    if (selectedSection !== 'ALL') {
+      const t = tables.find((tbl) => tbl.number === p.tableNumber);
+      if (t && t.section !== selectedSection) return false;
+    }
+    return true;
+  });
 
   const handleTableClick = (tableNumber: string) => {
     selectTable(tableNumber);
@@ -85,7 +117,7 @@ export const TabletScreen2TablesFeed: React.FC = () => {
               Vacant: {vacantCount}
             </span>
             <span className="border border-slate-300 bg-slate-50 px-2.5 py-1 rounded font-bold text-slate-700">
-              Active KOTs: {activeKdsTickets.length}
+              Active KOTs: {sortedAndFilteredKdsTickets.length}
             </span>
             <span className="border border-slate-300 bg-slate-50 px-2.5 py-1 rounded font-bold text-slate-700">
               Guests Seated: {totalGuests}
@@ -110,17 +142,36 @@ export const TabletScreen2TablesFeed: React.FC = () => {
           {/* LEFT 60%: ALL TABLES MATRIX */}
           <div className="w-[60%] border-r-2 border-slate-800 p-4 overflow-y-auto bg-slate-50 flex flex-col gap-3">
             <div className="flex justify-between items-center border-b border-slate-300 pb-2 shrink-0 font-mono">
-              <span className="font-black text-xs text-slate-950 uppercase">
-                FLOOR TABLES MATRIX
-              </span>
+              <div className="flex items-center gap-2.5">
+                <span className="font-black text-xs text-slate-950 uppercase">
+                  FLOOR TABLES MATRIX
+                </span>
+                {/* Section Filter Pills */}
+                <div className="flex items-center gap-1">
+                  {sectionsList.map((sec) => (
+                    <button
+                      key={sec}
+                      type="button"
+                      onClick={() => setSelectedSection(sec)}
+                      className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border transition ${
+                        selectedSection === sec
+                          ? 'border-slate-900 bg-slate-900 text-white shadow-2xs'
+                          : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      {sec}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <span className="text-[10.5px] font-bold text-slate-500">
-                Tap table card to open detailed view
+                Tap table card to open detail
               </span>
             </div>
 
             {/* 3-Column Tables Grid */}
             <div className="grid grid-cols-3 gap-3">
-              {tables.map((table: SharedTable) => {
+              {filteredTables.map((table: SharedTable) => {
                 const isOccupied = table.status === 'OCCUPIED';
                 const foodStatus = getTableFoodStatus(table);
                 const isReady = foodStatus?.state === 'READY';
@@ -298,29 +349,41 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                   <Bell className="h-3.5 w-3.5 text-orange-600" />
                   <span>CUSTOMER ASSISTANCE CALLS</span>
                 </span>
-                <span className="text-[10px] font-bold text-slate-500">Live ({pings.length})</span>
+                <span className="text-[10px] font-bold text-slate-500">Live ({filteredPings.length})</span>
               </div>
 
-              {pings.length > 0 ? (
-                pings.map((ping: SharedPing) => (
+              {filteredPings.length > 0 ? (
+                filteredPings.map((ping: SharedPing) => (
                   <div
                     key={ping.id}
-                    className="border-2 border-slate-300 bg-slate-50 rounded-lg p-3 flex justify-between items-center gap-3 font-mono shadow-2xs"
+                    className="border-2 border-orange-200 bg-orange-50/50 rounded-lg p-3 flex items-center justify-between gap-3 font-mono shadow-2xs"
                   >
-                    <div>
-                      <strong className="text-xs font-black text-slate-900 block">
+                    {/* Left Column: Table & Request Details */}
+                    <div className="flex-1 min-w-0 pr-2">
+                      <strong className="text-xs font-black text-slate-900 block truncate">
                         Table {ping.tableNumber}: Request: {ping.type}
                       </strong>
-                      <span className="text-[10px] text-slate-500 font-bold">
-                        ⏱ {ping.timestamp} • Section A
+                      <span className="text-[10px] text-slate-500 font-bold block mt-0.5 truncate">
+                        ⏱ {ping.timestamp} • {ping.message || 'Service requested'}
                       </span>
                     </div>
-                    <button
-                      onClick={() => waiterResolvePing(ping.id)}
-                      className="bg-orange-600 hover:bg-orange-700 text-white text-[10.5px] font-bold px-3 py-1.5 rounded transition shadow-2xs shrink-0 cursor-pointer"
-                    >
-                      Resolve Call
-                    </button>
+
+                    {/* Middle Column: Fixed Width Status Badge */}
+                    <div className="w-28 shrink-0 flex items-center justify-center">
+                      <span className="w-full text-center px-1.5 py-1 rounded border text-[9px] font-bold uppercase whitespace-nowrap bg-orange-100 text-orange-800 border-orange-300">
+                        Assistance Call
+                      </span>
+                    </div>
+
+                    {/* Right Column: Uniform Fixed Dimension Action Button */}
+                    <div className="w-28 shrink-0 flex items-center justify-end">
+                      <button
+                        onClick={() => waiterResolvePing(ping.id)}
+                        className="w-full h-8 bg-orange-600 hover:bg-orange-700 text-white text-[10.5px] font-bold rounded transition shadow-2xs flex items-center justify-center cursor-pointer"
+                      >
+                        Resolve Call
+                      </button>
+                    </div>
                   </div>
                 ))
               ) : (
@@ -337,11 +400,11 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                   <span>👨‍🍳</span>
                   <span>KITCHEN DISPATCH &amp; FOOD STATUS FEED</span>
                 </span>
-                <span className="text-[10px] font-bold text-slate-500">Live Orders ({activeKdsTickets.length})</span>
+                <span className="text-[10px] font-bold text-slate-500">Live Orders ({sortedAndFilteredKdsTickets.length})</span>
               </div>
 
-              {activeKdsTickets.length > 0 ? (
-                activeKdsTickets.map((item: SharedKDSTicket) => {
+              {sortedAndFilteredKdsTickets.length > 0 ? (
+                sortedAndFilteredKdsTickets.map((item: SharedKDSTicket) => {
                   const totalQty = item.items.reduce((s: number, it: any) => s + it.quantity, 0);
                   const dishTitle = item.items.map((it: any) => it.name).join(', ');
                   const isReady = item.status === 'READY';
@@ -351,7 +414,7 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                   return (
                     <div
                       key={item.id}
-                      className={`border-2 rounded-lg p-3 flex justify-between items-center gap-3 font-mono shadow-2xs transition ${
+                      className={`border-2 rounded-lg p-3 flex items-center justify-between gap-3 font-mono shadow-2xs transition ${
                         isReady
                           ? 'border-emerald-500 bg-emerald-50/80 ring-1 ring-emerald-500/20'
                           : isPrep
@@ -359,52 +422,57 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                           : 'border-amber-300 bg-amber-50/60'
                       }`}
                     >
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <strong className="text-xs font-black text-slate-900 block">
-                            Table {item.tableNumber}: {totalQty}x {dishTitle}
-                          </strong>
-                          <span
-                            className={`text-[9px] font-bold px-1.5 py-0.2 rounded border ${
-                              isReady
-                                ? 'bg-emerald-600 text-white border-emerald-700 animate-pulse'
-                                : isPrep
-                                ? 'bg-orange-100 text-orange-800 border-orange-300'
-                                : 'bg-amber-100 text-amber-800 border-amber-300'
-                            }`}
-                          >
-                            {isReady ? 'Ready for Pickup' : isPrep ? 'In Preparation' : 'Order Placed'}
-                          </span>
-                        </div>
-                        <span className="text-[10px] text-slate-500 font-bold block mt-0.5">
+                      {/* Left Column: Table & Dish Item Details */}
+                      <div className="flex-1 min-w-0 pr-2">
+                        <strong className="text-xs font-black text-slate-900 block truncate">
+                          Table {item.tableNumber}: {totalQty}x {dishTitle}
+                        </strong>
+                        <span className="text-[10px] text-slate-500 font-bold block mt-0.5 truncate">
                           ⏱ {item.timestamp} • {isReady ? 'Chef Pass Window' : 'Kitchen Station'}
                         </span>
                       </div>
 
-                      {/* Serve action is enabled ONLY when the food is Ready! */}
-                      {isReady ? (
-                        <button
-                          onClick={() => waiterMarkKitchenItemServed(item.id, item.items[0]?.id ?? '')}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10.5px] font-bold px-3 py-1.5 rounded transition shadow-2xs shrink-0 cursor-pointer flex items-center gap-1"
+                      {/* Middle Column: Fixed Width Status Badge */}
+                      <div className="w-28 shrink-0 flex items-center justify-center">
+                        <span
+                          className={`w-full text-center px-1.5 py-1 rounded border text-[9px] font-bold uppercase whitespace-nowrap ${
+                            isReady
+                              ? 'bg-emerald-600 text-white border-emerald-700 animate-pulse'
+                              : isPrep
+                              ? 'bg-orange-100 text-orange-800 border-orange-300'
+                              : 'bg-amber-100 text-amber-800 border-amber-300'
+                          }`}
                         >
-                          <CheckCircle2 className="h-3 w-3" />
-                          <span>Serve Food</span>
-                        </button>
-                      ) : isPrep ? (
-                        <button
-                          disabled
-                          className="bg-orange-100 text-orange-800 border border-orange-200 text-[10px] font-bold px-2.5 py-1.5 rounded shrink-0 cursor-not-allowed opacity-80"
-                        >
-                          Cooking
-                        </button>
-                      ) : (
-                        <button
-                          disabled
-                          className="bg-amber-100 text-amber-800 border border-amber-200 text-[10px] font-bold px-2.5 py-1.5 rounded shrink-0 cursor-not-allowed opacity-80"
-                        >
-                          Queued
-                        </button>
-                      )}
+                          {isReady ? 'Ready for Pickup' : isPrep ? 'In Preparation' : 'Order Placed'}
+                        </span>
+                      </div>
+
+                      {/* Right Column: Uniform Fixed Dimension Action Button */}
+                      <div className="w-28 shrink-0 flex items-center justify-end">
+                        {isReady ? (
+                          <button
+                            onClick={() => waiterMarkKitchenItemServed(item.id, item.items[0]?.id ?? '')}
+                            className="w-full h-8 bg-emerald-600 hover:bg-emerald-700 text-white text-[10.5px] font-bold rounded transition shadow-2xs flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            <CheckCircle2 className="h-3 w-3" />
+                            <span>Serve Food</span>
+                          </button>
+                        ) : isPrep ? (
+                          <button
+                            disabled
+                            className="w-full h-8 bg-orange-100 text-orange-800 border border-orange-200 text-[10px] font-bold rounded flex items-center justify-center cursor-not-allowed opacity-80"
+                          >
+                            Cooking...
+                          </button>
+                        ) : (
+                          <button
+                            disabled
+                            className="w-full h-8 bg-amber-100 text-amber-800 border border-amber-200 text-[10px] font-bold rounded flex items-center justify-center cursor-not-allowed opacity-80"
+                          >
+                            Queued
+                          </button>
+                        )}
+                      </div>
                     </div>
                   );
                 })

@@ -205,6 +205,18 @@ const freshKDSTickets: SharedKDSTicket[] = [
       { id: 'ki-103-2', name: 'Donne Egg Biryani', quantity: 2, stage: 'PLATED', prepMode: 'Dine-In' },
     ],
   },
+  {
+    id: 'KDS-104',
+    tableNumber: 'B-01',
+    serverName: 'Captain Suresh',
+    timestamp: '12:15 PM',
+    elapsedMinutes: 23,
+    status: 'READY',
+    source: 'WAITER',
+    items: [
+      { id: 'ki-104-1', name: 'Mutton Chops Fry', quantity: 1, stage: 'PLATED', prepMode: 'Dine-In' },
+    ],
+  },
 ];
 
 const freshPings: SharedPing[] = [
@@ -216,6 +228,15 @@ const freshPings: SharedPing[] = [
     timestamp: '12:36 PM',
     status: 'PENDING',
     guestName: 'Guest (Table A-01)',
+  },
+  {
+    id: 'p-2',
+    tableNumber: 'B-01',
+    type: 'ASSISTANCE',
+    message: 'Requesting bill payment assistance',
+    timestamp: '12:38 PM',
+    status: 'PENDING',
+    guestName: 'Guest (Table B-01)',
   },
 ];
 

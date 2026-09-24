@@ -78,24 +78,58 @@ export const ScreenW2TablesFeed: React.FC = () => {
     }
   };
 
-  // Filtered kitchen tickets
-  const filteredTickets = kdsTickets.filter((tk) => {
-    if (kitchenFilter === 'READY') return tk.status === 'READY';
-    if (kitchenFilter === 'PREP') return tk.status === 'PREP';
-    if (kitchenFilter === 'PLACED') return tk.status === 'NEW';
-    return true;
-  });
+  const [selectedSection, setSelectedSection] = useState<string>('ALL');
+  const sectionsList = ['ALL', 'SECTION A', 'SECTION B', 'SECTION C'];
+
+  const stagePriority: Record<string, number> = {
+    READY: 1,      // Urgent pass window ready
+    PREP: 2,       // In kitchen prep
+    NEW: 3,        // Placed in queue
+    COMPLETED: 4,  // Served
+  };
+
+  // Filtered tables based on section filter
+  const filteredTables = selectedSection === 'ALL'
+    ? tables
+    : tables.filter((t) => t.section === selectedSection);
+
+  // Filtered and sorted kitchen tickets based on stage filter & section filter
+  const filteredTickets = kdsTickets
+    .filter((tk) => {
+      if (selectedSection !== 'ALL') {
+        const tableForTicket = tables.find((t) => t.number === tk.tableNumber);
+        if (tableForTicket && tableForTicket.section !== selectedSection) {
+          return false;
+        }
+      }
+      if (kitchenFilter === 'READY') return tk.status === 'READY';
+      if (kitchenFilter === 'PREP') return tk.status === 'PREP';
+      if (kitchenFilter === 'PLACED') return tk.status === 'NEW';
+      return true;
+    })
+    .sort((a, b) => (stagePriority[a.status] || 99) - (stagePriority[b.status] || 99));
 
   const readyCount = kdsTickets.filter((tk) => tk.status === 'READY').length;
   const prepCount = kdsTickets.filter((tk) => tk.status === 'PREP').length;
   const placedCount = kdsTickets.filter((tk) => tk.status === 'NEW').length;
+
+  // Filtered customer pings based on section filter
+  const filteredPings = pings.filter((p) => {
+    if (selectedSection !== 'ALL') {
+      const tableForPing = tables.find((t) => t.number === p.tableNumber);
+      if (tableForPing && tableForPing.section !== selectedSection) {
+        return false;
+      }
+    }
+    return true;
+  });
 
   return (
     <WaiterTabletHousing screenNumber={2} screenTitle="FLOOR TABLES &amp; LIVE KITCHEN FEED">
       <div className="flex-1 flex flex-col p-3 space-y-3 overflow-hidden">
         {/* Top Section: Floor Tables Grid */}
         <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-xs">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-1.5">
             <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-slate-500">
               FLOOR TABLES OVERVIEW
             </span>
@@ -105,8 +139,26 @@ export const ScreenW2TablesFeed: React.FC = () => {
             </span>
           </div>
 
+          {/* Section Filter Tabs: All, Section A, Section B, Section C */}
+          <div className="flex items-center gap-1 mb-2.5 overflow-x-auto pb-0.5">
+            {sectionsList.map((sec) => (
+              <button
+                key={sec}
+                type="button"
+                onClick={() => setSelectedSection(sec)}
+                className={`py-1 px-2.5 rounded-lg text-[9.5px] font-mono font-bold border transition ${
+                  selectedSection === sec
+                    ? 'border-slate-900 bg-slate-900 text-white shadow-2xs'
+                    : 'border-slate-200 bg-stone-50 text-slate-600 hover:bg-stone-100 hover:border-slate-300'
+                }`}
+              >
+                {sec}
+              </button>
+            ))}
+          </div>
+
           <div className="grid grid-cols-3 gap-2">
-            {tables.map((t) => {
+            {filteredTables.map((t) => {
               const foodStatus = getTableFoodStatus(t);
 
               return (
@@ -193,7 +245,7 @@ export const ScreenW2TablesFeed: React.FC = () => {
                     : 'text-slate-600 hover:bg-stone-100'
                 }`}
               >
-                Customer Calls ({pings.length})
+                Customer Calls ({filteredPings.length})
               </button>
             </div>
           </div>
@@ -356,8 +408,8 @@ export const ScreenW2TablesFeed: React.FC = () => {
                   </div>
                 )}
               </div>
-            ) : pings.length > 0 ? (
-              pings.map((p) => (
+            ) : filteredPings.length > 0 ? (
+              filteredPings.map((p) => (
                 <div
                   key={p.id}
                   className="flex items-center justify-between p-2.5 rounded-xl bg-orange-50/70 border border-orange-200 text-xs font-mono"
