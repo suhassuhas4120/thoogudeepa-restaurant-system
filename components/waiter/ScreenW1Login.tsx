@@ -14,6 +14,13 @@ export const ScreenW1Login: React.FC = () => {
 
   const sections = ['ALL', 'SECTION A', 'SECTION B', 'TERRACE', 'FAMILY DINING'];
 
+  const presetWaiters = [
+    { name: 'Captain Ramesh', section: 'SECTION A' },
+    { name: 'Captain Suresh', section: 'SECTION B' },
+    { name: 'Captain Vijay', section: 'TERRACE' },
+    { name: 'Captain Kiran', section: 'FAMILY DINING' },
+  ];
+
   const handleNum = (num: string) => {
     if (pin.length < 4) {
       const nextPin = pin + num;
@@ -50,15 +57,41 @@ export const ScreenW1Login: React.FC = () => {
           <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 mb-1">
             [FLOOR CAPTAIN LOGIN]
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xs mb-3">
-            <label className="text-[10px] font-bold text-slate-500 font-mono">
-              [CAPTAIN NAME]
-            </label>
+          <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-xs mb-3">
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-[10px] font-bold text-slate-500 font-mono">
+                [CAPTAIN NAME]
+              </label>
+              <span className="text-[9px] font-mono text-slate-400">QUICK TAP</span>
+            </div>
+            <div className="grid grid-cols-4 gap-1 mb-2">
+              {presetWaiters.map((w) => {
+                const isSelected = activeCaptain === w.name;
+                return (
+                  <button
+                    key={w.name}
+                    type="button"
+                    onClick={() => {
+                      setActiveCaptain(w.name);
+                      setActiveSection(w.section);
+                    }}
+                    className={`py-1 px-0.5 rounded-lg border text-[9.5px] font-mono font-bold transition text-center ${
+                      isSelected
+                        ? 'border-orange-500 bg-orange-50 text-orange-950 font-black'
+                        : 'border-slate-200 bg-white text-slate-700 hover:bg-stone-50'
+                    }`}
+                  >
+                    {w.name.replace('Captain ', '')}
+                  </button>
+                );
+              })}
+            </div>
             <input
               type="text"
               value={activeCaptain}
               onChange={(e) => setActiveCaptain(e.target.value)}
-              className="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 bg-stone-50 text-xs font-black text-slate-900 focus:outline-none focus:border-orange-500"
+              className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-stone-50 text-xs font-black text-slate-900 focus:outline-none focus:border-orange-500"
+              placeholder="Or type custom name"
             />
           </div>
 
