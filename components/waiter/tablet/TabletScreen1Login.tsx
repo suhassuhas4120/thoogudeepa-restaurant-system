@@ -285,7 +285,7 @@ export const TabletScreen1Login: React.FC = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 max-w-[460px] mx-auto w-full">
+          <div className="flex gap-3 max-w-[460px] mx-auto w-full pt-3">
             <button
               type="button"
               onClick={handleClear}
