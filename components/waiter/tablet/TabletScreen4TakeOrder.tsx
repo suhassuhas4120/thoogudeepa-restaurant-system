@@ -6,6 +6,7 @@ import { useSharedBridge } from '../../../store/useSharedBridge';
 import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
 import { INITIAL_MENU_ITEMS } from '../../../data/menuItems';
 import { ArrowLeft, ShoppingCart, ArrowRight, Search, Plus, Minus, Check, Ban, Lock } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export const TabletScreen4TakeOrder: React.FC = () => {
   const {
@@ -67,27 +68,20 @@ export const TabletScreen4TakeOrder: React.FC = () => {
             </h3>
           </div>
 
-          {/* Cart Icon Button (styled like Customer Order) */}
-          <button
+          {/* Cart Icon only with proper number */}
+          <motion.button
+            whileTap={{ scale: 0.9 }}
             onClick={() => setCurrentScreen(5)}
-            className="bg-slate-900 hover:bg-black text-white px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2.5 shadow-sm border border-slate-700 active:scale-95 cursor-pointer"
+            className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 hover:bg-black text-white shadow-xs border border-slate-700 active:scale-95 cursor-pointer transition"
+            title="View Cart"
           >
-            <div className="relative flex items-center justify-center">
-              <ShoppingCart className="h-4 w-4 text-orange-400 stroke-[2.2]" />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-2 -right-2.5 min-w-[18px] h-[18px] px-1 bg-orange-600 text-white text-[9px] font-black rounded-full flex items-center justify-center ring-2 ring-slate-900 animate-pulse">
-                  {cartItemCount}
-                </span>
-              )}
-            </div>
-            <span className="font-bold text-slate-100">View Cart</span>
-            {cartTotal > 0 && (
-              <span className="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-[11px] font-mono font-bold text-amber-300">
-                ₹{cartTotal}
+            <ShoppingCart className="h-4 w-4 text-orange-400 stroke-[2.2]" />
+            {cartItemCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 min-w-[17px] h-[17px] px-1 bg-orange-600 text-white text-[9.5px] font-black rounded-full flex items-center justify-center ring-2 ring-slate-900 animate-pulse shadow-xs">
+                {cartItemCount}
               </span>
             )}
-            <ArrowRight className="h-3.5 w-3.5 text-slate-400" />
-          </button>
+          </motion.button>
         </div>
 
         {/* ORDER SAFETY BANNER: LOCKED ACTIVE ITEMS */}

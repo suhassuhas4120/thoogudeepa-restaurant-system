@@ -6,7 +6,7 @@ import { useSharedBridge } from '../../store/useSharedBridge';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
 import { INITIAL_MENU_ITEMS } from '../../data/menuItems';
 import { MenuItem } from '../../types/customer';
-import { ArrowLeft, Search, Plus, Minus, ShoppingBag, ArrowRight, Ban } from 'lucide-react';
+import { ArrowLeft, Search, Plus, Minus, ShoppingCart, ShoppingBag, ArrowRight, Ban } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const ScreenW4TakeOrder: React.FC = () => {
@@ -37,11 +37,12 @@ export const ScreenW4TakeOrder: React.FC = () => {
   return (
     <WaiterTabletHousing screenNumber={4} screenTitle="MENU ORDER ENTRY & KOT PUNCH">
       <div className="flex-1 flex flex-col p-3 space-y-2 overflow-hidden">
-        {/* Top Search & Back */}
+        {/* Top Search, Back & Cart */}
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => setCurrentScreen(3)}
-            className="p-2 rounded-xl bg-white border border-slate-200 text-slate-700"
+            className="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+            title="Back to Table"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
@@ -55,6 +56,20 @@ export const ScreenW4TakeOrder: React.FC = () => {
               className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-900 focus:outline-none"
             />
           </div>
+          {/* Cart Icon only with proper number */}
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setCurrentScreen(5)}
+            className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-900 hover:bg-black text-white shadow-xs border border-slate-800 transition cursor-pointer"
+            title="View Cart"
+          >
+            <ShoppingCart className="h-4 w-4 text-orange-400 stroke-[2.2]" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-orange-600 text-[9.5px] font-black text-white ring-2 ring-white animate-pulse">
+                {cartCount}
+              </span>
+            )}
+          </motion.button>
         </div>
 
         {/* Category Pills */}

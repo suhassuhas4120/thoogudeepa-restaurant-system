@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Wifi, Battery, UserCheck, Flame } from 'lucide-react';
+import { Wifi, Battery, UserCheck, Flame, ShoppingCart } from 'lucide-react';
 import { useWaiterStore } from '../../../store/useWaiterStore';
 
 interface WaiterTabletLandscapeHousingProps {
@@ -23,7 +23,11 @@ export const WaiterTabletLandscapeHousing: React.FC<WaiterTabletLandscapeHousing
     callKitchenStation,
     kitchenCallNotice,
     dismissKitchenCall,
+    orderCart,
+    setCurrentScreen,
   } = useWaiterStore();
+
+  const cartCount = orderCart.reduce((s, i) => s + i.quantity, 0);
 
   return (
     <div className="w-full max-w-[1260px] mx-auto flex flex-col items-center">
@@ -71,9 +75,23 @@ export const WaiterTabletLandscapeHousing: React.FC<WaiterTabletLandscapeHousing
               <span className="text-slate-500">{activeSection}</span>
             </div>
 
+            {cartCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setCurrentScreen(5)}
+                className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white hover:bg-black transition cursor-pointer border border-slate-700 shadow-xs"
+                title="View Active Cart"
+              >
+                <ShoppingCart className="h-4 w-4 text-orange-400 stroke-[2.2]" />
+                <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-orange-600 text-[9px] font-black text-white ring-2 ring-white animate-pulse">
+                  {cartCount}
+                </span>
+              </button>
+            )}
+
             <button
               onClick={() => callKitchenStation('KITCHEN DISPATCH HOTLINE')}
-              className="flex items-center gap-1 rounded bg-orange-600 text-white px-2.5 py-1 text-[10.5px] font-bold hover:bg-orange-700 transition shadow-xs"
+              className="flex items-center gap-1 rounded bg-orange-600 text-white px-2.5 py-1 text-[10.5px] font-bold hover:bg-orange-700 transition shadow-xs cursor-pointer"
             >
               <Flame className="h-3 w-3 fill-white" />
               <span>KITCHEN HOTLINE</span>

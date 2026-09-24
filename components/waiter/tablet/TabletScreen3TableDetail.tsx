@@ -22,6 +22,7 @@ import {
   Printer,
   MessageCircle,
   CheckCircle2,
+  ShoppingCart,
   ShoppingBag,
   Ban,
   Lock,
@@ -463,13 +464,28 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   <span className="font-black text-xs text-slate-900 uppercase">
                     Table {activeTable.number}: Menu Order Entry
                   </span>
-                  <button
-                    onClick={() => setRightPane('bill_summary')}
-                    className="p-1 hover:bg-slate-100 rounded text-slate-600"
-                    title="Close"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {/* Cart Icon only with proper number */}
+                    <button
+                      onClick={() => setRightPane('item_custom')}
+                      className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white hover:bg-black transition cursor-pointer"
+                      title="View Order Cart"
+                    >
+                      <ShoppingCart className="h-4 w-4 text-orange-400 stroke-[2.2]" />
+                      {draftItemCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 min-w-[17px] h-[17px] px-0.5 bg-orange-600 text-white text-[9px] font-black rounded-full flex items-center justify-center ring-2 ring-white animate-pulse">
+                          {draftItemCount}
+                        </span>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setRightPane('bill_summary')}
+                      className="p-1 hover:bg-slate-100 rounded text-slate-600 cursor-pointer"
+                      title="Close"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Safety Check: Already ordered items lock */}
