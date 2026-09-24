@@ -2,12 +2,16 @@
 
 import React, { useState } from 'react';
 import { useWaiterStore } from '../../../store/useWaiterStore';
+import { useSharedBridge } from '../../../store/useSharedBridge';
 import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
 import { INITIAL_MENU_ITEMS } from '../../../data/menuItems';
+import { MenuItem } from '../../../types/customer';
 import { ArrowLeft, Flame, ImageIcon } from 'lucide-react';
 
 export const TabletScreen5ItemCustom: React.FC = () => {
-  const { setCurrentScreen, orderCart, fireKOTToKitchen, selectedTableNumber } = useWaiterStore();
+  const { setCurrentScreen, orderCart, clearOrderCart, selectedTableNumber, activeCaptain } =
+    useWaiterStore();
+  const { waiterFiresKOT } = useSharedBridge();
 
   const [portion, setPortion] = useState<'REGULAR' | 'LARGE'>('REGULAR');
   const [spice, setSpice] = useState<'MILD' | 'MEDIUM' | 'VERY SPICY'>('MEDIUM');
@@ -15,19 +19,56 @@ export const TabletScreen5ItemCustom: React.FC = () => {
   const [chefNote, setChefNote] = useState('');
   const [kotFired, setKotFired] = useState(false);
 
-  const selectedItem = INITIAL_MENU_ITEMS[1]; // Donne Chicken Biryani as demo
+  const selectedItem = orderCart.length > 0
+    ? orderCart[orderCart.length - 1].menuItem
+    : INITIAL_MENU_ITEMS[0];
+  const isVeg = selectedItem.category.toLowerCase().includes('veg') ||
+    selectedItem.name.toLowerCase().includes('paneer') ||
+    selectedItem.name.toLowerCase().includes('gobi');
   const portionAddOn = portion === 'LARGE' ? 60 : 0;
   const cheeseAddon = options.extraCheese ? 40 : 0;
   const sauceAddon = options.extraSauce ? 25 : 0;
   const totalItemPrice = selectedItem.price + portionAddOn + cheeseAddon + sauceAddon;
 
   const handleFireKOT = () => {
-    fireKOTToKitchen();
+    const tableNum = selectedTableNumber || 'A-04';
+    const captain = activeCaptain || 'Floor Captain';
+
+    const customItem: MenuItem = {
+      ...selectedItem,
+      price: totalItemPrice,
+    };
+
+    const itemsToFire = orderCart.length > 0
+      ? orderCart.map((ci, idx) => {
+          if (idx === orderCart.length - 1) {
+            return {
+              item: customItem,
+              selectedOption: `${portion} • Spice: ${spice}${chefNote ? ` • Note: ${chefNote}` : ''}`,
+              quantity: ci.quantity,
+            };
+          }
+          return {
+            item: ci.menuItem,
+            selectedOption: ci.selectedOption,
+            quantity: ci.quantity,
+          };
+        })
+      : [
+          {
+            item: customItem,
+            selectedOption: `${portion} • Spice: ${spice}${chefNote ? ` • Note: ${chefNote}` : ''}`,
+            quantity: 1,
+          },
+        ];
+
+    waiterFiresKOT(tableNum, captain, itemsToFire);
+    clearOrderCart();
     setKotFired(true);
     setTimeout(() => {
       setKotFired(false);
       setCurrentScreen(3);
-    }, 2000);
+    }, 1500);
   };
 
   return (
@@ -67,7 +108,9 @@ export const TabletScreen5ItemCustom: React.FC = () => {
           <div className="flex-1 flex flex-col gap-3">
             {/* Item Image Space */}
             <div className="flex-1 min-h-[300px] border-2 border-dashed border-slate-400 bg-slate-50 rounded-2xl flex flex-col items-center justify-center gap-2">
-              <span className="text-5xl">🍗</span>
+              <span className="text-5xl">
+                {isVeg ? '🥗' : (selectedItem.name.toLowerCase().includes('biryani') ? '🍛' : '🍗')}
+              </span>
               <span className="font-mono text-xs font-bold text-slate-600 uppercase tracking-wider">
                 {selectedItem.name}
               </span>
@@ -75,8 +118,8 @@ export const TabletScreen5ItemCustom: React.FC = () => {
 
             {/* Prep & Diet Info */}
             <div className="border border-slate-300 bg-white rounded-xl p-3.5 flex justify-between items-center text-xs shadow-2xs">
-              <span className="font-bold text-slate-600">Prep Time: ⏱ 20-25 mins</span>
-              <span className="font-bold text-slate-600">Diet: Non-Veg • Fresh Prep</span>
+              <span className="font-bold text-slate-600">Prep: ⏱ {selectedItem.prepMode || '15-20 mins'}</span>
+              <span className="font-bold text-slate-600">Diet: {isVeg ? 'Pure Veg' : 'Non-Veg'} • Fresh Prep</span>
             </div>
           </div>
 

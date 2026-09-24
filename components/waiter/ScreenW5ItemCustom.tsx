@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useWaiterStore } from '../../store/useWaiterStore';
+import { useSharedBridge } from '../../store/useSharedBridge';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
 import { ArrowLeft, Plus, Minus, Flame, CheckCircle2, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -10,13 +11,33 @@ export const ScreenW5ItemCustom: React.FC = () => {
   const {
     setCurrentScreen,
     selectedTableNumber,
+    activeCaptain,
     orderCart,
     updateOrderCartQty,
-    fireKOTToKitchen,
+    clearOrderCart,
   } = useWaiterStore();
+  const { waiterFiresKOT } = useSharedBridge();
 
   const [dietaryNote, setDietaryNote] = useState('');
   const cartTotal = orderCart.reduce((s, i) => s + i.totalPrice, 0);
+
+  const handleFireKOT = () => {
+    if (orderCart.length === 0) return;
+    const tableNum = selectedTableNumber || 'A-04';
+    const captain = activeCaptain || 'Floor Captain';
+
+    const itemsToFire = orderCart.map((ci) => ({
+      item: ci.menuItem,
+      selectedOption: dietaryNote
+        ? `${ci.selectedOption} • Note: ${dietaryNote}`
+        : ci.selectedOption,
+      quantity: ci.quantity,
+    }));
+
+    waiterFiresKOT(tableNum, captain, itemsToFire);
+    clearOrderCart();
+    setCurrentScreen(3);
+  };
 
   return (
     <WaiterTabletHousing screenNumber={5} screenTitle="ORDER CUSTOMIZATION & KOT DISPATCH">
@@ -102,7 +123,7 @@ export const ScreenW5ItemCustom: React.FC = () => {
         <motion.button
           whileTap={{ scale: 0.98 }}
           disabled={orderCart.length === 0}
-          onClick={fireKOTToKitchen}
+          onClick={handleFireKOT}
           className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-orange-600 text-white font-mono text-xs font-black shadow-lg shadow-orange-600/30 hover:bg-orange-700 disabled:opacity-50 transition cursor-pointer"
         >
           <div className="flex items-center gap-1.5">

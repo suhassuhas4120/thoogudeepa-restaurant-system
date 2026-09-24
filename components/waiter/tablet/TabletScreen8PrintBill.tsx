@@ -4,22 +4,48 @@ import React, { useState } from 'react';
 import { useWaiterStore } from '../../../store/useWaiterStore';
 import { useSharedBridge } from '../../../store/useSharedBridge';
 import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
+import { INITIAL_MENU_ITEMS } from '../../../data/menuItems';
 import { ArrowLeft, Printer, MessageCircle, CheckCircle2, Trash2 } from 'lucide-react';
 
 export const TabletScreen8PrintBill: React.FC = () => {
-  const { setCurrentScreen, selectedTableNumber, orderCart } = useWaiterStore();
+  const { setCurrentScreen, selectedTableNumber, orderCart, activeCaptain } = useWaiterStore();
   const { tables, waiterVacatesTable } = useSharedBridge();
   const [printSent, setPrintSent] = useState(false);
   const [whatsappSent, setWhatsappSent] = useState(false);
   const [tableVacated, setTableVacated] = useState(false);
 
   const activeTable = tables.find((t) => t.number === (selectedTableNumber || 'A-04')) || tables[0];
-  const subtotal = (activeTable.currentBill || 1430);
-  const cgst = Math.round(subtotal * 0.025);
-  const sgst = Math.round(subtotal * 0.025);
+  const items = (activeTable.activeItems && activeTable.activeItems.length > 0)
+    ? activeTable.activeItems.map((ai) => {
+        const found = INITIAL_MENU_ITEMS.find((m) => m.name.toLowerCase() === ai.name.toLowerCase());
+        const unitPrice = found ? found.price : 260;
+        return {
+          name: ai.name,
+          qty: ai.quantity,
+          price: unitPrice * ai.quantity,
+          status: ai.status,
+        };
+      })
+    : (orderCart.length > 0
+        ? orderCart.map((c) => ({
+            name: c.menuItem.name,
+            qty: c.quantity,
+            price: c.menuItem.price * c.quantity,
+            status: 'Served',
+          }))
+        : [
+            { name: 'Donne Mutton Biryani', qty: 1, price: 320, status: 'Served' },
+            { name: 'Donne Chicken Biryani', qty: 1, price: 240, status: 'Served' },
+          ]);
+
+  const subtotal = activeTable.currentBill || items.reduce((sum, item) => sum + (item.price || 0), 0);
+  const netBeforeGst = Math.round(subtotal / 1.05);
+  const totalGst = subtotal - netBeforeGst;
+  const cgst = Math.round(totalGst / 2);
+  const sgst = totalGst - cgst;
   const netTotal = subtotal;
-  const invoiceNum = 'INV-2026-104';
-  const txnId = 'TXN_9876543210';
+  const invoiceNum = `INV-2026-${activeTable.number.replace(/\D/g, '') || '104'}`;
+  const txnId = `TXN_${(activeTable.number.replace(/\D/g, '') || '104').padStart(4, '0')}7892`;
   const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
   const handlePrint = () => {
@@ -98,7 +124,7 @@ export const TabletScreen8PrintBill: React.FC = () => {
                   <span>Table:</span><span className="font-bold">{activeTable.number}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Captain:</span><span className="font-bold">Ramesh</span>
+                  <span>Captain:</span><span className="font-bold">{activeTable.serverName || activeCaptain || 'Staff'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Time:</span><span className="font-bold">{now}</span>
@@ -110,11 +136,7 @@ export const TabletScreen8PrintBill: React.FC = () => {
                 <div className="flex justify-between font-bold text-[10px] border-b border-slate-200 pb-1 mb-1">
                   <span>ITEM</span><span>QTY</span><span>AMT</span>
                 </div>
-                {[
-                  { name: 'Donne Mutton Biryani', qty: 1, price: 520 },
-                  { name: 'Donne Chicken Biryani', qty: 2, price: 820 },
-                  { name: 'Raita Special', qty: 1, price: 90 },
-                ].map((item, idx) => (
+                {items.map((item, idx) => (
                   <div key={idx} className="flex justify-between text-[10px] text-slate-700 py-0.5">
                     <span className="flex-1 truncate pr-2">{item.name}</span>
                     <span className="w-6 text-center">{item.qty}</span>
@@ -126,7 +148,7 @@ export const TabletScreen8PrintBill: React.FC = () => {
               {/* GST Breakdown */}
               <div className="text-[10px] text-slate-600 flex flex-col gap-0.5 border-b border-dashed border-slate-300 pb-2 mb-2">
                 <div className="flex justify-between">
-                  <span>Subtotal:</span><span>₹ {(subtotal - cgst - sgst).toLocaleString('en-IN')}</span>
+                  <span>Subtotal (Net):</span><span>₹ {netBeforeGst.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>CGST @ 2.5%:</span><span>₹ {cgst}</span>
@@ -158,17 +180,16 @@ export const TabletScreen8PrintBill: React.FC = () => {
             <div className="border border-slate-300 bg-white rounded-xl p-4 flex flex-col gap-2">
               <strong className="text-xs font-black text-slate-900">Tax Invoice Details:</strong>
               <div className="flex flex-col gap-1 font-mono text-xs">
-                {[
-                  { name: '1x Donne Mutton Biryani', amt: 520 },
-                  { name: '2x Donne Chicken Biryani', amt: 820 },
-                  { name: '1x Raita Special', amt: 90 },
-                ].map((row, i) => (
+                {items.map((row, i) => (
                   <div key={i} className="flex justify-between text-slate-700">
-                    <span>{row.name}</span>
-                    <span>₹ {row.amt}.00</span>
+                    <span>{row.qty}x {row.name}</span>
+                    <span>₹ {row.price}.00</span>
                   </div>
                 ))}
                 <div className="border-t border-dashed border-slate-300 mt-1 pt-1 flex justify-between text-[10px] text-slate-500">
+                  <span>Subtotal (Net):</span><span>₹ {netBeforeGst}.00</span>
+                </div>
+                <div className="flex justify-between text-[10px] text-slate-500">
                   <span>CGST 2.5%:</span><span>₹ {cgst}.00</span>
                 </div>
                 <div className="flex justify-between text-[10px] text-slate-500">

@@ -16,17 +16,19 @@ import { motion } from 'framer-motion';
 
 export const ScreenW7Payment: React.FC = () => {
   const { setCurrentScreen, selectedTableNumber } = useWaiterStore();
-  const { waiterRecordsPayment } = useSharedBridge();
+  const { tables, waiterRecordsPayment } = useSharedBridge();
   const [method, setMethod] = useState<'CASH' | 'UPI' | 'CARD'>('UPI');
   const [tip, setTip] = useState(50);
   const [success, setSuccess] = useState(false);
 
-  const billAmount = 740;
-  const tax = Math.round(billAmount * 0.05);
-  const total = billAmount + tax + tip;
+  const activeTable = tables.find((t) => t.number === selectedTableNumber) || tables[0];
+  const billAmount = activeTable?.currentBill || 0;
+  const subtotal = Math.round(billAmount / 1.05);
+  const tax = billAmount - subtotal;
+  const total = billAmount + (billAmount > 0 ? tip : 0);
 
   const handlePay = () => {
-    waiterRecordsPayment(selectedTableNumber, method, total);
+    waiterRecordsPayment(activeTable?.number || selectedTableNumber, method, total);
     setSuccess(true);
     setTimeout(() => {
       setCurrentScreen(8);
@@ -59,7 +61,7 @@ export const ScreenW7Payment: React.FC = () => {
               ₹ {total}
             </div>
             <div className="font-mono text-[10.5px] text-slate-500 mt-0.5">
-              Subtotal: ₹{billAmount} + 5% GST: ₹{tax} + Tip: ₹{tip}
+              Net Subtotal: ₹{subtotal} + 5% GST: ₹{tax} + Tip: ₹{tip}
             </div>
           </div>
 

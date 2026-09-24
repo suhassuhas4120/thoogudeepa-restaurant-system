@@ -46,7 +46,7 @@ export function ScreenM4BillingPOS() {
           return {
             id: idx + 1,
             name: activeItem.name,
-            price: menuItem ? menuItem.price : 290,
+            price: activeItem.price || (menuItem ? menuItem.price : 260),
             qty: activeItem.quantity,
             isFree: false,
           };

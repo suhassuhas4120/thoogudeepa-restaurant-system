@@ -27,6 +27,12 @@ import {
   Ban,
   Lock,
   X,
+  Clock,
+  UtensilsCrossed,
+  ExternalLink,
+  Link2,
+  Receipt,
+  FileText,
 } from 'lucide-react';
 
 type RightPaneMode = 'bill_summary' | 'take_order' | 'item_custom' | 'merge' | 'payment' | 'bill_done';
@@ -41,14 +47,15 @@ export const TabletScreen3TableDetail: React.FC = () => {
     tables,
     inventory86,
     waiterMergeTables,
+    waiterUnmergeTable,
     waiterFiresKOT,
     waiterRecordsPayment,
     waiterVacatesTable,
   } = useSharedBridge();
 
   const [rightPane, setRightPane] = useState<RightPaneMode>('bill_summary');
-  const [selectedMergeChip, setSelectedMergeChip] = useState<string>('A-02');
-  const [mergeConfirmed, setMergeConfirmed] = useState(false);
+  const [selectedMergeChip, setSelectedMergeChip] = useState<string>('');
+  const [mergeNotice, setMergeNotice] = useState<string | null>(null);
   const [vacateNotice, setVacateNotice] = useState<string | null>(null);
   const [kotNotice, setKotNotice] = useState<string | null>(null);
   const [isPaymentDone, setIsPaymentDone] = useState(false);
@@ -71,9 +78,10 @@ export const TabletScreen3TableDetail: React.FC = () => {
   const [payMode, setPayMode] = useState<'CASH' | 'UPI' | 'POS'>('CASH');
 
   const activeTable = tables.find((t) => t.number === selectedTableNumber) || tables[0];
+  const isAlreadyMerged = Boolean(activeTable?.mergedWith);
   const runningTotal = activeTable?.currentBill || 0;
   const subtotal = Math.round(runningTotal / 1.05);
-  const gst = Math.round(subtotal * 0.05);
+  const gst = runningTotal - subtotal;
   const serviceCharge = Math.round(subtotal * 0.05);
 
   const canVacate = isPaymentDone || activeTable?.status === 'BILLING';
@@ -92,9 +100,16 @@ export const TabletScreen3TableDetail: React.FC = () => {
     return matchCat && matchSearch;
   });
 
-  const availableTablesToMerge = tables
-    .filter((t) => t.number !== activeTable?.number && t.number !== activeTable?.mergedWith)
-    .map((t) => t.number);
+  const availableTablesToMerge = tables.filter(
+    (t) => t.number !== activeTable?.number && t.number !== activeTable?.mergedWith
+  );
+
+  const effectiveMergeChip =
+    selectedMergeChip && availableTablesToMerge.some((t) => t.number === selectedMergeChip)
+      ? selectedMergeChip
+      : availableTablesToMerge[0]?.number || 'A-02';
+
+  const targetMergeTableObj = tables.find((t) => t.number === effectiveMergeChip);
 
   // Cart operations for Take Order (Screen 4)
   const handleAddItem = (item: MenuItem) => {
@@ -129,7 +144,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
     if (draftCart.length === 0) return;
     waiterFiresKOT(
       activeTable.number,
-      activeCaptain || 'Captain Ramesh',
+      activeCaptain || 'Staff Captain',
       draftCart.map((d) => ({
         item: d.item,
         selectedOption: d.selectedOption,
@@ -158,7 +173,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
       ...customizingItem,
       price: customizingItem.price + addOnPrice,
     };
-    waiterFiresKOT(activeTable.number, activeCaptain || 'Captain Ramesh', [
+    waiterFiresKOT(activeTable.number, activeCaptain || 'Staff Captain', [
       {
         item: customizedItem,
         selectedOption: `${portion} • Spice: ${spice}`,
@@ -175,9 +190,19 @@ export const TabletScreen3TableDetail: React.FC = () => {
 
   // Merge table confirmation
   const handleConfirmMerge = () => {
-    waiterMergeTables(activeTable.number, selectedMergeChip);
-    setMergeConfirmed(true);
-    setTimeout(() => setMergeConfirmed(false), 3000);
+    if (!activeTable?.number || !effectiveMergeChip) return;
+    waiterMergeTables(activeTable.number, effectiveMergeChip);
+    setMergeNotice(`✓ Table ${activeTable.number} and Table ${effectiveMergeChip} merged into unified bill!`);
+    setTimeout(() => setMergeNotice(null), 3500);
+  };
+
+  // Unmerge table confirmation
+  const handleUnmerge = () => {
+    if (!activeTable?.number) return;
+    const partner = activeTable.mergedWith;
+    waiterUnmergeTable(activeTable.number);
+    setMergeNotice(`✓ Table ${activeTable.number} and Table ${partner} separated into individual tables.`);
+    setTimeout(() => setMergeNotice(null), 3500);
   };
 
   // Payment confirmation (Screen 7 -> Screen 8)
@@ -244,6 +269,12 @@ export const TabletScreen3TableDetail: React.FC = () => {
         </div>
 
         {/* Global Success / Notice Toasts */}
+        {mergeNotice && (
+          <div className="bg-purple-800 text-white font-mono text-xs font-black px-5 py-2 flex items-center gap-2 shrink-0">
+            <CheckCircle2 className="h-4 w-4" />
+            <span>{mergeNotice}</span>
+          </div>
+        )}
         {vacateNotice && (
           <div className="bg-emerald-700 text-white font-mono text-xs font-black px-5 py-2 flex items-center gap-2 shrink-0">
             <CheckCircle2 className="h-4 w-4" />
@@ -269,7 +300,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     KOT #{activeTable.kotCount || 104} • Seated {activeTable.seatedTime || '12:52 PM'}
                   </strong>
                   <div className="text-[11px] text-slate-500 font-bold mt-0.5">
-                    Guest Count: {activeTable.guestCount || 3} Guests • Server: {activeCaptain}
+                    Guest Count: {activeTable.guestCount || 3} Guests • Server: {activeCaptain || activeTable.serverName}
                   </div>
                   {activeTable.mergedWith && (
                     <div className="text-[10.5px] text-purple-700 font-black mt-0.5">
@@ -285,7 +316,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
               {/* Ordered Items List & Preparation Tracking */}
               <div>
                 <span className="font-black text-xs text-slate-900 uppercase tracking-wider block mb-2">
-                  ORDERED ITEMS & PREPARATION STATUS
+                  ORDERED ITEMS &amp; PREPARATION STATUS
                 </span>
 
                 <div className="flex flex-col gap-2">
@@ -300,7 +331,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                             {item.quantity}x {item.name}
                           </strong>
                           <div className="text-[10.5px] text-slate-500 font-bold">
-                            Kitchen Prep • Protected
+                            ₹{(item.price || 260) * item.quantity} (₹{item.price || 260} ea) • Kitchen Prep
                           </div>
                         </div>
                         <span className={`border px-2 py-0.5 rounded text-[10.5px] font-bold ${
@@ -314,49 +345,54 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     ))
                   ) : (
                     <div className="bg-white border border-slate-300 rounded-lg p-3 text-slate-400 italic text-xs">
-                      No active items placed yet. Click Take Orders to add dishes.
+                      No active items placed yet. Click Take Orders below to add dishes.
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Special Customer Service Notes */}
+              {/* Dynamic Service Briefing */}
               <div className="bg-white border border-slate-300 rounded-xl p-3.5 flex flex-col gap-1 text-[11px] shadow-2xs">
                 <span className="font-black text-slate-500 uppercase text-[10px]">
-                  Special Service Notes
+                  Table Service Briefing
                 </span>
                 <div className="text-slate-700">
-                  • Customer Request: Extra water bottle provided at 01:05 PM
+                  • Assigned Service: Table {activeTable.number} • Seated at {activeTable.seatedTime || 'Active Shift'}
                 </div>
                 <div className="text-slate-700">
-                  • Allergy Alert: Nut-free preparation confirmed with head chef
+                  • Dining Party: {activeTable.guestCount || 2} Guests • Floor Captain: {activeCaptain || activeTable.serverName}
                 </div>
+                {activeTable.mergedWith && (
+                  <div className="text-purple-700 font-bold">
+                    • Consolidated with Table {activeTable.mergedWith} (Unified Orders &amp; Billing)
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* 4 ACTION BUTTONS (DYNAMIC EXPANSION INTO RIGHT PANE WITHOUT FULL PAGE REDIRECT) */}
-            <div className="grid grid-cols-2 gap-2.5 pt-2 shrink-0">
+            {/* ACTION BUTTONS (DYNAMIC EXPANSION INTO RIGHT PANE WITHOUT FULL PAGE REDIRECT) */}
+            <div className="grid grid-cols-2 gap-2 pt-2 shrink-0">
               {/* 1. Take Orders Button */}
               <button
                 type="button"
                 onClick={() => setRightPane(rightPane === 'take_order' ? 'bill_summary' : 'take_order')}
-                className={`py-3.5 px-4 rounded-lg font-black text-xs transition flex items-center justify-center gap-2 shadow-2xs ${
+                className={`py-3 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
                   rightPane === 'take_order' || rightPane === 'item_custom'
-                    ? 'bg-orange-600 text-white border-2 border-orange-700'
+                    ? 'bg-orange-600 text-white ring-2 ring-orange-400'
                     : 'bg-slate-900 hover:bg-black text-white'
                 }`}
               >
                 <Utensils className="h-4 w-4" />
-                <span>Take Orders</span>
+                <span>Take Orders {draftItemCount > 0 ? `(${draftItemCount})` : ''}</span>
               </button>
 
               {/* 2. Payment Button */}
               <button
                 type="button"
                 onClick={() => setRightPane(rightPane === 'payment' ? 'bill_summary' : 'payment')}
-                className={`py-3.5 px-4 rounded-lg font-black text-xs transition flex items-center justify-center gap-2 shadow-2xs ${
-                  rightPane === 'payment' || rightPane === 'bill_done'
-                    ? 'bg-orange-600 text-white border-2 border-orange-700'
+                className={`py-3 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
+                  rightPane === 'payment'
+                    ? 'bg-orange-600 text-white ring-2 ring-orange-400'
                     : 'bg-slate-900 hover:bg-black text-white'
                 }`}
               >
@@ -368,30 +404,60 @@ export const TabletScreen3TableDetail: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setRightPane(rightPane === 'merge' ? 'bill_summary' : 'merge')}
-                className={`py-3.5 px-4 rounded-lg font-black text-xs transition flex items-center justify-center gap-2 border ${
+                className={`py-3 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
                   rightPane === 'merge'
-                    ? 'bg-slate-900 text-white border-black'
-                    : 'bg-white hover:bg-slate-100 text-slate-900 border-slate-400'
+                    ? 'bg-orange-600 text-white ring-2 ring-orange-400'
+                    : isAlreadyMerged
+                    ? 'bg-purple-100 border border-purple-400 text-purple-900 hover:bg-purple-200'
+                    : 'bg-white hover:bg-slate-100 text-slate-900 border border-slate-300'
                 }`}
               >
                 <Users className="h-4 w-4" />
-                <span>Merge Tables</span>
+                <span>{isAlreadyMerged ? `Merged (+${activeTable.mergedWith})` : 'Merge Tables'}</span>
               </button>
 
-              {/* 4. Table Vacate Button (ENABLED ONLY WHEN PAYMENT IS DONE) */}
+              {/* 4. Print / Invoice Button */}
+              <button
+                type="button"
+                onClick={() => setRightPane(rightPane === 'bill_done' ? 'bill_summary' : 'bill_done')}
+                className={`py-3 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
+                  rightPane === 'bill_done'
+                    ? 'bg-orange-600 text-white ring-2 ring-orange-400'
+                    : 'bg-white hover:bg-slate-100 text-slate-900 border border-slate-300'
+                }`}
+              >
+                <Printer className="h-4 w-4" />
+                <span>Print Bill</span>
+              </button>
+
+              {/* 5. Bill Summary Button */}
+              <button
+                type="button"
+                onClick={() => setRightPane('bill_summary')}
+                className={`py-2.5 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
+                  rightPane === 'bill_summary'
+                    ? 'bg-slate-800 text-white ring-2 ring-slate-600'
+                    : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300'
+                }`}
+              >
+                <Receipt className="h-3.5 w-3.5" />
+                <span>Bill Breakdown</span>
+              </button>
+
+              {/* 6. Table Vacate Button (ENABLED ONLY WHEN PAYMENT IS DONE) */}
               <button
                 type="button"
                 disabled={!canVacate}
                 onClick={handleDirectVacate}
                 title={canVacate ? 'Vacate table immediately' : 'Payment required before table can be vacated'}
-                className={`py-3.5 px-4 rounded-lg font-black text-xs transition flex items-center justify-center gap-2 ${
+                className={`py-2.5 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs ${
                   canVacate
-                    ? 'bg-rose-700 hover:bg-rose-800 text-white shadow-2xs'
-                    : 'bg-slate-200 text-slate-400 border border-slate-300 cursor-not-allowed'
+                    ? 'bg-rose-700 hover:bg-rose-800 text-white cursor-pointer'
+                    : 'bg-slate-200 text-slate-400 border border-slate-300 cursor-not-allowed opacity-70'
                 }`}
               >
-                <Trash2 className="h-4 w-4" />
-                <span>🧹 {canVacate ? 'Vacate Table' : 'Vacate (Locked: Bill Due)'}</span>
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>{canVacate ? 'Vacate Table' : 'Vacate (Locked)'}</span>
               </button>
             </div>
           </div>
@@ -415,20 +481,16 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     Bill Summary — Table {activeTable.number}
                   </strong>
                   <div className="flex justify-between text-xs text-slate-600">
-                    <span>Subtotal:</span>
+                    <span>Net Subtotal:</span>
                     <span>₹ {subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-xs text-slate-600">
-                    <span>CGST 2.5%:</span>
-                    <span>₹ {(gst / 2).toFixed(2)}</span>
+                    <span>CGST @ 2.5%:</span>
+                    <span>₹ {Math.round(gst / 2).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-xs text-slate-600">
-                    <span>SGST 2.5%:</span>
-                    <span>₹ {(gst / 2).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs text-slate-600">
-                    <span>Service Charge 5%:</span>
-                    <span>₹ {serviceCharge.toFixed(2)}</span>
+                    <span>SGST @ 2.5%:</span>
+                    <span>₹ {(gst - Math.round(gst / 2)).toFixed(2)}</span>
                   </div>
                   <div className="border-t-2 border-slate-900 pt-2 flex justify-between text-sm font-black text-slate-950">
                     <span>Grand Total Due:</span>
@@ -464,13 +526,23 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   <span className="font-black text-xs text-slate-900 uppercase">
                     Table {activeTable.number}: Menu Order Entry
                   </span>
-                  <button
-                    onClick={() => setRightPane('bill_summary')}
-                    className="p-1 hover:bg-slate-100 rounded text-slate-600 cursor-pointer"
-                    title="Close"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setCurrentScreen(4)}
+                      className="text-[10px] font-bold text-slate-600 hover:text-slate-900 border border-slate-300 rounded px-2 py-0.5 flex items-center gap-1 bg-stone-50 cursor-pointer"
+                      title="Open full dedicated Menu Screen 4"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      <span>Full Matrix</span>
+                    </button>
+                    <button
+                      onClick={() => setRightPane('bill_summary')}
+                      className="p-1 hover:bg-slate-100 rounded text-slate-600 cursor-pointer"
+                      title="Close"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Safety Check: Already ordered items lock */}
@@ -497,7 +569,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                       <button
                         key={cat}
                         onClick={() => setSelectedCat(cat)}
-                        className={`px-2.5 py-1 rounded text-[10.5px] font-bold border whitespace-nowrap transition ${
+                        className={`px-2.5 py-1 rounded text-[10.5px] font-bold border whitespace-nowrap transition cursor-pointer ${
                           selectedCat === cat
                             ? 'bg-slate-900 text-white border-slate-900'
                             : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
@@ -536,89 +608,122 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Dish Cards List with Stepper (- qty +) */}
+                {/* Dish Cards List with Stepper (- qty +) or Clean Empty State */}
                 <div className="flex-1 overflow-y-auto space-y-2 pr-1">
-                  {filteredMenuItems.map((item) => {
-                    const item86 = inventory86.find((i) => i.id === item.id);
-                    const isSoldOut = !!item86?.is86;
-                    const draftEntry = draftCart.find((d) => d.item.id === item.id);
-                    const qty = draftEntry ? draftEntry.quantity : 0;
+                  {filteredMenuItems.length === 0 ? (
+                    <div className="py-12 px-4 text-center rounded-xl border border-dashed border-slate-300 bg-slate-50 flex flex-col items-center justify-center gap-2 my-auto">
+                      <div className="h-11 w-11 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
+                        <UtensilsCrossed className="h-6 w-6" />
+                      </div>
+                      <strong className="text-xs font-black text-slate-900 uppercase">
+                        No Dishes Available in {selectedCat}
+                      </strong>
+                      <p className="text-[10.5px] text-slate-500 max-w-[240px] leading-relaxed">
+                        {search
+                          ? `No items found matching "${search}".`
+                          : 'All items in this section are currently sold out or fresh batches are in kitchen preparation.'}
+                      </p>
+                      {(selectedCat !== 'ALL' || search) && (
+                        <button
+                          onClick={() => { setSelectedCat('ALL'); setSearch(''); }}
+                          className="mt-1 px-3 py-1 rounded-lg bg-slate-900 hover:bg-black text-white text-[10.5px] font-bold transition cursor-pointer"
+                        >
+                          View All Dishes
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    filteredMenuItems.map((item) => {
+                      const item86 = inventory86.find((i) => i.id === item.id);
+                      const isSoldOut = !!item86?.is86;
+                      const prepDelay = item86?.prepDelayMinutes || 0;
+                      const draftEntry = draftCart.find((d) => d.item.id === item.id);
+                      const qty = draftEntry ? draftEntry.quantity : 0;
 
-                    return (
-                      <div
-                        key={item.id}
-                        className={`border rounded-lg p-2.5 flex items-center justify-between gap-2 transition ${
-                          isSoldOut
-                            ? 'bg-stone-50 border-rose-200 opacity-60'
-                            : 'bg-white border-slate-300 hover:border-slate-800'
-                        }`}
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <strong className="text-xs font-black text-slate-950 truncate">
-                              {item.name}
-                            </strong>
-                            {isSoldOut && (
-                              <span className="bg-rose-600 text-white text-[8.5px] font-black px-1 rounded">
-                                86 SOLD OUT
-                              </span>
-                            )}
+                      return (
+                        <div
+                          key={item.id}
+                          className={`border rounded-lg p-2.5 flex items-center justify-between gap-2 transition ${
+                            isSoldOut
+                              ? 'bg-stone-50 border-rose-200 opacity-65'
+                              : prepDelay > 0
+                              ? 'bg-amber-50/40 border-amber-200'
+                              : 'bg-white border-slate-300 hover:border-slate-800'
+                          }`}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <strong className="text-xs font-black text-slate-950 truncate">
+                                {item.name}
+                              </strong>
+                              {isSoldOut ? (
+                                <span className="bg-rose-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                                  <Ban className="h-2 w-2" />
+                                  <span>86 SOLD OUT</span>
+                                </span>
+                              ) : prepDelay > 0 ? (
+                                <span className="bg-amber-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                                  <Clock className="h-2 w-2" />
+                                  <span>+{prepDelay}M PREP</span>
+                                </span>
+                              ) : null}
+                            </div>
+                            <span className="text-[10px] text-slate-500 block">
+                              ₹{item.price.toFixed(2)} • {item.category}
+                            </span>
                           </div>
-                          <span className="text-[10px] text-slate-500 block">
-                            ₹{item.price.toFixed(2)} • {item.category}
-                          </span>
-                        </div>
 
-                        {/* Action Stepper or Add Button */}
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenCustomize(item)}
-                            className="text-[9.5px] font-bold text-slate-500 hover:text-slate-900 border border-slate-300 rounded px-1.5 py-1"
-                            title="Customize item"
-                          >
-                            ⚙️
-                          </button>
-
-                          {qty === 0 ? (
+                          {/* Action Stepper or Add Button */}
+                          <div className="flex items-center gap-1.5 shrink-0">
                             <button
                               type="button"
-                              disabled={isSoldOut}
-                              onClick={() => !isSoldOut && handleAddItem(item)}
-                              className={`py-1 px-2.5 rounded font-bold text-xs transition flex items-center gap-1 shadow-2xs ${
-                                isSoldOut
-                                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                                  : 'bg-slate-900 hover:bg-black text-white'
-                              }`}
+                              onClick={() => handleOpenCustomize(item)}
+                              className="text-[9.5px] font-bold text-slate-500 hover:text-slate-900 border border-slate-300 rounded px-1.5 py-1"
+                              title="Customize item"
                             >
-                              <Plus className="h-3 w-3" />
-                              <span>+ Add</span>
+                              ⚙️
                             </button>
-                          ) : (
-                            <div className="flex items-center gap-1 rounded border border-slate-300 bg-white p-0.5 shadow-2xs">
+
+                            {qty === 0 ? (
                               <button
                                 type="button"
-                                onClick={() => handleUpdateQty(item.id, -1)}
-                                className="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-900 font-black flex items-center justify-center text-xs"
+                                disabled={isSoldOut}
+                                onClick={() => !isSoldOut && handleAddItem(item)}
+                                className={`py-1 px-2.5 rounded font-bold text-xs transition flex items-center gap-1 shadow-2xs ${
+                                  isSoldOut
+                                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                    : 'bg-slate-900 hover:bg-black text-white cursor-pointer active:scale-95'
+                                }`}
                               >
-                                <Minus className="h-3 w-3 stroke-[2.5]" />
+                                <Plus className="h-3 w-3" />
+                                <span>+ Add</span>
                               </button>
-                              <span className="min-w-4 text-center text-xs font-black text-slate-950">
-                                {qty}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => handleUpdateQty(item.id, 1)}
-                                className="w-5 h-5 rounded bg-slate-900 hover:bg-black text-white font-black flex items-center justify-center text-xs"
-                              >
-                                <Plus className="h-3 w-3 stroke-[2.5]" />
-                              </button>
-                            </div>
-                          )}
+                            ) : (
+                              <div className="flex items-center gap-1 rounded border border-slate-300 bg-white p-0.5 shadow-2xs">
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateQty(item.id, -1)}
+                                  className="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-900 font-black flex items-center justify-center text-xs"
+                                >
+                                  <Minus className="h-3 w-3 stroke-[2.5]" />
+                                </button>
+                                <span className="min-w-4 text-center text-xs font-black text-slate-950">
+                                  {qty}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateQty(item.id, 1)}
+                                  className="w-5 h-5 rounded bg-slate-900 hover:bg-black text-white font-black flex items-center justify-center text-xs"
+                                >
+                                  <Plus className="h-3 w-3 stroke-[2.5]" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
 
                 {/* Bottom Order Bar */}
@@ -767,93 +872,170 @@ export const TabletScreen3TableDetail: React.FC = () => {
               </div>
             )}
 
-            {/* ─── PANE 4: SCREEN 6 TABLE MERGE (NO SPLIT, NO TIPS) ─────── */}
+            {/* ─── PANE 4: SCREEN 6 TABLE MERGE ─────── */}
             {rightPane === 'merge' && (
               <div className="flex flex-col gap-3 flex-1 overflow-y-auto">
                 <div className="flex justify-between items-center border-b-2 border-slate-800 pb-2">
-                  <span className="font-black text-xs text-slate-900 uppercase">
-                    Table Merge Controller
-                  </span>
-                  <button
-                    onClick={() => setRightPane('bill_summary')}
-                    className="p-1 hover:bg-slate-100 rounded text-slate-600"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-purple-700" />
+                    <span className="font-black text-xs text-slate-900 uppercase">
+                      Table Merge Controller
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setCurrentScreen(6)}
+                      className="text-[10px] font-bold text-slate-600 hover:text-slate-900 border border-slate-300 rounded px-2 py-0.5 flex items-center gap-1 bg-stone-50 cursor-pointer"
+                      title="Open full dedicated Merge Screen 6"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      <span>Full Studio</span>
+                    </button>
+                    <button
+                      onClick={() => setRightPane('bill_summary')}
+                      className="p-1 hover:bg-slate-100 rounded text-slate-600 cursor-pointer"
+                      title="Close"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
 
-                <div className="border border-slate-300 bg-white rounded-xl p-3.5 flex flex-col gap-2">
-                  <span className="text-[11px] font-bold text-slate-700">
-                    Primary Table: {activeTable.number}
-                  </span>
-                  <span className="text-[10.5px] font-bold text-slate-500 uppercase">
-                    Select Table to Merge:
-                  </span>
-
-                  <div className="grid grid-cols-3 gap-2">
-                    {availableTablesToMerge.slice(0, 6).map((tbl) => (
-                      <button
-                        key={tbl}
-                        onClick={() => setSelectedMergeChip(tbl)}
-                        className={`py-2 px-1 border rounded-lg text-xs font-bold transition ${
-                          selectedMergeChip === tbl
-                            ? 'bg-slate-900 text-white border-slate-900'
-                            : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
-                        }`}
-                      >
-                        {tbl}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="text-[10.5px] font-bold text-purple-700 mt-1">
-                    Merge Preview: {activeTable.number} + {selectedMergeChip} Combined
-                  </div>
-                  <div className="text-[10px] text-slate-500">
-                    Bills and active orders will unify under one combined table.
-                  </div>
-
-                  {mergeConfirmed && (
-                    <div className="p-2 bg-emerald-50 border border-emerald-400 rounded text-emerald-800 text-xs font-bold flex items-center gap-1.5">
-                      <CheckCircle2 className="h-4 w-4" />
-                      <span>✓ Tables Merged Successfully!</span>
+                {isAlreadyMerged ? (
+                  <div className="border-2 border-purple-300 bg-purple-50/70 rounded-xl p-4 flex flex-col gap-3 shadow-2xs">
+                    <div className="flex items-center gap-2 text-purple-950 font-black text-xs">
+                      <Link2 className="h-4 w-4 text-purple-700" />
+                      <span>Table Consolidation Active</span>
                     </div>
-                  )}
-                </div>
+                    <div className="text-xs text-purple-950 font-bold">
+                      Table {activeTable.number} is currently consolidated with Table {activeTable.mergedWith}.
+                    </div>
+                    <div className="text-[11px] text-purple-900 space-y-1 bg-white/80 p-3 rounded-lg border border-purple-200">
+                      <div className="flex justify-between">
+                        <span>Consolidated Bill:</span>
+                        <span className="font-black">₹{runningTotal.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Combined Party:</span>
+                        <span className="font-black">{activeTable.guestCount || 4} Guests</span>
+                      </div>
+                      <div className="text-[10px] text-purple-700 mt-1">
+                        • Kitchen KOTs and billing unified under one consolidated account.
+                      </div>
+                    </div>
 
-                <button
-                  type="button"
-                  onClick={handleConfirmMerge}
-                  className="w-full py-3 bg-slate-900 hover:bg-black text-white rounded-lg font-black text-xs transition shadow-2xs mt-auto flex items-center justify-center gap-2"
-                >
-                  <Users className="h-4 w-4" />
-                  <span>Confirm Merge with {selectedMergeChip}</span>
-                </button>
+                    <button
+                      type="button"
+                      onClick={handleUnmerge}
+                      className="w-full py-3 bg-rose-700 hover:bg-rose-800 text-white rounded-lg font-black text-xs transition shadow-2xs mt-2 flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Users className="h-4 w-4" />
+                      <span>Unmerge / Separate Table {activeTable.number} &amp; {activeTable.mergedWith}</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="border border-slate-300 bg-white rounded-xl p-3.5 flex flex-col gap-3 shadow-2xs">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-bold text-slate-700">Primary Master Table:</span>
+                      <span className="font-black text-slate-900 bg-slate-100 px-2 py-0.5 rounded border border-slate-300">
+                        Table {activeTable.number} (₹{runningTotal.toFixed(2)})
+                      </span>
+                    </div>
+
+                    <div>
+                      <span className="text-[10.5px] font-bold text-slate-500 uppercase block mb-1.5">
+                        Select Table to Merge:
+                      </span>
+                      <div className="grid grid-cols-3 gap-2">
+                        {availableTablesToMerge.slice(0, 6).map((tbl) => {
+                          const isSelected = effectiveMergeChip === tbl.number;
+                          return (
+                            <button
+                              key={tbl.number}
+                              onClick={() => setSelectedMergeChip(tbl.number)}
+                              className={`py-2 px-1.5 border rounded-lg text-xs font-bold transition flex flex-col items-center justify-center cursor-pointer ${
+                                isSelected
+                                  ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
+                                  : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
+                              }`}
+                            >
+                              <span className="font-black">{tbl.number}</span>
+                              <span className="text-[9px] opacity-75 font-mono">
+                                ₹{tbl.currentBill} • {tbl.status === 'OCCUPIED' ? 'Occ' : 'Vac'}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Preview box */}
+                    <div className="border border-dashed border-purple-300 bg-purple-50/50 p-2.5 rounded-lg text-xs font-bold text-purple-900 space-y-1">
+                      <div className="flex justify-between">
+                        <span>Merge Preview:</span>
+                        <span>{activeTable.number} + {effectiveMergeChip}</span>
+                      </div>
+                      <div className="flex justify-between text-[11px] text-purple-700">
+                        <span>Consolidated Bill:</span>
+                        <span>₹{(runningTotal + (targetMergeTableObj?.currentBill || 0)).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-[11px] text-purple-700">
+                        <span>Total Guests:</span>
+                        <span>{(activeTable.guestCount || 2) + (targetMergeTableObj?.guestCount || 2)} Guests</span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleConfirmMerge}
+                      className="w-full py-3 bg-purple-700 hover:bg-purple-800 text-white rounded-lg font-black text-xs transition shadow-2xs mt-auto flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Users className="h-4 w-4" />
+                      <span>Confirm Merge with Table {effectiveMergeChip}</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
-            {/* ─── PANE 5: SCREEN 7 PAYMENT (NO POINTS, NO CASH CALCULATOR) ── */}
+            {/* ─── PANE 5: SCREEN 7 PAYMENT ── */}
             {rightPane === 'payment' && (
               <div className="flex flex-col gap-3 flex-1 overflow-y-auto">
                 <div className="flex justify-between items-center border-b-2 border-slate-800 pb-2">
                   <span className="font-black text-xs text-slate-900 uppercase">
                     Payment Settlement — Table {activeTable.number}
                   </span>
-                  <button
-                    onClick={() => setRightPane('bill_summary')}
-                    className="p-1 hover:bg-slate-100 rounded text-slate-600"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setCurrentScreen(7)}
+                      className="text-[10px] font-bold text-slate-600 hover:text-slate-900 border border-slate-300 rounded px-2 py-0.5 flex items-center gap-1 bg-stone-50 cursor-pointer"
+                      title="Open full dedicated Payment Screen 7"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      <span>Terminal Hub</span>
+                    </button>
+                    <button
+                      onClick={() => setRightPane('bill_summary')}
+                      className="p-1 hover:bg-slate-100 rounded text-slate-600 cursor-pointer"
+                      title="Close"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
 
-                <div className="border-2 border-slate-900 bg-slate-50 rounded-xl p-3 text-center">
+                <div className="border-2 border-slate-900 bg-slate-50 rounded-xl p-3 text-center shadow-xs">
                   <span className="text-[10.5px] font-bold text-slate-500 block uppercase">
                     TOTAL BILL PAYABLE
                   </span>
                   <strong className="text-xl font-black text-slate-950 font-mono">
                     ₹{runningTotal.toFixed(2)}
                   </strong>
+                  <div className="flex justify-center gap-4 text-[10.5px] font-bold text-slate-600 mt-1 pt-1 border-t border-slate-200">
+                    <span>Subtotal: ₹{subtotal.toFixed(2)}</span>
+                    <span>CGST (2.5%): ₹{(gst / 2).toFixed(2)}</span>
+                    <span>SGST (2.5%): ₹{(gst / 2).toFixed(2)}</span>
+                  </div>
                 </div>
 
                 {/* Method Switcher */}
@@ -862,9 +1044,9 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     <button
                       key={m}
                       onClick={() => setPayMode(m)}
-                      className={`py-2 rounded-lg border text-[11px] font-bold transition ${
+                      className={`py-2 rounded-lg border text-[11px] font-bold transition cursor-pointer ${
                         payMode === m
-                          ? 'bg-slate-900 text-white border-slate-900'
+                          ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
                           : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
                       }`}
                     >
@@ -881,10 +1063,10 @@ export const TabletScreen3TableDetail: React.FC = () => {
                         <QrCode className="h-16 w-16 text-slate-800" />
                       </div>
                       <span className="text-[11px] font-bold text-slate-800">
-                        Scan QR Code to Pay ₹{runningTotal.toFixed(2)}
+                        Scan Dynamic QR to Pay ₹{runningTotal.toFixed(2)}
                       </span>
                       <span className="text-[10px] text-slate-500">
-                        Timeout: 04:58 mins remaining
+                        Supported: BHIM, GPay, PhonePe, Paytm &amp; Bank UPI
                       </span>
                     </>
                   ) : payMode === 'CASH' ? (
@@ -894,17 +1076,17 @@ export const TabletScreen3TableDetail: React.FC = () => {
                         Collect Cash Tender: ₹{runningTotal.toFixed(2)}
                       </span>
                       <span className="text-[10px] text-slate-500">
-                        Confirm currency notes from guest
+                        Confirm exact currency notes received from guest
                       </span>
                     </>
                   ) : (
                     <>
                       <CreditCard className="h-12 w-12 text-slate-800" />
                       <span className="text-xs font-black text-slate-900">
-                        Swipe / Tap Card on POS Machine
+                        Swipe / Tap Card on Countertop POS
                       </span>
                       <span className="text-[10px] text-slate-500">
-                        Card Transaction: ₹{runningTotal.toFixed(2)}
+                        Card Authorization: ₹{runningTotal.toFixed(2)}
                       </span>
                     </>
                   )}
@@ -913,10 +1095,10 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleConfirmPayment}
-                  className="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-black text-xs transition shadow-2xs mt-auto flex items-center justify-center gap-2"
+                  className="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-black text-xs transition shadow-2xs mt-auto flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <CheckCircle2 className="h-4 w-4" />
-                  <span>Confirm Payment & Generate Bill ➔</span>
+                  <span>Confirm Payment &amp; Generate Tax Invoice ➔</span>
                 </button>
               </div>
             )}
@@ -926,14 +1108,25 @@ export const TabletScreen3TableDetail: React.FC = () => {
               <div className="flex flex-col gap-3 flex-1 overflow-y-auto">
                 <div className="flex justify-between items-center border-b-2 border-slate-800 pb-2">
                   <span className="font-black text-xs text-slate-900 uppercase">
-                    Bill Settlement & Vacate Table
+                    Tax Invoice &amp; Table Settlement
                   </span>
-                  <button
-                    onClick={() => setRightPane('bill_summary')}
-                    className="p-1 hover:bg-slate-100 rounded text-slate-600"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setCurrentScreen(8)}
+                      className="text-[10px] font-bold text-slate-600 hover:text-slate-900 border border-slate-300 rounded px-2 py-0.5 flex items-center gap-1 bg-stone-50 cursor-pointer"
+                      title="Open full dedicated Tax Invoice Screen 8"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      <span>Full Invoice Hub</span>
+                    </button>
+                    <button
+                      onClick={() => setRightPane('bill_summary')}
+                      className="p-1 hover:bg-slate-100 rounded text-slate-600 cursor-pointer"
+                      title="Close"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="border border-emerald-400 bg-emerald-50 rounded-xl p-3 flex items-center gap-2.5">
@@ -948,8 +1141,8 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Thermal Receipt Summary */}
-                <div className="border border-slate-300 rounded-xl p-3 bg-slate-50 font-mono text-[10.5px] space-y-1">
+                {/* Thermal Receipt Summary with Dynamic Items */}
+                <div className="border border-slate-300 rounded-xl p-3 bg-slate-50 font-mono text-[10.5px] space-y-1.5">
                   <div className="text-center font-black pb-1 border-b border-dashed border-slate-300 text-xs">
                     THOOGUDEEPA DONNE BIRYANI MANE
                   </div>
@@ -957,13 +1150,34 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     <span>Table:</span><span>{activeTable.number}</span>
                   </div>
                   <div className="flex justify-between text-slate-600">
-                    <span>Captain:</span><span>{activeCaptain}</span>
+                    <span>Captain:</span><span>{activeCaptain || activeTable.serverName}</span>
                   </div>
+
+                  {/* Dynamic Itemized Dishes */}
+                  <div className="border-t border-b border-dashed border-slate-200 py-1.5 my-1 space-y-1">
+                    {activeTable.activeItems && activeTable.activeItems.length > 0 ? (
+                      activeTable.activeItems.map((item, idx) => (
+                        <div key={idx} className="flex justify-between text-slate-800">
+                          <span className="truncate pr-2">{item.quantity}x {item.name}</span>
+                          <span className="font-bold">₹{item.quantity * 260}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="flex justify-between text-slate-800">
+                        <span>1x F&amp;B Dine-In Service</span>
+                        <span className="font-bold">₹{subtotal.toFixed(2)}</span>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="flex justify-between text-slate-600">
                     <span>Subtotal:</span><span>₹ {subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-slate-600">
-                    <span>GST (5%):</span><span>₹ {gst.toFixed(2)}</span>
+                    <span>CGST (2.5%):</span><span>₹ {(gst / 2).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-600">
+                    <span>SGST (2.5%):</span><span>₹ {(gst / 2).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between font-black text-slate-950 border-t border-slate-300 pt-1 text-xs">
                     <span>TOTAL PAID:</span><span>₹ {runningTotal.toFixed(2)}</span>
@@ -972,12 +1186,12 @@ export const TabletScreen3TableDetail: React.FC = () => {
 
                 {printSent && (
                   <div className="p-2 bg-slate-900 text-white rounded text-[10.5px] font-bold text-center">
-                    Print job sent to POS Printer #PRN-104
+                    ✓ Print job sent to Thermal POS Printer #PRN-104
                   </div>
                 )}
                 {whatsappSent && (
                   <div className="p-2 bg-emerald-700 text-white rounded text-[10.5px] font-bold text-center">
-                    Digital receipt shared to guest via WhatsApp
+                    ✓ Digital receipt shared to guest via WhatsApp
                   </div>
                 )}
 
@@ -989,7 +1203,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                       setWhatsappSent(true);
                       setTimeout(() => setWhatsappSent(false), 2500);
                     }}
-                    className="py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs"
+                    className="py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
                   >
                     <MessageCircle className="h-3.5 w-3.5" />
                     <span>WhatsApp</span>
@@ -1000,7 +1214,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                       setPrintSent(true);
                       setTimeout(() => setPrintSent(false), 2500);
                     }}
-                    className="py-2.5 bg-slate-900 hover:bg-black text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs"
+                    className="py-2.5 bg-slate-900 hover:bg-black text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
                   >
                     <Printer className="h-3.5 w-3.5" />
                     <span>Print Bill</span>

@@ -6,26 +6,52 @@ import { useSharedBridge } from '../../../store/useSharedBridge';
 import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
 import { ArrowLeft, TrendingUp } from 'lucide-react';
 
-const KPI_CARDS = [
-  { label: 'Total Orders Done Today:', value: '24', sub: 'Across 10 unique tables' },
-  { label: 'Total Payments Processed:', value: '₹ 18,450', sub: 'All payment modes combined' },
-  { label: 'Total Cash Collected:', value: '₹ 7,200', sub: 'Ready for handover' },
-  { label: 'Digital / UPI Settlements:', value: '₹ 11,250', sub: 'Instant reconciliation' },
-  { label: 'Total Tips Accrued:', value: '₹ 1,420', sub: 'Direct waiter tip accrual' },
-  { label: 'Avg Turnaround Time:', value: '38 mins', sub: 'Efficiency benchmark' },
-];
-
-const TIMELINE = [
-  { time: '12:52 PM', table: 'Table 04', amount: '₹ 1,450.00', mode: 'CASH' },
-  { time: '12:20 PM', table: 'Table 02', amount: '₹ 2,100.00', mode: 'UPI QR' },
-  { time: '11:45 AM', table: 'Table 07', amount: '₹ 980.00', mode: 'CARD POS' },
-  { time: '11:20 AM', table: 'Table 09', amount: '₹ 1,875.00', mode: 'UPI QR' },
-  { time: '10:55 AM', table: 'Table 01', amount: '₹ 560.00', mode: 'CASH' },
-];
-
 export const TabletScreen10ShiftStats: React.FC = () => {
   const { setCurrentScreen, activeCaptain, activeSection } = useWaiterStore();
-  const shiftStats = useSharedBridge((s) => s.shiftStats);
+  const { shiftStats, tables } = useSharedBridge();
+
+  const timeline = tables
+    .filter((t) => t.status === 'BILLING' || t.status === 'OCCUPIED')
+    .slice(0, 5)
+    .map((t) => ({
+      time: t.seatedTime !== '--' ? t.seatedTime : 'Active',
+      table: `Table ${t.number}`,
+      amount: `₹ ${t.currentBill.toFixed(2)}`,
+      mode: t.status === 'BILLING' ? 'Paid / Settled' : 'In Service',
+    }));
+
+  const kpiCards = [
+    {
+      label: 'Total Tables Served Today:',
+      value: `${shiftStats.tablesServed}`,
+      sub: 'Across floor sections',
+    },
+    {
+      label: 'Total Payments Processed:',
+      value: `₹ ${shiftStats.totalRevenue.toLocaleString('en-IN')}`,
+      sub: 'All payment modes combined',
+    },
+    {
+      label: 'Total Cash Collected:',
+      value: `₹ ${Math.round(shiftStats.totalRevenue * 0.4).toLocaleString('en-IN')}`,
+      sub: 'Ready for manager cash handover',
+    },
+    {
+      label: 'Digital / UPI Settlements:',
+      value: `₹ ${Math.round(shiftStats.totalRevenue * 0.6).toLocaleString('en-IN')}`,
+      sub: 'Direct bank reconciliation',
+    },
+    {
+      label: 'Total Tips Accrued:',
+      value: `₹ ${shiftStats.tipsEarned.toLocaleString('en-IN')}`,
+      sub: 'Direct captain tip pool',
+    },
+    {
+      label: 'Avg Turnaround Time:',
+      value: `${shiftStats.avgTurnaroundMinutes} mins`,
+      sub: 'Efficiency benchmark',
+    },
+  ];
 
   return (
     <WaiterTabletLandscapeHousing
@@ -67,7 +93,7 @@ export const TabletScreen10ShiftStats: React.FC = () => {
 
         {/* 6 KPI METRICS CARDS (3-COLUMN GRID) */}
         <div className="grid grid-cols-3 gap-3.5 mb-4 shrink-0">
-          {KPI_CARDS.map((card, idx) => (
+          {kpiCards.map((card, idx) => (
             <div
               key={idx}
               className="bg-white border-2 border-slate-800 rounded-xl p-4 flex flex-col gap-2 shadow-xs"
@@ -89,20 +115,26 @@ export const TabletScreen10ShiftStats: React.FC = () => {
             Today's Shift Activity Timeline:
           </strong>
           <div className="flex flex-col gap-2 font-mono text-xs">
-            {TIMELINE.map((row, idx) => (
-              <div
-                key={idx}
-                className="flex justify-between items-center border-b border-dashed border-slate-200 pb-2 text-slate-700"
-              >
-                <span className="font-bold text-slate-950">
-                  {row.time} • {row.table}
-                </span>
-                <span className="font-bold">{row.amount} • {row.mode}</span>
-                <span className="border border-slate-300 bg-slate-100 px-2 py-0.5 rounded text-[10px] font-black text-slate-700">
-                  Settled
-                </span>
+            {timeline.length > 0 ? (
+              timeline.map((row, idx) => (
+                <div
+                  key={idx}
+                  className="flex justify-between items-center border-b border-dashed border-slate-200 pb-2 text-slate-700"
+                >
+                  <span className="font-bold text-slate-950">
+                    {row.time} • {row.table}
+                  </span>
+                  <span className="font-bold">{row.amount} • {row.mode}</span>
+                  <span className="border border-slate-300 bg-slate-100 px-2 py-0.5 rounded text-[10px] font-black text-slate-700">
+                    {row.mode === 'Paid / Settled' ? 'Settled ✓' : 'Dining'}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="text-slate-400 text-xs italic py-2">
+                No active billing history recorded yet for this shift.
               </div>
-            ))}
+            )}
           </div>
         </div>
 

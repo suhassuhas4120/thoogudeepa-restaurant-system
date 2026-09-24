@@ -14,17 +14,28 @@ export const TabletScreen6MergeSplit: React.FC = () => {
   const activeTable = tables.find((t) => t.number === primary) || tables[0];
   const isAlreadyMerged = Boolean(activeTable?.mergedWith);
 
-  const [selectedMergeTables, setSelectedMergeTables] = useState<string[]>([
-    primary,
-    activeTable?.mergedWith || 'A-02',
-  ]);
-  const [mergeConfirmed, setMergeConfirmed] = useState<string | null>(null);
-
-  const runningBill = activeTable?.currentBill || 0;
-
   const availableTables = tables
     .filter((t) => t.number !== primary)
     .map((t) => t.number);
+
+  const [selectedMergeTables, setSelectedMergeTables] = useState<string[]>(
+    activeTable?.mergedWith
+      ? [primary, activeTable.mergedWith]
+      : availableTables.length > 0
+      ? [primary, availableTables[0]]
+      : [primary]
+  );
+  const [mergeConfirmed, setMergeConfirmed] = useState<string | null>(null);
+
+  const combinedBill = selectedMergeTables.reduce((sum, num) => {
+    const t = tables.find((tbl) => tbl.number === num);
+    return sum + (t?.currentBill || 0);
+  }, 0);
+
+  const combinedGuests = selectedMergeTables.reduce((sum, num) => {
+    const t = tables.find((tbl) => tbl.number === num);
+    return sum + (t?.capacity || 4);
+  }, 0);
 
   const toggleMerge = (tableNum: string) => {
     if (tableNum === primary) return;
@@ -111,7 +122,7 @@ export const TabletScreen6MergeSplit: React.FC = () => {
                 <div>Primary Master Table: {selectedTableNumber || 'A-04'}</div>
                 <div>Selected Tables to Merge: {selectedMergeTables.join(' + ')}</div>
                 <div className="text-purple-700 font-black">
-                  Combined Guests: {selectedMergeTables.length * 3} Guests • Consolidated Bill: ₹{(runningBill * selectedMergeTables.length).toLocaleString('en-IN')}.00
+                  Combined Capacity: ~{combinedGuests} Guests • Consolidated Bill: ₹{combinedBill.toLocaleString('en-IN')}.00
                 </div>
               </div>
 

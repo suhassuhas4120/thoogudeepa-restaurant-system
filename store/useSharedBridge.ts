@@ -40,6 +40,14 @@ export interface SharedKDSTicket {
   source: 'CUSTOMER' | 'WAITER'; // who originated the order
 }
 
+export interface SharedActiveItem {
+  id?: string;
+  name: string;
+  quantity: number;
+  price: number;
+  status: string;
+}
+
 export interface SharedTable {
   id: string;
   number: string;
@@ -52,8 +60,26 @@ export interface SharedTable {
   serverName: string;
   kotCount: number;
   mergedWith?: string;
-  activeItems?: { name: string; quantity: number; status: string }[];
+  activeItems?: SharedActiveItem[];
 }
+
+export const getItemPriceByName = (name: string): number => {
+  const clean = name.toLowerCase().trim();
+  const found = INITIAL_MENU_ITEMS.find((m) =>
+    m.name.toLowerCase().trim() === clean ||
+    clean.includes(m.name.toLowerCase().trim()) ||
+    m.name.toLowerCase().trim().includes(clean)
+  );
+  return found ? found.price : 240;
+};
+
+export const calculateTableBill = (items?: SharedActiveItem[]): number => {
+  if (!items || items.length === 0) return 0;
+  return items.reduce(
+    (sum, item) => sum + (item.price || getItemPriceByName(item.name)) * item.quantity,
+    0
+  );
+};
 
 export interface SharedPing {
   id: string;
@@ -90,11 +116,11 @@ const freshTables: SharedTable[] = [
     status: 'OCCUPIED',
     guestCount: 2,
     seatedTime: '12:35 PM',
-    currentBill: 580,
-    serverName: 'Captain Ramesh',
+    currentBill: 680,
+    serverName: 'Captain Staff',
     kotCount: 1,
     activeItems: [
-      { name: 'Donne Mutton Biryani', quantity: 2, status: 'Placed' },
+      { name: 'Thoogudeepa Mutton Donne Biryani', quantity: 2, price: 340, status: 'Placed' },
     ],
   },
   {
@@ -105,12 +131,12 @@ const freshTables: SharedTable[] = [
     status: 'OCCUPIED',
     guestCount: 2,
     seatedTime: '12:20 PM',
-    currentBill: 720,
-    serverName: 'Captain Ramesh',
+    currentBill: 480,
+    serverName: 'Captain Staff',
     kotCount: 1,
     activeItems: [
-      { name: 'Special Chicken Donne Biryani', quantity: 1, status: 'Preparing' },
-      { name: 'Guntur Chicken Wings', quantity: 1, status: 'Preparing' },
+      { name: 'Special Chicken Donne Biryani', quantity: 1, price: 260, status: 'Preparing' },
+      { name: 'Guntur Chicken Wings', quantity: 1, price: 220, status: 'Preparing' },
     ],
   },
   {
@@ -121,12 +147,12 @@ const freshTables: SharedTable[] = [
     status: 'OCCUPIED',
     guestCount: 4,
     seatedTime: '12:10 PM',
-    currentBill: 940,
-    serverName: 'Captain Ramesh',
+    currentBill: 860,
+    serverName: 'Captain Staff',
     kotCount: 1,
     activeItems: [
-      { name: 'Chicken Kshatriya Kebab', quantity: 2, status: 'Ready' },
-      { name: 'Donne Egg Biryani', quantity: 2, status: 'Ready' },
+      { name: 'Chicken Kshatriya Kebab', quantity: 2, price: 240, status: 'Ready' },
+      { name: 'Donne Egg Biryani', quantity: 2, price: 190, status: 'Ready' },
     ],
   },
   {
@@ -137,12 +163,12 @@ const freshTables: SharedTable[] = [
     status: 'OCCUPIED',
     guestCount: 3,
     seatedTime: '11:55 AM',
-    currentBill: 860,
-    serverName: 'Captain Ramesh',
+    currentBill: 840,
+    serverName: 'Captain Staff',
     kotCount: 1,
     activeItems: [
-      { name: 'Special Chicken Donne Biryani', quantity: 2, status: 'Served' },
-      { name: 'Mutton Chops Fry', quantity: 1, status: 'Served' },
+      { name: 'Special Chicken Donne Biryani', quantity: 2, price: 260, status: 'Served' },
+      { name: 'Mutton Chops Fry', quantity: 1, price: 320, status: 'Served' },
     ],
   },
   {
@@ -153,12 +179,12 @@ const freshTables: SharedTable[] = [
     status: 'BILLING',
     guestCount: 4,
     seatedTime: '11:40 AM',
-    currentBill: 1380,
+    currentBill: 1220,
     serverName: 'Captain Suresh',
     kotCount: 2,
     activeItems: [
-      { name: 'Special Chicken Donne Biryani', quantity: 3, status: 'Served' },
-      { name: 'Guntur Chicken Wings', quantity: 2, status: 'Served' },
+      { name: 'Special Chicken Donne Biryani', quantity: 3, price: 260, status: 'Served' },
+      { name: 'Guntur Chicken Wings', quantity: 2, price: 220, status: 'Served' },
     ],
   },
   { id: 't-6', number: 'B-02', section: 'SECTION B', capacity: 2, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Suresh', kotCount: 0, activeItems: [] },
@@ -171,12 +197,12 @@ const freshTables: SharedTable[] = [
     status: 'OCCUPIED',
     guestCount: 3,
     seatedTime: '12:40 PM',
-    currentBill: 1150,
+    currentBill: 740,
     serverName: 'Captain Vijay',
     kotCount: 1,
     activeItems: [
-      { name: 'Special Chicken Donne Biryani', quantity: 2, status: 'Preparing' },
-      { name: 'Guntur Chicken Wings', quantity: 1, status: 'Ready' },
+      { name: 'Special Chicken Donne Biryani', quantity: 2, price: 260, status: 'Preparing' },
+      { name: 'Guntur Chicken Wings', quantity: 1, price: 220, status: 'Ready' },
     ],
   },
   { id: 't-9', number: 'T-02', section: 'TERRACE', capacity: 6, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Vijay', kotCount: 0, activeItems: [] },
@@ -188,15 +214,15 @@ const freshTables: SharedTable[] = [
     status: 'BILLING',
     guestCount: 5,
     seatedTime: '12:15 PM',
-    currentBill: 2240,
-    serverName: 'Captain Ramesh',
+    currentBill: 1500,
+    serverName: 'Captain Staff',
     kotCount: 2,
     activeItems: [
-      { name: 'Donne Mutton Biryani', quantity: 3, status: 'Served' },
-      { name: 'Chicken Kshatriya Kebab', quantity: 2, status: 'Served' },
+      { name: 'Thoogudeepa Mutton Donne Biryani', quantity: 3, price: 340, status: 'Served' },
+      { name: 'Chicken Kshatriya Kebab', quantity: 2, price: 240, status: 'Served' },
     ],
   },
-  { id: 't-11', number: 'FD-02', section: 'FAMILY DINING', capacity: 8, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Ramesh', kotCount: 0, activeItems: [] },
+  { id: 't-11', number: 'FD-02', section: 'FAMILY DINING', capacity: 8, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Staff', kotCount: 0, activeItems: [] },
 ];
 
 const freshKDSTickets: SharedKDSTicket[] = [
@@ -298,8 +324,8 @@ const freshInventory86: SharedMenuItem86[] = INITIAL_MENU_ITEMS.map((item) => ({
   id: item.id,
   name: item.name,
   category: item.category,
-  is86: false,
-  prepDelayMinutes: 0,
+  is86: item.id === 'item-5', // Starter: Gunpowder Pepper Chicken Dry (Sold Out)
+  prepDelayMinutes: item.id === 'item-2' ? 15 : 0, // Mutton Biryani (Fresh batch in prep)
 }));
 
 let ticketCounter = 4;
@@ -408,26 +434,27 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
         addOns: i.addOns,
       })),
     };
-    const orderTotal = items.reduce((s, i) => s + i.item.price * i.quantity, 0);
+    const newItems: SharedActiveItem[] = items.map((i) => ({
+      name: i.item.name,
+      quantity: i.quantity,
+      price: i.item.price,
+      status: 'Placed',
+    }));
     set((state) => ({
       kdsTickets: [...state.kdsTickets, ticket],
-      tables: state.tables.map((t) =>
-        t.number === tableNumber
-          ? {
-              ...t,
-              status: 'OCCUPIED',
-              guestCount: guestCount || t.guestCount || 1,
-              seatedTime: nowTime(),
-              currentBill: t.currentBill + orderTotal,
-              kotCount: t.kotCount + 1,
-              activeItems: items.map((i) => ({
-                name: i.item.name,
-                quantity: i.quantity,
-                status: 'Placed',
-              })),
-            }
-          : t
-      ),
+      tables: state.tables.map((t) => {
+        if (t.number !== tableNumber) return t;
+        const updatedItems: SharedActiveItem[] = [...(t.activeItems || []), ...newItems];
+        return {
+          ...t,
+          status: 'OCCUPIED',
+          guestCount: guestCount || t.guestCount || 1,
+          seatedTime: t.seatedTime === '--' ? nowTime() : t.seatedTime,
+          kotCount: t.kotCount + 1,
+          activeItems: updatedItems,
+          currentBill: calculateTableBill(updatedItems),
+        };
+      }),
     }));
   },
 
@@ -479,11 +506,22 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
         if (!ticket) return tbl;
         return {
           ...tbl,
-          activeItems: ticket.items.map((it) => ({
-            name: it.name,
-            quantity: it.quantity,
-            status: it.stage === 'PLATED' ? 'Ready' : it.stage === 'PREP' ? 'Cooking' : it.stage,
-          })),
+          activeItems: (tbl.activeItems || []).map((ai) => {
+            const ticketItem = ticket.items.find((ti) => ti.name.toLowerCase() === ai.name.toLowerCase());
+            return {
+              ...ai,
+              price: ai.price || getItemPriceByName(ai.name),
+              status: ticketItem
+                ? ticketItem.stage === 'PLATED'
+                  ? 'Ready'
+                  : ticketItem.stage === 'PREP'
+                  ? 'Cooking'
+                  : ticketItem.stage === 'SERVED'
+                  ? 'Served'
+                  : 'Placed'
+                : ai.status,
+            };
+          }),
         };
       });
 
@@ -515,11 +553,24 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
         if (!ticket) return tbl;
         return {
           ...tbl,
-          activeItems: ticket.items.map((it) => ({
-            name: it.name,
-            quantity: it.quantity,
-            status: it.stage === 'PLATED' ? 'Ready' : it.stage === 'PREP' ? 'Cooking' : it.stage === 'SERVED' ? 'Served' : 'Placed',
-          })),
+          activeItems: (tbl.activeItems || []).map((ai) => {
+            const ticketItem = ticket.items.find(
+              (ti) => ti.id === itemId || ti.name.toLowerCase() === ai.name.toLowerCase()
+            );
+            return {
+              ...ai,
+              price: ai.price || getItemPriceByName(ai.name),
+              status: ticketItem
+                ? stage === 'PLATED'
+                  ? 'Ready'
+                  : stage === 'PREP'
+                  ? 'Cooking'
+                  : stage === 'SERVED'
+                  ? 'Served'
+                  : 'Placed'
+                : ai.status,
+            };
+          }),
         };
       });
 
@@ -555,15 +606,25 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
 
       // Update activeItems on all matching tables
       const updatedTables = state.tables.map((tbl) => {
-        const ticket = newTickets.find((tk) => tk.tableNumber === tbl.number);
-        if (!ticket) return tbl;
         return {
           ...tbl,
-          activeItems: ticket.items.map((it) => ({
-            name: it.name,
-            quantity: it.quantity,
-            status: it.stage === 'PLATED' ? 'Ready' : it.stage === 'PREP' ? 'Cooking' : it.stage === 'SERVED' ? 'Served' : 'Placed',
-          })),
+          activeItems: (tbl.activeItems || []).map((ai) => {
+            const itemLower = ai.name.toLowerCase();
+            const matches = itemLower.includes(targetNameLower) || targetNameLower.includes(itemLower);
+            return {
+              ...ai,
+              price: ai.price || getItemPriceByName(ai.name),
+              status: matches
+                ? stage === 'PLATED'
+                  ? 'Ready'
+                  : stage === 'PREP'
+                  ? 'Cooking'
+                  : stage === 'SERVED'
+                  ? 'Served'
+                  : 'Placed'
+                : ai.status,
+            };
+          }),
         };
       });
 
@@ -624,23 +685,25 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
         options: i.selectedOption,
       })),
     };
-    const kotTotal = items.reduce((s, i) => s + i.item.price * i.quantity, 0);
+    const kotItems: SharedActiveItem[] = items.map((i) => ({
+      name: i.item.name,
+      quantity: i.quantity,
+      price: i.item.price,
+      status: 'Placed',
+    }));
     set((state) => ({
       kdsTickets: [...state.kdsTickets, ticket],
-      tables: state.tables.map((t) =>
-        t.number === tableNumber
-          ? {
-              ...t,
-              status: 'OCCUPIED',
-              currentBill: t.currentBill + kotTotal,
-              kotCount: t.kotCount + 1,
-              activeItems: [
-                ...(t.activeItems || []),
-                ...items.map((i) => ({ name: i.item.name, quantity: i.quantity, status: 'Placed' })),
-              ],
-            }
-          : t
-      ),
+      tables: state.tables.map((t) => {
+        if (t.number !== tableNumber) return t;
+        const newActiveItems: SharedActiveItem[] = [...(t.activeItems || []), ...kotItems];
+        return {
+          ...t,
+          status: 'OCCUPIED',
+          kotCount: t.kotCount + 1,
+          activeItems: newActiveItems,
+          currentBill: calculateTableBill(newActiveItems),
+        };
+      }),
     }));
   },
 
@@ -661,7 +724,8 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
       const target = state.tables.find((t) => t.number === targetTable);
       const source = state.tables.find((t) => t.number === sourceTable);
       if (!target || !source) return state;
-      const mergedBill = target.currentBill + source.currentBill;
+      const combinedActiveItems = [...(target.activeItems || []), ...(source.activeItems || [])];
+      const mergedBill = calculateTableBill(combinedActiveItems);
       const mergedGuests = Math.max(2, (target.guestCount || 2) + (source.guestCount || 2));
       return {
         tables: state.tables.map((t) => {
@@ -672,7 +736,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
               currentBill: mergedBill,
               guestCount: mergedGuests,
               mergedWith: sourceTable,
-              activeItems: [...(t.activeItems || []), ...(source.activeItems || [])],
+              activeItems: combinedActiveItems,
             };
           }
           if (t.number === sourceTable) {
@@ -682,6 +746,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
               currentBill: 0,
               guestCount: 0,
               mergedWith: targetTable,
+              activeItems: [],
             };
           }
           return t;

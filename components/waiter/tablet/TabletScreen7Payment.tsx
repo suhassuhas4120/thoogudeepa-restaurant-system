@@ -16,6 +16,10 @@ export const TabletScreen7Payment: React.FC = () => {
 
   const activeTable = tables.find((t) => t.number === (selectedTableNumber || 'A-04')) || tables[0];
   const billAmount = activeTable?.currentBill || 0;
+  const subtotal = Math.round(billAmount / 1.05);
+  const totalTax = billAmount - subtotal;
+  const cgst = Math.round(totalTax / 2);
+  const sgst = totalTax - cgst;
   const qrTimer = '04:58';
 
   const handleConfirmPay = () => {
@@ -146,6 +150,14 @@ export const TabletScreen7Payment: React.FC = () => {
               <div className="flex justify-between text-xs text-slate-600">
                 <span>Selected Mode:</span>
                 <span className="font-bold text-slate-900">{payMode}</span>
+              </div>
+              <div className="flex justify-between text-xs text-slate-600">
+                <span>Subtotal (Net):</span>
+                <span className="font-bold text-slate-800">₹{subtotal.toLocaleString('en-IN')}.00</span>
+              </div>
+              <div className="flex justify-between text-xs text-slate-600">
+                <span>CGST (2.5%) + SGST (2.5%):</span>
+                <span className="font-bold text-slate-800">₹{(cgst + sgst).toLocaleString('en-IN')}.00</span>
               </div>
               <div className="border-t border-dashed border-slate-200 pt-2 flex justify-between text-sm font-black text-slate-950">
                 <span>Total Payable:</span>

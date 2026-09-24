@@ -2,15 +2,26 @@
 
 import React, { useState } from 'react';
 import { useWaiterStore } from '../../store/useWaiterStore';
+import { useSharedBridge } from '../../store/useSharedBridge';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
 import { ArrowLeft, Printer, Share2, CheckCircle2, RotateCcw } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const ScreenW8PrintBill: React.FC = () => {
-  const { setCurrentScreen, selectedTableNumber } = useWaiterStore();
+  const { setCurrentScreen, selectedTableNumber, activeCaptain } = useWaiterStore();
+  const { tables } = useSharedBridge();
   const [printed, setPrinted] = useState(false);
   const [shared, setShared] = useState(false);
   const [phone, setPhone] = useState('+91 98450 12345');
+
+  const activeTable = tables.find((t) => t.number === selectedTableNumber) || tables[0];
+  const runningTotal = activeTable?.currentBill || 0;
+  const subtotal = Math.round(runningTotal / 1.05);
+  const gst = runningTotal - subtotal;
+  const tip = 50;
+  const totalPaid = runningTotal + (runningTotal > 0 ? tip : 0);
+  const captainName = activeTable.serverName || activeCaptain || 'Floor Captain';
+  const invoiceNum = `INV-2026-${activeTable.number}`;
 
   const handlePrint = () => {
     setPrinted(true);
@@ -35,7 +46,7 @@ export const ScreenW8PrintBill: React.FC = () => {
               <span>Back to Table</span>
             </button>
             <span className="font-mono text-xs font-black text-slate-900">
-              Table: {selectedTableNumber}
+              Table: {activeTable.number}
             </span>
           </div>
 
@@ -45,39 +56,46 @@ export const ScreenW8PrintBill: React.FC = () => {
               THOOGUDEEPA DONNE BIRYANI MANE
             </div>
             <div className="font-mono text-[10px] text-slate-400">
-              Tax Invoice #INV-2026-9140 • SAC 996331
+              Tax Invoice #{invoiceNum} • SAC 996331
             </div>
             <div className="font-mono text-[10.5px] font-bold text-slate-700 pb-2 border-b border-dashed border-slate-200">
-              Table: {selectedTableNumber} • Captain: Ramesh
+              Table: {activeTable.number} • Captain: {captainName}
             </div>
 
             <div className="space-y-1 text-left text-xs font-medium text-slate-800 py-1">
-              <div className="flex justify-between">
-                <span>Special Chicken Donne Biryani × 2</span>
-                <span className="font-mono font-bold">₹ 520</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Kshatriya Chicken Kebab × 1</span>
-                <span className="font-mono font-bold">₹ 220</span>
-              </div>
+              {activeTable.activeItems && activeTable.activeItems.length > 0 ? (
+                activeTable.activeItems.map((item, idx) => (
+                  <div key={idx} className="flex justify-between">
+                    <span>{item.name} × {item.quantity}</span>
+                    <span className="font-mono font-bold">₹ {item.quantity * (item.price || 260)}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="flex justify-between">
+                  <span>Dine-In Food &amp; Beverage Service</span>
+                  <span className="font-mono font-bold">₹ {subtotal}</span>
+                </div>
+              )}
             </div>
 
             <div className="pt-2 border-t border-dashed border-slate-200 font-mono text-xs text-left space-y-0.5">
               <div className="flex justify-between text-slate-500">
                 <span>Subtotal:</span>
-                <span>₹ 740</span>
+                <span>₹ {subtotal}</span>
               </div>
               <div className="flex justify-between text-slate-500">
                 <span>5% GST:</span>
-                <span>₹ 37</span>
+                <span>₹ {gst}</span>
               </div>
-              <div className="flex justify-between text-orange-600 font-bold">
-                <span>Staff Tip:</span>
-                <span>₹ 50</span>
-              </div>
+              {runningTotal > 0 && (
+                <div className="flex justify-between text-orange-600 font-bold">
+                  <span>Staff Tip:</span>
+                  <span>₹ {tip}</span>
+                </div>
+              )}
               <div className="flex justify-between text-slate-900 font-black pt-1 border-t border-slate-100 text-sm">
                 <span>Total Paid:</span>
-                <span>₹ 827</span>
+                <span>₹ {totalPaid}</span>
               </div>
             </div>
           </div>

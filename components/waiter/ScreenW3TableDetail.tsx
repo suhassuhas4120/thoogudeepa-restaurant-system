@@ -80,14 +80,39 @@ export const ScreenW3TableDetail: React.FC = () => {
             </div>
 
             <div className="space-y-1.5 text-xs font-semibold">
-              <div className="flex justify-between items-center text-slate-800">
-                <span>Special Chicken Donne Biryani × 2</span>
-                <span className="font-mono font-bold text-orange-600">Preparing</span>
-              </div>
-              <div className="flex justify-between items-center text-slate-800">
-                <span>Kshatriya Chicken Kebab × 1</span>
-                <span className="font-mono font-bold text-emerald-600">Ready to Serve</span>
-              </div>
+              {table.activeItems && table.activeItems.length > 0 ? (
+                table.activeItems.map((item, idx) => (
+                  <div key={idx} className="flex justify-between items-center text-slate-800 py-0.5">
+                    <div>
+                      <span>{item.name} × {item.quantity}</span>
+                      <span className="font-mono text-[10.5px] font-bold text-slate-500 ml-2">
+                        ₹{item.price * item.quantity}
+                      </span>
+                    </div>
+                    <span className={`font-mono text-[10.5px] font-bold px-2 py-0.5 rounded ${
+                      item.status === 'Ready'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : item.status === 'Served'
+                        ? 'bg-blue-100 text-blue-800'
+                        : item.status === 'Preparing'
+                        ? 'bg-amber-100 text-amber-800'
+                        : 'bg-stone-100 text-slate-700'
+                    }`}>
+                      {item.status === 'Ready'
+                        ? 'Ready to Serve'
+                        : item.status === 'Served'
+                        ? 'Served'
+                        : item.status === 'Preparing'
+                        ? 'Preparing'
+                        : 'Placed'}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="py-2 text-center text-slate-400 font-mono text-[11px] italic">
+                  No active orders placed yet. Tap Punch New Order below.
+                </div>
+              )}
             </div>
           </div>
 
