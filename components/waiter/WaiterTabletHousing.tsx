@@ -16,7 +16,7 @@ export const WaiterTabletHousing: React.FC<WaiterTabletHousingProps> = ({
   children,
   screenNumber,
   screenTitle,
-  showKitchenHotline = screenNumber !== 1,
+  showKitchenHotline = false,
   className = '',
 }) => {
   const {

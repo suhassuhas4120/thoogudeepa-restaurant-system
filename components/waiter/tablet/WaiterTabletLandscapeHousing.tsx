@@ -16,7 +16,7 @@ export const WaiterTabletLandscapeHousing: React.FC<WaiterTabletLandscapeHousing
   children,
   screenNumber,
   screenTitle,
-  showKitchenHotline = screenNumber !== 1,
+  showKitchenHotline = false,
   className = '',
 }) => {
   const {
