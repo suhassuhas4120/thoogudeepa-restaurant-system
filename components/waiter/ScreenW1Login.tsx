@@ -15,12 +15,14 @@ export const ScreenW1Login: React.FC = () => {
   const [pin, setPin] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const sections = ['SECTION A', 'SECTION B', 'TERRACE', 'FAMILY DINING'];
+  const sections = ['ALL', 'SECTION A', 'SECTION B', 'TERRACE', 'FAMILY DINING'];
 
   const handleSelectWaiter = (waiter: WaiterProfile) => {
     setSelectedWaiter(waiter);
     setActiveCaptain(waiter.name);
-    setActiveSection(waiter.section);
+    if (!activeSection) {
+      setActiveSection('ALL');
+    }
     setPin('');
     setErrorMessage(null);
   };
@@ -115,16 +117,16 @@ export const ScreenW1Login: React.FC = () => {
           <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 mb-1">
             [ASSIGNED FLOOR SECTION]
           </div>
-          <div className="grid grid-cols-2 gap-1.5 mb-3">
+          <div className="flex flex-wrap gap-1.5 mb-3">
             {sections.map((sec) => (
               <button
                 key={sec}
                 type="button"
                 onClick={() => setActiveSection(sec)}
-                className={`py-1.5 px-2 rounded-lg border text-[10px] font-mono font-bold transition ${
+                className={`py-1.5 px-2.5 rounded-lg border text-[10.5px] font-mono font-bold transition ${
                   activeSection === sec
                     ? 'border-slate-900 bg-slate-900 text-white shadow-2xs'
-                    : 'border-slate-200 bg-white text-slate-600 hover:bg-stone-50'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-stone-50'
                 }`}
               >
                 {sec}

@@ -38,7 +38,7 @@ export const useWaiterStore = create<WaiterStoreState>((set, get) => ({
   previousScreen: 1,
   viewMode: 'single',
   activeCaptain: '',     // empty — waiter must log in
-  activeSection: 'SECTION A',
+  activeSection: 'ALL',
   selectedTableNumber: '',
   orderCart: [],
   kitchenCallNotice: null,

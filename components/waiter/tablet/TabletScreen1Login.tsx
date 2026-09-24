@@ -14,12 +14,14 @@ export const TabletScreen1Login: React.FC = () => {
   const [pin, setPin] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const sections = ['SECTION A & B', 'TERRACE ROOFTOP', 'FAMILY AC DINING', 'ALL SECTIONS'];
+  const sections = ['ALL', 'SECTION A', 'SECTION B', 'TERRACE', 'FAMILY DINING'];
 
   const handleSelectWaiter = (waiter: WaiterProfile) => {
     setSelectedWaiter(waiter);
     setActiveCaptain(waiter.name);
-    setActiveSection(waiter.section);
+    if (!activeSection) {
+      setActiveSection('ALL');
+    }
     setPin('');
     setErrorMessage(null);
   };
@@ -197,13 +199,13 @@ export const TabletScreen1Login: React.FC = () => {
             <label className="block font-mono text-[11px] font-bold text-slate-600 mb-1.5">
               [ASSIGNED FLOOR SECTION]:
             </label>
-            <div className="grid grid-cols-4 gap-1.5">
+            <div className="flex flex-wrap gap-1.5">
               {sections.map((sec) => (
                 <button
                   key={sec}
                   type="button"
                   onClick={() => setActiveSection(sec)}
-                  className={`py-1.5 px-2 rounded-lg border text-[10px] font-mono font-bold transition truncate ${
+                  className={`py-1.5 px-3 rounded-lg border text-[10.5px] font-mono font-bold transition ${
                     activeSection === sec
                       ? 'border-slate-900 bg-slate-900 text-white shadow-xs'
                       : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100'
