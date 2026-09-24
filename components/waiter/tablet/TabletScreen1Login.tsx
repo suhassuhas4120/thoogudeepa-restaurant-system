@@ -79,7 +79,7 @@ export const TabletScreen1Login: React.FC = () => {
             <div className="w-full h-28 border-2 border-dashed border-slate-400 bg-white rounded-xl flex flex-col items-center justify-center gap-2 mb-6">
               <span className="text-3xl">🍗</span>
               <span className="font-mono text-xs font-black tracking-wider text-slate-700">
-                [ESTABLISHMENT LOGO SPACE]
+                THOOGUDEEPA DONNE BIRYANI
               </span>
             </div>
 
@@ -87,22 +87,22 @@ export const TabletScreen1Login: React.FC = () => {
               THOOGUDEEPA DONNE BIRYANI MANE
             </h1>
             <p className="font-mono text-xs font-extrabold text-orange-600 mt-1 uppercase tracking-wider">
-              [FLOOR CAPTAIN / WAITER SERVICE CONSOLE]
+              FLOOR CAPTAIN SERVICE CONSOLE
             </p>
 
             {/* Active Shift Announcement */}
             <div className="mt-6 border border-slate-300 bg-white rounded-xl p-4 flex flex-col gap-2 font-mono text-xs shadow-2xs">
               <span className="font-bold text-slate-500 uppercase text-[10px]">
-                [ACTIVE SHIFT ANNOUNCEMENT]:
+                ACTIVE SHIFT DETAILS:
               </span>
               <div className="font-bold text-slate-900 text-sm">
-                [SHIFT A: 08:00 AM - 04:00 PM]
+                SHIFT A: 08:00 AM - 04:00 PM
               </div>
               <div className="text-slate-600 text-[11px]">
-                [ASSIGNED ZONE: MAIN DINING HALL • SECTION A & B]
+                Assigned Zone: Main Dining Hall • Section A &amp; B
               </div>
               <div className="text-slate-600 text-[11px]">
-                [TABLES UNDER MANAGEMENT: 16 ACTIVE TABLES]
+                Tables Under Management: 8 Active Tables
               </div>
             </div>
 
@@ -123,7 +123,7 @@ export const TabletScreen1Login: React.FC = () => {
           {/* Bottom Company Platform Tag */}
           <div className="border-t border-dashed border-slate-400 pt-4 text-center">
             <span className="font-mono text-[10px] text-slate-500 font-bold">
-              [POWERED BY THOOGUDEEPA RESTAURANT OS • TABLET CLIENT v2.4]
+              Powered by Thoogudeepa Restaurant OS • Captain Terminal
             </span>
           </div>
         </div>
@@ -133,21 +133,21 @@ export const TabletScreen1Login: React.FC = () => {
           <div className="max-w-[460px] mx-auto w-full">
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs font-bold text-slate-500 uppercase">
-                [AUTHENTICATION CREDENTIALS]:
+                AUTHENTICATION CREDENTIALS
               </span>
               <span className="font-mono text-[10px] font-bold text-orange-600 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded">
-                PASSWORD REQUIRED
+                PIN REQUIRED
               </span>
             </div>
             <h2 className="text-base font-black text-slate-950 font-mono mt-1">
-              [SELECT SAVED WAITER & ENTER PIN]
+              Floor Captain Authentication
             </h2>
           </div>
 
           {/* 4 Saved Waiter Buttons: Waiter 1, 2, 3, 4 */}
           <div className="max-w-[460px] mx-auto w-full">
             <label className="block font-mono text-[11px] font-bold text-slate-600 mb-1.5">
-              [SELECT WAITER PROFILE (WAITER 1, 2, 3, OR 4)]:
+              Select Floor Captain Profile:
             </label>
             <div className="grid grid-cols-2 gap-2">
               {SAVED_WAITERS.map((w) => {
@@ -197,7 +197,7 @@ export const TabletScreen1Login: React.FC = () => {
           {/* Floor Section Selection */}
           <div className="max-w-[460px] mx-auto w-full">
             <label className="block font-mono text-[11px] font-bold text-slate-600 mb-1.5">
-              [ASSIGNED FLOOR SECTION]:
+              ASSIGNED FLOOR SECTION:
             </label>
             <div className="flex flex-wrap gap-1.5">
               {sections.map((sec) => (
@@ -221,12 +221,12 @@ export const TabletScreen1Login: React.FC = () => {
           <div className="max-w-[460px] mx-auto w-full">
             <div className="flex justify-between items-center mb-1 font-mono text-[11px]">
               <label className="font-bold text-slate-700">
-                [ENTER RESPECTIVE PIN FOR {selectedWaiter?.name?.toUpperCase()}]:
+                Security PIN ({selectedWaiter?.name?.toUpperCase()}):
               </label>
               <span className="font-bold text-orange-600">
                 {pin.length === 4
-                  ? '[PIN ENTERED]'
-                  : `[ENTER PIN: ${selectedWaiter?.pin}]`}
+                  ? 'PIN Entered'
+                  : `Default PIN: ${selectedWaiter?.pin}`}
               </span>
             </div>
             <div className="border-2 border-slate-800 rounded-lg p-2.5 flex justify-center gap-4 bg-slate-100">
@@ -266,7 +266,7 @@ export const TabletScreen1Login: React.FC = () => {
               onClick={handleDel}
               className="h-10 font-mono text-xs font-black bg-slate-100 border-2 border-slate-800 rounded-lg hover:bg-slate-200 active:bg-slate-300 transition text-slate-800"
             >
-              [⌫ DEL]
+              DEL
             </button>
             <button
               type="button"
@@ -280,7 +280,7 @@ export const TabletScreen1Login: React.FC = () => {
               onClick={handleClear}
               className="h-10 font-mono text-xs font-black bg-slate-100 border-2 border-slate-800 rounded-lg hover:bg-slate-200 active:bg-slate-300 transition text-slate-800"
             >
-              [✕ CLR]
+              CLR
             </button>
           </div>
 
@@ -291,14 +291,14 @@ export const TabletScreen1Login: React.FC = () => {
               onClick={handleClear}
               className="flex-1 py-2.5 border-2 border-slate-800 rounded-lg font-mono text-xs font-bold text-slate-800 bg-white hover:bg-slate-100 transition"
             >
-              [RESET]
+              Clear PIN
             </button>
             <button
               type="button"
               onClick={handleLogin}
               className="flex-[2] py-2.5 border-2 border-slate-900 rounded-lg font-mono text-xs font-black text-white bg-slate-900 hover:bg-black transition shadow-sm flex items-center justify-center gap-2"
             >
-              <span>[VERIFY & LOGIN AS {selectedWaiter?.name?.toUpperCase()}]</span>
+              <span>Verify &amp; Access Console</span>
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>

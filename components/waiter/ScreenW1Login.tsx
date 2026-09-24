@@ -69,17 +69,17 @@ export const ScreenW1Login: React.FC = () => {
   };
 
   return (
-    <WaiterTabletHousing screenNumber={1} screenTitle="CAPTAIN AUTH & SECTION LOGIN">
+    <WaiterTabletHousing screenNumber={1} screenTitle="FLOOR CAPTAIN AUTHENTICATION">
       {/* Mobile-optimized viewport: starts cleanly at the top with no empty space above, proper spacing above bottom button */}
       <div className="flex-1 flex flex-col justify-between px-4 pt-2 pb-3 overflow-y-auto">
         <div className="space-y-2.5">
           {/* Header - Starts immediately at the top with no wasted space */}
           <div className="flex items-center justify-between pt-0.5">
-            <span className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400">
-              [SELECT SAVED WAITER]
+            <span className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-500">
+              SELECT FLOOR CAPTAIN
             </span>
-            <span className="text-[9.5px] font-mono font-bold text-orange-600 bg-orange-50 border border-orange-200 px-1.5 py-0.5 rounded">
-              PASSWORD MANDATORY
+            <span className="text-[9.5px] font-mono font-bold text-orange-600 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">
+              PIN REQUIRED
             </span>
           </div>
 
@@ -116,8 +116,8 @@ export const ScreenW1Login: React.FC = () => {
 
           {/* Assigned Section with ALL at the first position */}
           <div>
-            <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 mb-1">
-              [ASSIGNED FLOOR SECTION]
+            <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-500 mb-1">
+              ASSIGNED FLOOR SECTION
             </div>
             <div className="flex flex-wrap gap-1.5">
               {sections.map((sec) => (
@@ -142,11 +142,11 @@ export const ScreenW1Login: React.FC = () => {
         <div className="space-y-2 pt-2">
           {/* Passcode PIN Display */}
           <div>
-            <div className="flex items-center justify-between text-[10px] font-bold font-mono text-slate-500 mb-1">
-              <span>[PIN FOR {selectedWaiter?.name?.toUpperCase()}]:</span>
+            <div className="flex items-center justify-between text-[10px] font-bold font-mono text-slate-600 mb-1">
+              <span>SECURITY PIN ({selectedWaiter?.name?.toUpperCase()}):</span>
               <span className="text-orange-600 font-extrabold flex items-center gap-1">
                 <Lock className="h-2.5 w-2.5" />
-                <span>REQUIRED ({selectedWaiter?.pin})</span>
+                <span>PIN: {selectedWaiter?.pin}</span>
               </span>
             </div>
 
@@ -219,7 +219,7 @@ export const ScreenW1Login: React.FC = () => {
               onClick={handleLogin}
               className="w-full flex items-center justify-center gap-2 rounded-2xl bg-orange-600 py-3.5 text-xs font-extrabold uppercase tracking-wider text-white shadow-lg shadow-orange-600/30 hover:bg-orange-700 transition"
             >
-              <span>[VERIFY & LOGIN AS {selectedWaiter?.name?.toUpperCase()}]</span>
+              <span>VERIFY &amp; LOGIN AS {selectedWaiter?.name?.toUpperCase()}</span>
               <ArrowRight className="h-4 w-4 stroke-[2.5]" />
             </motion.button>
           </div>
