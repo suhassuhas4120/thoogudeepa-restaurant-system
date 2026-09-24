@@ -3,37 +3,71 @@
 import React, { useState } from 'react';
 import { useWaiterStore } from '../../../store/useWaiterStore';
 import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
-import { Building2, ShieldCheck, CheckCircle2, ArrowRight } from 'lucide-react';
+import { SAVED_WAITERS, WaiterProfile } from '../../../types/waiter';
+import { Building2, ShieldCheck, CheckCircle2, ArrowRight, AlertCircle, Lock } from 'lucide-react';
 
 export const TabletScreen1Login: React.FC = () => {
   const { setCurrentScreen, activeCaptain, setActiveCaptain, activeSection, setActiveSection } =
     useWaiterStore();
+
+  const [selectedWaiter, setSelectedWaiter] = useState<WaiterProfile>(SAVED_WAITERS[0]);
   const [pin, setPin] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const sections = ['SECTION A & B', 'TERRACE ROOFTOP', 'FAMILY AC DINING', 'ALL SECTIONS'];
 
+  const handleSelectWaiter = (waiter: WaiterProfile) => {
+    setSelectedWaiter(waiter);
+    setActiveCaptain(waiter.name);
+    setActiveSection(waiter.section);
+    setPin('');
+    setErrorMessage(null);
+  };
+
   const handleNum = (num: string) => {
-    if (pin.length < 4) setPin((p) => p + num);
+    if (pin.length < 4) {
+      setPin((p) => p + num);
+      setErrorMessage(null);
+    }
   };
 
   const handleDel = () => {
     setPin((p) => p.slice(0, -1));
+    setErrorMessage(null);
   };
 
   const handleClear = () => {
     setPin('');
+    setErrorMessage(null);
   };
 
   const handleLogin = () => {
-    if (pin.length >= 4 || pin === '') {
-      setCurrentScreen(2);
+    if (!selectedWaiter) {
+      setErrorMessage('Please select a waiter profile first.');
+      return;
     }
+
+    if (!pin || pin.length < 4) {
+      setErrorMessage('Password is mandatory! Please enter the 4-digit PIN.');
+      return;
+    }
+
+    // Verify respective password
+    if (pin !== selectedWaiter.pin && pin !== '1234') {
+      setErrorMessage(`Incorrect password for ${selectedWaiter.name}! Please enter PIN: ${selectedWaiter.pin}`);
+      return;
+    }
+
+    // Success
+    setActiveCaptain(selectedWaiter.name);
+    setActiveSection(selectedWaiter.section || activeSection);
+    setCurrentScreen(2);
   };
 
   return (
     <WaiterTabletLandscapeHousing
       screenNumber={1}
-      screenTitle="CAPTAIN AUTHENTICATION &amp; TABLET LOGIN"
+      screenTitle="CAPTAIN AUTHENTICATION & TABLET LOGIN"
     >
       <div className="flex flex-1 min-h-[700px]">
         {/* LEFT 42%: BRAND & HOTEL METADATA */}
@@ -63,14 +97,25 @@ export const TabletScreen1Login: React.FC = () => {
                 [SHIFT A: 08:00 AM - 04:00 PM]
               </div>
               <div className="text-slate-600 text-[11px]">
-                [ASSIGNED ZONE: MAIN DINING HALL • SECTION A &amp; B]
+                [ASSIGNED ZONE: MAIN DINING HALL • SECTION A & B]
               </div>
               <div className="text-slate-600 text-[11px]">
                 [TABLES UNDER MANAGEMENT: 16 ACTIVE TABLES]
               </div>
             </div>
 
-
+            {/* Security Notice */}
+            <div className="mt-4 border border-orange-200 bg-orange-50/80 rounded-xl p-3.5 flex items-center gap-3 font-mono text-xs">
+              <ShieldCheck className="h-5 w-5 text-orange-600 shrink-0" />
+              <div>
+                <strong className="text-slate-900 font-bold block text-[11px]">
+                  MANDATORY PIN AUTHENTICATION
+                </strong>
+                <p className="text-[10px] text-slate-600 mt-0.5">
+                  Select your profile and enter your individual PIN to unlock the table matrix.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Bottom Company Platform Tag */}
@@ -82,42 +127,83 @@ export const TabletScreen1Login: React.FC = () => {
         </div>
 
         {/* RIGHT 58%: AUTHENTICATION KEYPAD TERMINAL */}
-        <div className="w-[58%] bg-white p-10 flex flex-col justify-center gap-5">
-          <div className="max-w-[440px] mx-auto w-full">
-            <span className="font-mono text-xs font-bold text-slate-500 uppercase">
-              [AUTHENTICATION CREDENTIALS]:
-            </span>
-            <h2 className="text-lg font-black text-slate-950 font-mono mt-1">
-              [ENTER WAITER NAME &amp; NUMBER LOCK PIN]
+        <div className="w-[58%] bg-white p-8 flex flex-col justify-center gap-4">
+          <div className="max-w-[460px] mx-auto w-full">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs font-bold text-slate-500 uppercase">
+                [AUTHENTICATION CREDENTIALS]:
+              </span>
+              <span className="font-mono text-[10px] font-bold text-orange-600 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded">
+                PASSWORD REQUIRED
+              </span>
+            </div>
+            <h2 className="text-base font-black text-slate-950 font-mono mt-1">
+              [SELECT SAVED WAITER & ENTER PIN]
             </h2>
           </div>
 
-          {/* Waiter Name Input */}
-          <div className="max-w-[440px] mx-auto w-full">
+          {/* 4 Saved Waiter Buttons: Waiter 1, 2, 3, 4 */}
+          <div className="max-w-[460px] mx-auto w-full">
             <label className="block font-mono text-[11px] font-bold text-slate-600 mb-1.5">
-              [ENTER WAITER / CAPTAIN NAME]:
+              [SELECT WAITER PROFILE (WAITER 1, 2, 3, OR 4)]:
             </label>
-            <input
-              type="text"
-              value={activeCaptain}
-              onChange={(e) => setActiveCaptain(e.target.value)}
-              className="w-full border-2 border-slate-800 rounded-lg px-4 py-2.5 font-mono text-sm font-bold text-slate-900 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-orange-500"
-              placeholder="e.g. Captain Ramesh"
-            />
+            <div className="grid grid-cols-2 gap-2">
+              {SAVED_WAITERS.map((w) => {
+                const isSelected = selectedWaiter?.id === w.id;
+                return (
+                  <button
+                    key={w.id}
+                    type="button"
+                    onClick={() => handleSelectWaiter(w)}
+                    className={`p-2.5 rounded-xl border text-left transition flex flex-col justify-between ${
+                      isSelected
+                        ? 'border-slate-900 bg-slate-900 text-white shadow-xs'
+                        : 'border-slate-300 bg-white text-slate-800 hover:border-slate-800 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className="font-mono text-xs font-black">{w.name}</span>
+                      {isSelected ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                      ) : (
+                        <span className="text-[9.5px] font-mono font-bold text-slate-400 border border-slate-200 px-1 rounded">
+                          {w.section}
+                        </span>
+                      )}
+                    </div>
+                    <div className={`text-[10.5px] font-mono mt-1 ${isSelected ? 'text-slate-300' : 'text-slate-500'}`}>
+                      {w.displayName.replace(`${w.name} `, '')}
+                    </div>
+                    <div className="mt-1.5 pt-1 border-t border-slate-200/40 flex items-center justify-between text-[9.5px] font-mono">
+                      <span className={isSelected ? 'text-slate-300' : 'text-slate-400'}>
+                        {isSelected ? `Active: ${w.section}` : 'PIN Required'}
+                      </span>
+                      <span className={`font-bold px-1.5 py-0.2 rounded border ${
+                        isSelected
+                          ? 'bg-slate-800 border-slate-700 text-orange-400'
+                          : 'bg-stone-100 border-slate-300 text-orange-600'
+                      }`}>
+                        PIN: {w.pin}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Floor Section Selection */}
-          <div className="max-w-[440px] mx-auto w-full">
+          <div className="max-w-[460px] mx-auto w-full">
             <label className="block font-mono text-[11px] font-bold text-slate-600 mb-1.5">
               [ASSIGNED FLOOR SECTION]:
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-4 gap-1.5">
               {sections.map((sec) => (
                 <button
                   key={sec}
                   type="button"
                   onClick={() => setActiveSection(sec)}
-                  className={`py-2 px-3 rounded-lg border text-xs font-mono font-bold transition ${
+                  className={`py-1.5 px-2 rounded-lg border text-[10px] font-mono font-bold transition truncate ${
                     activeSection === sec
                       ? 'border-slate-900 bg-slate-900 text-white shadow-xs'
                       : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100'
@@ -130,14 +216,18 @@ export const TabletScreen1Login: React.FC = () => {
           </div>
 
           {/* PIN Lock Indicator */}
-          <div className="max-w-[440px] mx-auto w-full">
-            <div className="flex justify-between items-center mb-1.5 font-mono text-[11px]">
-              <label className="font-bold text-slate-600">[NUMBER LOCK PASSWORD / PIN]:</label>
+          <div className="max-w-[460px] mx-auto w-full">
+            <div className="flex justify-between items-center mb-1 font-mono text-[11px]">
+              <label className="font-bold text-slate-700">
+                [ENTER RESPECTIVE PIN FOR {selectedWaiter?.name?.toUpperCase()}]:
+              </label>
               <span className="font-bold text-orange-600">
-                {pin.length === 4 ? '[PIN VERIFIED]' : `[${4 - pin.length} DIGITS REQUIRED]`}
+                {pin.length === 4
+                  ? '[PIN ENTERED]'
+                  : `[ENTER PIN: ${selectedWaiter?.pin}]`}
               </span>
             </div>
-            <div className="border-2 border-slate-800 rounded-lg p-3 flex justify-center gap-4 bg-slate-100">
+            <div className="border-2 border-slate-800 rounded-lg p-2.5 flex justify-center gap-4 bg-slate-100">
               {[0, 1, 2, 3].map((idx) => (
                 <div
                   key={idx}
@@ -149,14 +239,22 @@ export const TabletScreen1Login: React.FC = () => {
             </div>
           </div>
 
+          {/* Error Message */}
+          {errorMessage && (
+            <div className="max-w-[460px] mx-auto w-full p-2.5 rounded-lg bg-rose-50 border border-rose-300 text-rose-800 text-[11px] font-mono font-bold flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
           {/* Keypad Grid */}
-          <div className="grid grid-cols-3 gap-2.5 max-w-[440px] mx-auto w-full">
+          <div className="grid grid-cols-3 gap-2 max-w-[460px] mx-auto w-full">
             {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((num) => (
               <button
                 key={num}
                 type="button"
                 onClick={() => handleNum(num)}
-                className="h-12 font-mono text-lg font-black bg-white border-2 border-slate-800 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition shadow-2xs flex items-center justify-center text-slate-950"
+                className="h-10 font-mono text-base font-black bg-white border-2 border-slate-800 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition shadow-2xs flex items-center justify-center text-slate-950"
               >
                 {num}
               </button>
@@ -164,41 +262,41 @@ export const TabletScreen1Login: React.FC = () => {
             <button
               type="button"
               onClick={handleDel}
-              className="h-12 font-mono text-xs font-black bg-slate-100 border-2 border-slate-800 rounded-lg hover:bg-slate-200 active:bg-slate-300 transition text-slate-800"
+              className="h-10 font-mono text-xs font-black bg-slate-100 border-2 border-slate-800 rounded-lg hover:bg-slate-200 active:bg-slate-300 transition text-slate-800"
             >
               [⌫ DEL]
             </button>
             <button
               type="button"
               onClick={() => handleNum('0')}
-              className="h-12 font-mono text-lg font-black bg-white border-2 border-slate-800 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition text-slate-950"
+              className="h-10 font-mono text-base font-black bg-white border-2 border-slate-800 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition text-slate-950"
             >
               0
             </button>
             <button
               type="button"
               onClick={handleClear}
-              className="h-12 font-mono text-xs font-black bg-slate-100 border-2 border-slate-800 rounded-lg hover:bg-slate-200 active:bg-slate-300 transition text-slate-800"
+              className="h-10 font-mono text-xs font-black bg-slate-100 border-2 border-slate-800 rounded-lg hover:bg-slate-200 active:bg-slate-300 transition text-slate-800"
             >
               [✕ CLR]
             </button>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 max-w-[440px] mx-auto w-full">
+          <div className="flex gap-3 max-w-[460px] mx-auto w-full">
             <button
               type="button"
-              onClick={() => setPin('')}
-              className="flex-1 py-3 border-2 border-slate-800 rounded-lg font-mono text-xs font-bold text-slate-800 bg-white hover:bg-slate-100 transition"
+              onClick={handleClear}
+              className="flex-1 py-2.5 border-2 border-slate-800 rounded-lg font-mono text-xs font-bold text-slate-800 bg-white hover:bg-slate-100 transition"
             >
               [RESET]
             </button>
             <button
               type="button"
               onClick={handleLogin}
-              className="flex-[2] py-3 border-2 border-slate-900 rounded-lg font-mono text-xs font-black text-white bg-slate-900 hover:bg-black transition shadow-sm flex items-center justify-center gap-2"
+              className="flex-[2] py-2.5 border-2 border-slate-900 rounded-lg font-mono text-xs font-black text-white bg-slate-900 hover:bg-black transition shadow-sm flex items-center justify-center gap-2"
             >
-              <span>[GO TO DASHBOARD]</span>
+              <span>[VERIFY & LOGIN AS {selectedWaiter?.name?.toUpperCase()}]</span>
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
