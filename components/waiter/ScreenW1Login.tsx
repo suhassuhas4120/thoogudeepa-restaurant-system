@@ -136,7 +136,10 @@ export const ScreenW1Login: React.FC = () => {
               ))}
             </div>
           </div>
+        </div>
 
+        {/* Bottom Section: PIN entry display, keypad, and verify button grouped together */}
+        <div className="space-y-2 pt-2">
           {/* Passcode PIN Display */}
           <div>
             <div className="flex items-center justify-between text-[10px] font-bold font-mono text-slate-500 mb-1">
@@ -181,7 +184,7 @@ export const ScreenW1Login: React.FC = () => {
                 key={n}
                 type="button"
                 onClick={() => handleNum(n)}
-                className="h-9 rounded-xl border border-slate-200 bg-white text-sm font-bold font-mono text-slate-800 hover:bg-stone-100 transition active:scale-95 shadow-2xs"
+                className="h-10 rounded-xl border border-slate-200 bg-white text-sm font-bold font-mono text-slate-800 hover:bg-stone-100 transition active:scale-95 shadow-2xs"
               >
                 {n}
               </button>
@@ -189,37 +192,37 @@ export const ScreenW1Login: React.FC = () => {
             <button
               type="button"
               onClick={handleClear}
-              className="h-9 rounded-xl border border-slate-200 bg-stone-100 font-mono text-[10px] font-bold text-slate-600 active:scale-95"
+              className="h-10 rounded-xl border border-slate-200 bg-stone-100 font-mono text-[10px] font-bold text-slate-600 active:scale-95"
             >
               CLR
             </button>
             <button
               type="button"
               onClick={() => handleNum('0')}
-              className="h-9 rounded-xl border border-slate-200 bg-white font-mono text-sm font-bold text-slate-800 shadow-2xs active:scale-95"
+              className="h-10 rounded-xl border border-slate-200 bg-white font-mono text-sm font-bold text-slate-800 shadow-2xs active:scale-95"
             >
               0
             </button>
             <button
               type="button"
               onClick={handleDel}
-              className="h-9 rounded-xl border border-slate-200 bg-stone-100 font-mono text-[10px] font-bold text-slate-600 active:scale-95"
+              className="h-10 rounded-xl border border-slate-200 bg-stone-100 font-mono text-[10px] font-bold text-slate-600 active:scale-95"
             >
               DEL
             </button>
           </div>
-        </div>
 
-        {/* Proper breathing room between the Keypad numbers above and the Verify & Login button below */}
-        <div className="pt-4 pb-1">
-          <motion.button
-            whileTap={{ scale: 0.98 }}
-            onClick={handleLogin}
-            className="w-full flex items-center justify-center gap-2 rounded-2xl bg-orange-600 py-3.5 text-xs font-extrabold uppercase tracking-wider text-white shadow-lg shadow-orange-600/30 hover:bg-orange-700 transition"
-          >
-            <span>[VERIFY & LOGIN AS {selectedWaiter?.name?.toUpperCase()}]</span>
-            <ArrowRight className="h-4 w-4 stroke-[2.5]" />
-          </motion.button>
+          {/* Verify & Login button directly below keypad with neat spacing */}
+          <div className="pt-2 pb-1">
+            <motion.button
+              whileTap={{ scale: 0.98 }}
+              onClick={handleLogin}
+              className="w-full flex items-center justify-center gap-2 rounded-2xl bg-orange-600 py-3.5 text-xs font-extrabold uppercase tracking-wider text-white shadow-lg shadow-orange-600/30 hover:bg-orange-700 transition"
+            >
+              <span>[VERIFY & LOGIN AS {selectedWaiter?.name?.toUpperCase()}]</span>
+              <ArrowRight className="h-4 w-4 stroke-[2.5]" />
+            </motion.button>
+          </div>
         </div>
       </div>
     </WaiterTabletHousing>
