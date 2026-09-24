@@ -1,0 +1,129 @@
+﻿'use client';
+
+import React, { useState } from 'react';
+import { useWaiterStore } from '../../store/useWaiterStore';
+import { WaiterTabletHousing } from './WaiterTabletHousing';
+import { ArrowLeft, Printer, Share2, CheckCircle2, RotateCcw } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+export const ScreenW8PrintBill: React.FC = () => {
+  const { setCurrentScreen, selectedTableNumber } = useWaiterStore();
+  const [printed, setPrinted] = useState(false);
+  const [shared, setShared] = useState(false);
+  const [phone, setPhone] = useState('+91 98450 12345');
+
+  const handlePrint = () => {
+    setPrinted(true);
+    setTimeout(() => setPrinted(false), 2000);
+  };
+
+  const handleWhatsApp = () => {
+    setShared(true);
+    setTimeout(() => setShared(false), 2000);
+  };
+
+  return (
+    <WaiterTabletHousing screenNumber={8} screenTitle="PRINT &amp; WHATSAPP DIGITAL BILL">
+      <div className="flex-1 flex flex-col justify-between p-4 space-y-3 overflow-y-auto">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setCurrentScreen(3)}
+              className="flex items-center gap-1 text-xs font-black text-slate-700"
+            >
+              <ArrowLeft className="h-3.5 w-3.5 stroke-[2.5]" />
+              <span>[BACK TO TABLE]</span>
+            </button>
+            <span className="font-mono text-xs font-black text-slate-900">
+              TABLE: [{selectedTableNumber}]
+            </span>
+          </div>
+
+          {/* Receipt Preview */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs space-y-2 text-center">
+            <div className="font-mono text-xs font-black text-slate-900">
+              THOOGUDEEPA DONNE BIRYANI MANE
+            </div>
+            <div className="font-mono text-[10px] text-slate-400">
+              Tax Invoice #INV-2026-9140 • SAC 996331
+            </div>
+            <div className="font-mono text-[10.5px] font-bold text-slate-700 pb-2 border-b border-dashed border-slate-200">
+              Table: {selectedTableNumber} • Captain: Ramesh
+            </div>
+
+            <div className="space-y-1 text-left text-xs font-medium text-slate-800 py-1">
+              <div className="flex justify-between">
+                <span>Special Chicken Donne Biryani × 2</span>
+                <span className="font-mono font-bold">₹ 520</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Kshatriya Chicken Kebab × 1</span>
+                <span className="font-mono font-bold">₹ 220</span>
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-dashed border-slate-200 font-mono text-xs text-left space-y-0.5">
+              <div className="flex justify-between text-slate-500">
+                <span>Subtotal:</span>
+                <span>₹ 740</span>
+              </div>
+              <div className="flex justify-between text-slate-500">
+                <span>5% GST:</span>
+                <span>₹ 37</span>
+              </div>
+              <div className="flex justify-between text-orange-600 font-bold">
+                <span>Staff Tip:</span>
+                <span>₹ 50</span>
+              </div>
+              <div className="flex justify-between text-slate-900 font-black pt-1 border-t border-slate-100 text-sm">
+                <span>Total Paid:</span>
+                <span>₹ 827</span>
+              </div>
+            </div>
+          </div>
+
+          {/* WhatsApp Mobile Number Input */}
+          <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-2xs">
+            <label className="font-mono text-[10px] font-bold text-slate-500 uppercase">
+              [CUSTOMER WHATSAPP PHONE NUMBER]
+            </label>
+            <input
+              type="text"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full mt-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-stone-50 font-mono text-xs font-bold focus:outline-none"
+            />
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="space-y-2">
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={handlePrint}
+            className="w-full py-3 rounded-xl border border-slate-200 bg-white font-mono text-xs font-black text-slate-800 shadow-2xs hover:bg-stone-50 flex items-center justify-center gap-2"
+          >
+            <Printer className="h-4 w-4 text-slate-700" />
+            <span>{printed ? '✓ THERMAL RECEIPT PRINTED!' : '[PRINT 80MM THERMAL BILL]'}</span>
+          </motion.button>
+
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={handleWhatsApp}
+            className="w-full py-3 rounded-xl bg-emerald-600 font-mono text-xs font-black text-white shadow-md shadow-emerald-600/30 hover:bg-emerald-700 flex items-center justify-center gap-2"
+          >
+            <Share2 className="h-4 w-4" />
+            <span>{shared ? '✓ SENT VIA WHATSAPP!' : '[DISPATCH TO WHATSAPP]'}</span>
+          </motion.button>
+
+          <button
+            onClick={() => setCurrentScreen(9)}
+            className="w-full py-2.5 font-mono text-xs font-bold text-slate-500 hover:text-slate-800 text-center"
+          >
+            Proceed to Vacate Table ➔
+          </button>
+        </div>
+      </div>
+    </WaiterTabletHousing>
+  );
+};
