@@ -15,6 +15,10 @@ import {
   AlertCircle,
   Plus,
   Utensils,
+  GitMerge,
+  CreditCard,
+  TrendingUp,
+  UtensilsCrossed,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -155,6 +159,45 @@ export const ScreenW2TablesFeed: React.FC = () => {
                 {sec}
               </button>
             ))}
+          </div>
+
+          {/* Quick Jump Action Shortcuts Bar with Icons */}
+          <div className="flex items-center gap-1.5 pt-1.5 pb-2 border-t border-slate-100 overflow-x-auto scrollbar-none">
+            <span className="text-[9px] font-mono font-bold text-slate-400 uppercase shrink-0">
+              Quick:
+            </span>
+            <button
+              type="button"
+              onClick={() => setCurrentScreen(6)}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 text-[9.5px] font-mono font-bold transition shadow-2xs shrink-0 cursor-pointer"
+            >
+              <GitMerge className="h-3 w-3 text-purple-600" />
+              <span>Merge Tables</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setCurrentScreen(4)}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-200 text-[9.5px] font-mono font-bold transition shadow-2xs shrink-0 cursor-pointer"
+            >
+              <UtensilsCrossed className="h-3 w-3 text-orange-600" />
+              <span>Punch KOT</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setCurrentScreen(7)}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-[9.5px] font-mono font-bold transition shadow-2xs shrink-0 cursor-pointer"
+            >
+              <CreditCard className="h-3 w-3 text-emerald-600" />
+              <span>Settlement</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setCurrentScreen(10)}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 text-[9.5px] font-mono font-bold transition shadow-2xs shrink-0 cursor-pointer"
+            >
+              <TrendingUp className="h-3 w-3 text-slate-700" />
+              <span>Shift Stats</span>
+            </button>
           </div>
 
           <div className="grid grid-cols-3 gap-2">

@@ -50,14 +50,15 @@ export default function WaiterTabletPage() {
   const { currentScreen, setCurrentScreen, viewMode, setViewMode } = useWaiterStore();
 
   const screens = [
-    { id: 1 as WaiterScreenId, name: '1. Waiter Login', icon: <UserCheck className="h-3.5 w-3.5 text-orange-500" />, mobile: <ScreenW1Login />, tablet: <TabletScreen1Login /> },
-    { id: 2 as WaiterScreenId, name: '2. All Tables & Feeds', icon: <Users className="h-3.5 w-3.5 text-purple-500" />, mobile: <ScreenW2TablesFeed />, tablet: <TabletScreen2TablesFeed /> },
-    { id: 3 as WaiterScreenId, name: '3. Table Detail', icon: <UtensilsCrossed className="h-3.5 w-3.5 text-indigo-500" />, mobile: <ScreenW3TableDetail />, tablet: <TabletScreen3TableDetail /> },
-    { id: 4 as WaiterScreenId, name: '4. Take Order Menu', icon: <Utensils className="h-3.5 w-3.5 text-blue-500" />, mobile: <ScreenW4TakeOrder />, tablet: <TabletScreen4TakeOrder /> },
-    { id: 5 as WaiterScreenId, name: '5. Item Custom / KOT', icon: <Flame className="h-3.5 w-3.5 text-amber-500" />, mobile: <ScreenW5ItemCustom />, tablet: <TabletScreen5ItemCustom /> },
-    { id: 6 as WaiterScreenId, name: '6. Merge/Split Tables', icon: <Users className="h-3.5 w-3.5 text-teal-500" />, mobile: <ScreenW6MergeSplit />, tablet: <TabletScreen6MergeSplit /> },
-    { id: 7 as WaiterScreenId, name: '7. Collect Payment', icon: <CreditCard className="h-3.5 w-3.5 text-emerald-500" />, mobile: <ScreenW7Payment />, tablet: <TabletScreen7Payment /> },
-    { id: 8 as WaiterScreenId, name: '8. Print & WhatsApp', icon: <Receipt className="h-3.5 w-3.5 text-cyan-600" />, mobile: <ScreenW8PrintBill />, tablet: <TabletScreen8PrintBill /> },
+    { id: 1 as WaiterScreenId, name: '1. Captain Login', icon: <UserCheck className="h-3.5 w-3.5 text-orange-500" />, mobile: <ScreenW1Login />, tablet: <TabletScreen1Login /> },
+    { id: 2 as WaiterScreenId, name: '2. Floor Overview', icon: <LayoutGrid className="h-3.5 w-3.5 text-purple-500" />, mobile: <ScreenW2TablesFeed />, tablet: <TabletScreen2TablesFeed /> },
+    { id: 3 as WaiterScreenId, name: '3. Table Operations', icon: <UtensilsCrossed className="h-3.5 w-3.5 text-indigo-500" />, mobile: <ScreenW3TableDetail />, tablet: <TabletScreen3TableDetail /> },
+    { id: 4 as WaiterScreenId, name: '4. Menu Order Entry', icon: <Utensils className="h-3.5 w-3.5 text-blue-500" />, mobile: <ScreenW4TakeOrder />, tablet: <TabletScreen4TakeOrder /> },
+    { id: 5 as WaiterScreenId, name: '5. KOT Dispatch', icon: <Flame className="h-3.5 w-3.5 text-amber-500" />, mobile: <ScreenW5ItemCustom />, tablet: <TabletScreen5ItemCustom /> },
+    { id: 6 as WaiterScreenId, name: '6. Table Management', icon: <Users className="h-3.5 w-3.5 text-teal-500" />, mobile: <ScreenW6MergeSplit />, tablet: <TabletScreen6MergeSplit /> },
+    { id: 7 as WaiterScreenId, name: '7. Bill Settlement', icon: <CreditCard className="h-3.5 w-3.5 text-emerald-500" />, mobile: <ScreenW7Payment />, tablet: <TabletScreen7Payment /> },
+    { id: 8 as WaiterScreenId, name: '8. Receipt & Invoice', icon: <Receipt className="h-3.5 w-3.5 text-cyan-600" />, mobile: <ScreenW8PrintBill />, tablet: <TabletScreen8PrintBill /> },
+    { id: 9 as WaiterScreenId, name: '9. Table Vacate', icon: <Trash2 className="h-3.5 w-3.5 text-rose-500" />, mobile: <ScreenW9Vacate />, tablet: <TabletScreen9Vacate /> },
     { id: 10 as WaiterScreenId, name: '10. Shift Performance', icon: <TrendingUp className="h-3.5 w-3.5 text-slate-700" />, mobile: <ScreenW10ShiftStats />, tablet: <TabletScreen10ShiftStats /> },
   ];
 

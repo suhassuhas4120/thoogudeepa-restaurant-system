@@ -22,19 +22,19 @@ export const ScreenW6MergeSplit: React.FC = () => {
   };
 
   return (
-    <WaiterTabletHousing screenNumber={6} screenTitle="MERGE / SPLIT TABLES">
+    <WaiterTabletHousing screenNumber={6} screenTitle="TABLE TRANSFER & MERGE MANAGEMENT">
       <div className="flex-1 flex flex-col justify-between p-4 space-y-3 overflow-y-auto">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setCurrentScreen(3)}
-              className="flex items-center gap-1 text-xs font-black text-slate-700"
+              className="flex items-center gap-1 text-xs font-black text-slate-700 hover:text-slate-900 cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span>[BACK TO TABLE]</span>
+              <span>Back to Table</span>
             </button>
             <span className="font-mono text-xs font-black text-slate-900">
-              TARGET: [{selectedTableNumber}]
+              Target: Table {selectedTableNumber}
             </span>
           </div>
 
@@ -42,10 +42,10 @@ export const ScreenW6MergeSplit: React.FC = () => {
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs space-y-3">
             <div className="flex items-center gap-2 font-mono text-[10.5px] font-black text-purple-700">
               <Link2 className="h-4 w-4" />
-              <span>[MERGE TABLES FOR LARGE PARTY]</span>
+              <span>Merge Tables for Large Party</span>
             </div>
             <p className="text-xs text-slate-500">
-              Combine running orders and bill of an adjacent table into [{selectedTableNumber}].
+              Combine running orders and bill of an adjacent table into Table {selectedTableNumber}.
             </p>
 
             <div className="flex items-center gap-2">
@@ -67,9 +67,9 @@ export const ScreenW6MergeSplit: React.FC = () => {
 
             <button
               onClick={handleMerge}
-              className="w-full py-2.5 rounded-xl bg-purple-600 text-white font-mono text-xs font-black hover:bg-purple-700 transition"
+              className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-mono text-xs font-black transition cursor-pointer"
             >
-              {mergedNotice ? '✓ TABLES MERGED SUCCESSFULLY!' : `[LINK ${sourceTable} TO ${selectedTableNumber}]`}
+              {mergedNotice ? '✓ Tables Merged Successfully!' : `Merge Table ${sourceTable} into Table ${selectedTableNumber}`}
             </button>
           </div>
 
@@ -77,7 +77,7 @@ export const ScreenW6MergeSplit: React.FC = () => {
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs space-y-3">
             <div className="flex items-center gap-2 font-mono text-[10.5px] font-black text-indigo-700">
               <Scissors className="h-4 w-4" />
-              <span>[SPLIT BILL BY GUESTS / PERSONS]</span>
+              <span>Split Bill by Guests / Seats</span>
             </div>
             <p className="text-xs text-slate-500">
               Evenly divide total table amount across multiple payment receipts.
@@ -90,7 +90,7 @@ export const ScreenW6MergeSplit: React.FC = () => {
                   <button
                     key={cnt}
                     onClick={() => setSplitCount(cnt)}
-                    className={`h-7 w-7 rounded-lg font-mono text-xs font-black transition ${
+                    className={`h-7 w-7 rounded-lg font-mono text-xs font-black transition cursor-pointer ${
                       splitCount === cnt
                         ? 'bg-slate-900 text-white'
                         : 'bg-white border border-slate-200 text-slate-700'
@@ -110,9 +110,9 @@ export const ScreenW6MergeSplit: React.FC = () => {
 
         <button
           onClick={() => setCurrentScreen(7)}
-          className="w-full py-3 rounded-xl bg-slate-900 text-white font-mono text-xs font-black hover:bg-slate-800 transition"
+          className="w-full py-3 rounded-xl bg-slate-900 hover:bg-black text-white font-mono text-xs font-black transition cursor-pointer"
         >
-          [PROCEED TO PAYMENT] ➔
+          Proceed to Payment ➔
         </button>
       </div>
     </WaiterTabletHousing>

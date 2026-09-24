@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { useWaiterStore } from '../../store/useWaiterStore';
@@ -19,25 +19,25 @@ export const ScreenW5ItemCustom: React.FC = () => {
   const cartTotal = orderCart.reduce((s, i) => s + i.totalPrice, 0);
 
   return (
-    <WaiterTabletHousing screenNumber={5} screenTitle="ITEM CUSTOMIZATION &amp; KOT SUBMIT">
+    <WaiterTabletHousing screenNumber={5} screenTitle="ORDER CUSTOMIZATION & KOT DISPATCH">
       <div className="flex-1 flex flex-col justify-between p-4 overflow-y-auto space-y-3">
         <div className="space-y-3">
           {/* Header */}
           <div className="flex items-center justify-between">
             <button
               onClick={() => setCurrentScreen(4)}
-              className="flex items-center gap-1 text-xs font-black text-slate-700"
+              className="flex items-center gap-1 text-xs font-black text-slate-700 hover:text-slate-900 cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span>[BACK TO MENU]</span>
+              <span>Back to Menu</span>
             </button>
             <span className="font-mono text-xs font-black text-slate-900">
-              TABLE: [{selectedTableNumber}]
+              Table: {selectedTableNumber}
             </span>
           </div>
 
-          <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400">
-            [KOT ITEMS FOR SUBMISSION TO KITCHEN]
+          <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-500">
+            KOT Items for Kitchen Submission
           </div>
 
           {/* Cart List */}
@@ -60,7 +60,7 @@ export const ScreenW5ItemCustom: React.FC = () => {
                   <div className="flex items-center gap-1.5 bg-stone-100 p-1 rounded-lg border border-slate-200">
                     <button
                       onClick={() => updateOrderCartQty(ci.cartItemId, -1)}
-                      className="h-6 w-6 rounded bg-white font-mono font-bold text-xs"
+                      className="h-6 w-6 rounded bg-white font-mono font-bold text-xs cursor-pointer"
                     >
                       -
                     </button>
@@ -69,7 +69,7 @@ export const ScreenW5ItemCustom: React.FC = () => {
                     </span>
                     <button
                       onClick={() => updateOrderCartQty(ci.cartItemId, 1)}
-                      className="h-6 w-6 rounded bg-white font-mono font-bold text-xs"
+                      className="h-6 w-6 rounded bg-white font-mono font-bold text-xs cursor-pointer"
                     >
                       +
                     </button>
@@ -78,7 +78,7 @@ export const ScreenW5ItemCustom: React.FC = () => {
               ))
             ) : (
               <div className="p-6 text-center text-slate-400 font-mono text-xs border border-dashed border-slate-200 rounded-xl bg-white">
-                [NO DISHES ADDED - TAP BACK TO SELECT MENU]
+                No dishes in cart. Tap back to add items.
               </div>
             )}
           </div>
@@ -86,7 +86,7 @@ export const ScreenW5ItemCustom: React.FC = () => {
           {/* Kitchen Dietary Notes */}
           <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-2xs">
             <label className="text-[10px] font-bold font-mono uppercase text-slate-500">
-              [SPECIAL GUEST DIETARY INSTRUCTIONS / CHEF NOTES]
+              Special Guest Dietary Instructions / Chef Notes
             </label>
             <input
               type="text"
@@ -103,11 +103,11 @@ export const ScreenW5ItemCustom: React.FC = () => {
           whileTap={{ scale: 0.98 }}
           disabled={orderCart.length === 0}
           onClick={fireKOTToKitchen}
-          className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-orange-600 text-white font-mono text-xs font-black shadow-lg shadow-orange-600/30 hover:bg-orange-700 disabled:opacity-50 transition"
+          className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-orange-600 text-white font-mono text-xs font-black shadow-lg shadow-orange-600/30 hover:bg-orange-700 disabled:opacity-50 transition cursor-pointer"
         >
           <div className="flex items-center gap-1.5">
             <Flame className="h-4 w-4 fill-white" />
-            <span>[FIRE KOT TO KITCHEN]</span>
+            <span>Fire KOT to Kitchen</span>
           </div>
           <span>₹ {cartTotal} ➔</span>
         </motion.button>

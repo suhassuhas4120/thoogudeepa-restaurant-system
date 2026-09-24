@@ -30,7 +30,7 @@ export const TabletScreen7Payment: React.FC = () => {
   return (
     <WaiterTabletLandscapeHousing
       screenNumber={7}
-      screenTitle="PAYMENT GATEWAY & QR / CASH SETTLEMENT"
+      screenTitle="BILL SETTLEMENT & PAYMENT COLLECTION"
     >
       <div className="flex flex-col flex-1 min-h-[700px] p-5 font-mono select-none">
         {/* TOP HEADER */}
@@ -40,13 +40,13 @@ export const TabletScreen7Payment: React.FC = () => {
             className="bg-slate-900 hover:bg-black text-white px-3 py-1.5 rounded font-bold transition flex items-center gap-1.5 text-xs shadow-2xs"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            <span>[⬅ BACK TO {selectedTableNumber || 'TABLE'}]</span>
+            <span>Back to Table</span>
           </button>
           <h3 className="font-black text-slate-950 text-sm">
-            [SCREEN 7: PAYMENT GATEWAY &amp; SETTLEMENT]
+            Payment Gateway & Settlement Hub
           </h3>
           <span className="border border-slate-400 bg-slate-100 px-3 py-1 rounded font-bold text-xs text-slate-700">
-            [{activeTable.number} SETTLEMENT]
+            Table {activeTable.number} Settlement
           </span>
         </div>
 
@@ -54,16 +54,16 @@ export const TabletScreen7Payment: React.FC = () => {
         {paidConfirmed && (
           <div className="mb-3 p-3 bg-emerald-700 text-white rounded-xl font-black text-xs text-center flex items-center justify-center gap-2">
             <CheckCircle2 className="h-4 w-4 fill-white" />
-            ✓ PAYMENT CONFIRMED — GENERATING TAX INVOICE (SCREEN 8)...
+            ✓ Payment Confirmed — Generating Tax Invoice (Screen 8)...
           </div>
         )}
 
         {/* PAYMENT METHOD SWITCHER */}
         <div className="flex gap-3 mb-4 shrink-0">
           {[
-            { mode: 'CASH' as PayMode, icon: '💵', label: 'CASH SETTLEMENT' },
-            { mode: 'UPI' as PayMode, icon: '📱', label: 'UPI SCAN & PAY' },
-            { mode: 'POS' as PayMode, icon: '💳', label: 'POS SWIPE' },
+            { mode: 'CASH' as PayMode, icon: '💵', label: 'Cash Settlement' },
+            { mode: 'UPI' as PayMode, icon: '📱', label: 'UPI Scan & Pay' },
+            { mode: 'POS' as PayMode, icon: '💳', label: 'Card POS Swipe' },
           ].map(({ mode, icon, label }) => (
             <button
               key={mode}
@@ -75,7 +75,7 @@ export const TabletScreen7Payment: React.FC = () => {
               }`}
             >
               <span>{icon}</span>
-              <span>[{label}]</span>
+              <span>{label}</span>
             </button>
           ))}
         </div>
@@ -89,46 +89,46 @@ export const TabletScreen7Payment: React.FC = () => {
                 <div className="w-52 h-52 border-2 border-dashed border-slate-400 bg-slate-50 rounded-xl flex flex-col items-center justify-center gap-3">
                   <QrCode className="h-20 w-20 text-slate-800" />
                   <span className="font-mono text-xs font-bold text-slate-600">
-                    [QR SCANNER SPACE FOR CUSTOMER UPI / CARD PAYMENT]
+                    Scan Dynamic Merchant QR Code
                   </span>
                 </div>
                 <strong className="text-base font-black text-slate-950">
-                  [SCAN TO PAY ₹ {billAmount.toLocaleString('en-IN')}.00]
+                  Scan to Pay ₹{billAmount.toLocaleString('en-IN')}.00
                 </strong>
                 <span className="font-mono text-xs font-bold text-slate-500">
-                  [SUPPORTED: BHIM, GPAY, PHONEPE, PAYTM &amp; BANK APPS]
+                  Supported: BHIM, GPay, PhonePe, Paytm & Bank UPI
                 </span>
                 <div className="border border-slate-300 bg-slate-50 px-3 py-1.5 rounded-lg font-mono text-xs font-bold text-slate-700">
-                  [PAYMENT TIMEOUT: {qrTimer} MINS REMAINING]
+                  Payment Timeout: {qrTimer} mins remaining
                 </div>
               </>
             ) : payMode === 'CASH' ? (
               <>
                 <span className="text-6xl">💵</span>
                 <strong className="text-base font-black text-slate-950">
-                  [CASH TENDER SETTLEMENT]
+                  Cash Tender Settlement
                 </strong>
                 <div className="text-2xl font-black text-slate-950 font-mono">
-                  ₹ {billAmount.toLocaleString('en-IN')}.00
+                  ₹{billAmount.toLocaleString('en-IN')}.00
                 </div>
                 <span className="font-mono text-xs font-bold text-slate-500">
-                  [TOTAL CASH PAYABLE FOR TABLE {activeTable.number}]
+                  Total Cash Payable for Table {activeTable.number}
                 </span>
                 <div className="border border-slate-300 bg-emerald-50 px-4 py-2 rounded-lg font-mono text-xs font-bold text-emerald-800">
-                  [STATUS: READY FOR WAITER CASH COLLECTION]
+                  Status: Ready for Cash Collection
                 </div>
               </>
             ) : (
               <>
                 <CreditCard className="h-20 w-20 text-slate-800" />
                 <strong className="text-base font-black text-slate-950">
-                  [POS SWIPE / CARD TERMINAL]
+                  Card POS Terminal Swipe
                 </strong>
                 <div className="text-2xl font-black text-slate-950 font-mono">
-                  ₹ {billAmount.toLocaleString('en-IN')}.00
+                  ₹{billAmount.toLocaleString('en-IN')}.00
                 </div>
                 <div className="border border-slate-300 bg-slate-50 px-4 py-2 rounded-lg font-mono text-xs font-bold text-slate-700">
-                  [INSERT CARD OR TAP TO PAY ON POS MACHINE]
+                  Insert or tap card on countertop terminal
                 </div>
               </>
             )}
@@ -138,18 +138,18 @@ export const TabletScreen7Payment: React.FC = () => {
           <div className="flex-1 flex flex-col gap-4 overflow-y-auto">
             {/* Bill Summary */}
             <div className="border border-slate-300 bg-white rounded-xl p-4 flex flex-col gap-2.5">
-              <strong className="text-xs font-black text-slate-900">[SETTLEMENT SUMMARY]:</strong>
+              <strong className="text-xs font-black text-slate-900">SETTLEMENT SUMMARY:</strong>
               <div className="flex justify-between text-xs text-slate-600">
-                <span>[TABLE NUMBER]:</span>
+                <span>Table Number:</span>
                 <span className="font-bold text-slate-900">{activeTable.number}</span>
               </div>
               <div className="flex justify-between text-xs text-slate-600">
-                <span>[SELECTED PAYMENT MODE]:</span>
-                <span className="font-bold text-slate-900">[{payMode}]</span>
+                <span>Selected Mode:</span>
+                <span className="font-bold text-slate-900">{payMode}</span>
               </div>
               <div className="border-t border-dashed border-slate-200 pt-2 flex justify-between text-sm font-black text-slate-950">
-                <span>[TOTAL PAYABLE AMOUNT]:</span>
-                <span>₹ {billAmount.toLocaleString('en-IN')}.00</span>
+                <span>Total Payable:</span>
+                <span>₹{billAmount.toLocaleString('en-IN')}.00</span>
               </div>
             </div>
 
@@ -157,11 +157,11 @@ export const TabletScreen7Payment: React.FC = () => {
             {payMode === 'POS' && (
               <div className="border border-slate-300 bg-white rounded-xl p-4 flex flex-col gap-2">
                 <strong className="text-xs font-black text-slate-900">
-                  [POS TRANSACTION REFERENCE]:
+                  POS Transaction Reference:
                 </strong>
                 <input
                   type="text"
-                  placeholder="[ENTER POS TRANSACTION ID / AUTH CODE...]"
+                  placeholder="Enter POS Transaction ID / Auth Code..."
                   className="w-full border border-slate-400 rounded-lg px-3 py-2 font-mono text-xs bg-white focus:outline-none"
                 />
               </div>
@@ -174,7 +174,7 @@ export const TabletScreen7Payment: React.FC = () => {
               className="w-full py-4 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-black text-sm transition shadow-sm flex items-center justify-center gap-2 mt-auto"
             >
               <CheckCircle2 className="h-5 w-5 fill-white" />
-              <span>✓ [CONFIRM &amp; PAY ➔ GENERATE BILL (SCREEN 8)]</span>
+              <span>Confirm & Record ₹{billAmount.toLocaleString('en-IN')}.00 ➔</span>
             </button>
           </div>
         </div>

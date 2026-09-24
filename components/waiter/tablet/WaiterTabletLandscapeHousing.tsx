@@ -95,7 +95,7 @@ export const WaiterTabletLandscapeHousing: React.FC<WaiterTabletLandscapeHousing
               onClick={dismissKitchenCall}
               className="text-xs text-slate-400 hover:text-white underline ml-3"
             >
-              [Dismiss]
+              Dismiss
             </button>
           </div>
         )}

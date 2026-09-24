@@ -7,20 +7,20 @@ import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
 import { ArrowLeft, TrendingUp } from 'lucide-react';
 
 const KPI_CARDS = [
-  { label: '[TOTAL ORDERS DONE TODAY VIA TAB]:', value: '24', sub: '[ACROSS 10 UNIQUE TABLES]' },
-  { label: '[TOTAL PAYMENTS PROCESSED]:', value: '₹ 18,450', sub: '[ALL PAYMENT MODES COMBINED]' },
-  { label: '[TOTAL CASH COLLECTED]:', value: '₹ 7,200', sub: '[READY FOR HANDOVER]' },
-  { label: '[DIGITAL / UPI SETTLEMENTS]:', value: '₹ 11,250', sub: '[INSTANT RECONCILIATION]' },
-  { label: '[TOTAL TIPS EARNED TODAY]:', value: '₹ 1,420', sub: '[DIRECT WAITER TIP ACCRUAL]' },
-  { label: '[AVG TABLE TURNAROUND TIME]:', value: '38 MINS', sub: '[EFFICIENCY BENCHMARK]' },
+  { label: 'Total Orders Done Today:', value: '24', sub: 'Across 10 unique tables' },
+  { label: 'Total Payments Processed:', value: '₹ 18,450', sub: 'All payment modes combined' },
+  { label: 'Total Cash Collected:', value: '₹ 7,200', sub: 'Ready for handover' },
+  { label: 'Digital / UPI Settlements:', value: '₹ 11,250', sub: 'Instant reconciliation' },
+  { label: 'Total Tips Accrued:', value: '₹ 1,420', sub: 'Direct waiter tip accrual' },
+  { label: 'Avg Turnaround Time:', value: '38 mins', sub: 'Efficiency benchmark' },
 ];
 
 const TIMELINE = [
-  { time: '12:52 PM', table: 'TABLE 04', amount: '₹ 1,450.00', mode: 'CASH' },
-  { time: '12:20 PM', table: 'TABLE 02', amount: '₹ 2,100.00', mode: 'UPI QR' },
-  { time: '11:45 AM', table: 'TABLE 07', amount: '₹ 980.00', mode: 'CARD POS' },
-  { time: '11:20 AM', table: 'TABLE 09', amount: '₹ 1,875.00', mode: 'UPI QR' },
-  { time: '10:55 AM', table: 'TABLE 01', amount: '₹ 560.00', mode: 'CASH' },
+  { time: '12:52 PM', table: 'Table 04', amount: '₹ 1,450.00', mode: 'CASH' },
+  { time: '12:20 PM', table: 'Table 02', amount: '₹ 2,100.00', mode: 'UPI QR' },
+  { time: '11:45 AM', table: 'Table 07', amount: '₹ 980.00', mode: 'CARD POS' },
+  { time: '11:20 AM', table: 'Table 09', amount: '₹ 1,875.00', mode: 'UPI QR' },
+  { time: '10:55 AM', table: 'Table 01', amount: '₹ 560.00', mode: 'CASH' },
 ];
 
 export const TabletScreen10ShiftStats: React.FC = () => {
@@ -30,7 +30,7 @@ export const TabletScreen10ShiftStats: React.FC = () => {
   return (
     <WaiterTabletLandscapeHousing
       screenNumber={10}
-      screenTitle="WAITER DAILY SHIFT PERFORMANCE OVERVIEW"
+      screenTitle="SHIFT PERFORMANCE & SUMMARY KPIS"
     >
       <div className="flex flex-col flex-1 min-h-[700px] p-5 font-mono select-none overflow-y-auto">
         {/* TOP HEADER */}
@@ -40,13 +40,13 @@ export const TabletScreen10ShiftStats: React.FC = () => {
             className="bg-slate-900 hover:bg-black text-white px-3 py-1.5 rounded font-bold transition flex items-center gap-1.5 text-xs shadow-2xs"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            <span>[⬅ BACK TO ALL TABLES]</span>
+            <span>Back to All Tables</span>
           </button>
           <h3 className="font-black text-slate-950 text-sm">
-            [SCREEN 10: WAITER DAILY SHIFT PERFORMANCE OVERVIEW]
+            Shift Performance & Daily Summary KPIs
           </h3>
           <span className="border border-slate-400 bg-slate-100 px-3 py-1 rounded font-bold text-xs text-slate-700">
-            [{activeCaptain} • SHIFT ACTIVE]
+            {activeCaptain} • Active Shift
           </span>
         </div>
 
@@ -61,7 +61,7 @@ export const TabletScreen10ShiftStats: React.FC = () => {
           </div>
           <div className="ml-auto flex items-center gap-2 text-xs font-bold text-emerald-700 border border-emerald-300 bg-emerald-50 rounded-lg px-3 py-2">
             <TrendingUp className="h-4 w-4" />
-            <span>[SHIFT ACTIVE — 5h 32m ELAPSED]</span>
+            <span>Shift Active — 5h 32m elapsed</span>
           </div>
         </div>
 
@@ -86,7 +86,7 @@ export const TabletScreen10ShiftStats: React.FC = () => {
         {/* SHIFT ACTIVITY TIMELINE */}
         <div className="border-2 border-slate-800 bg-white rounded-xl p-4 shadow-xs">
           <strong className="text-xs font-black text-slate-950 block mb-3">
-            [TODAY'S SHIFT ACTIVITY TIMELINE]:
+            Today's Shift Activity Timeline:
           </strong>
           <div className="flex flex-col gap-2 font-mono text-xs">
             {TIMELINE.map((row, idx) => (
@@ -95,11 +95,11 @@ export const TabletScreen10ShiftStats: React.FC = () => {
                 className="flex justify-between items-center border-b border-dashed border-slate-200 pb-2 text-slate-700"
               >
                 <span className="font-bold text-slate-950">
-                  {row.time} • [{row.table}]
+                  {row.time} • {row.table}
                 </span>
                 <span className="font-bold">{row.amount} • {row.mode}</span>
                 <span className="border border-slate-300 bg-slate-100 px-2 py-0.5 rounded text-[10px] font-black text-slate-700">
-                  [SETTLED]
+                  Settled
                 </span>
               </div>
             ))}
@@ -111,7 +111,7 @@ export const TabletScreen10ShiftStats: React.FC = () => {
           onClick={() => setCurrentScreen(1)}
           className="mt-4 w-full py-4 border-2 border-slate-800 bg-white hover:bg-slate-100 text-slate-900 rounded-xl font-black text-xs transition flex items-center justify-center gap-2 shrink-0"
         >
-          🔐 [CLOSE SHIFT &amp; LOG OUT OF CAPTAIN TERMINAL ➔ SCREEN 1]
+          🔐 End Shift & Clock Out
         </button>
       </div>
     </WaiterTabletLandscapeHousing>

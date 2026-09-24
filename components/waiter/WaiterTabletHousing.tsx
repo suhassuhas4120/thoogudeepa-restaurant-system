@@ -1,7 +1,19 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
-import { Wifi, Battery, Bell, UserCheck, Flame, Utensils } from 'lucide-react';
+import {
+  Wifi,
+  Battery,
+  Bell,
+  UserCheck,
+  Flame,
+  Utensils,
+  LayoutGrid,
+  UtensilsCrossed,
+  GitMerge,
+  CreditCard,
+  TrendingUp,
+} from 'lucide-react';
 import { useWaiterStore } from '../../store/useWaiterStore';
 
 interface WaiterTabletHousingProps {
@@ -23,6 +35,7 @@ export const WaiterTabletHousing: React.FC<WaiterTabletHousingProps> = ({
     callKitchenStation,
     kitchenCallNotice,
     dismissKitchenCall,
+    setCurrentScreen,
   } = useWaiterStore();
 
   return (
@@ -88,6 +101,76 @@ export const WaiterTabletHousing: React.FC<WaiterTabletHousingProps> = ({
         <div className="flex-1 overflow-y-auto bg-stone-50/70 text-slate-900 flex flex-col relative">
           {children}
         </div>
+
+        {/* Mobile Quick Jump Dock with Icons (Active when Logged In: Screens 2 to 10) */}
+        {screenNumber !== 1 && (
+          <div className="h-14 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 flex items-center justify-around select-none shrink-0 z-30 shadow-lg">
+            <button
+              type="button"
+              onClick={() => setCurrentScreen(2)}
+              className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 rounded-xl transition cursor-pointer active:scale-95 ${
+                screenNumber === 2
+                  ? 'text-orange-600 font-extrabold scale-105'
+                  : 'text-slate-500 hover:text-slate-900 font-medium'
+              }`}
+            >
+              <LayoutGrid className="h-4 w-4" />
+              <span className="text-[9.5px] font-mono leading-none">Floor</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setCurrentScreen(4)}
+              className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 rounded-xl transition cursor-pointer active:scale-95 ${
+                screenNumber === 4 || screenNumber === 5
+                  ? 'text-orange-600 font-extrabold scale-105'
+                  : 'text-slate-500 hover:text-slate-900 font-medium'
+              }`}
+            >
+              <UtensilsCrossed className="h-4 w-4" />
+              <span className="text-[9.5px] font-mono leading-none">Order</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setCurrentScreen(6)}
+              className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 rounded-xl transition cursor-pointer active:scale-95 ${
+                screenNumber === 6
+                  ? 'text-orange-600 font-extrabold scale-105'
+                  : 'text-slate-500 hover:text-slate-900 font-medium'
+              }`}
+            >
+              <GitMerge className="h-4 w-4" />
+              <span className="text-[9.5px] font-mono leading-none">Merge</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setCurrentScreen(7)}
+              className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 rounded-xl transition cursor-pointer active:scale-95 ${
+                screenNumber === 7 || screenNumber === 8
+                  ? 'text-orange-600 font-extrabold scale-105'
+                  : 'text-slate-500 hover:text-slate-900 font-medium'
+              }`}
+            >
+              <CreditCard className="h-4 w-4" />
+              <span className="text-[9.5px] font-mono leading-none">Billing</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setCurrentScreen(10)}
+              className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 rounded-xl transition cursor-pointer active:scale-95 ${
+                screenNumber === 10
+                  ? 'text-orange-600 font-extrabold scale-105'
+                  : 'text-slate-500 hover:text-slate-900 font-medium'
+              }`}
+            >
+              <TrendingUp className="h-4 w-4" />
+              <span className="text-[9.5px] font-mono leading-none">Shift</span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

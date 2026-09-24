@@ -35,7 +35,7 @@ export const TabletScreen8PrintBill: React.FC = () => {
   return (
     <WaiterTabletLandscapeHousing
       screenNumber={8}
-      screenTitle="BILL GENERATION &amp; MANAGER PRINT DISPATCH"
+      screenTitle="TAX INVOICE & DIGITAL RECEIPT"
     >
       <div className="flex flex-col flex-1 min-h-[700px] p-5 font-mono select-none">
         {/* TOP HEADER */}
@@ -45,13 +45,13 @@ export const TabletScreen8PrintBill: React.FC = () => {
             className="bg-slate-900 hover:bg-black text-white px-3 py-1.5 rounded font-bold transition flex items-center gap-1.5 text-xs shadow-2xs"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            <span>[⬅ BACK TO ALL TABLES]</span>
+            <span>Back to All Tables</span>
           </button>
           <h3 className="font-black text-slate-950 text-sm">
-            [SCREEN 8: BILL GENERATION &amp; MANAGER PRINT DISPATCH]
+            Tax Invoice & Thermal Print Hub
           </h3>
           <span className="border border-slate-400 bg-slate-100 px-3 py-1 rounded font-bold text-xs text-slate-700">
-            [{invoiceNum}]
+            {invoiceNum}
           </span>
         </div>
 
@@ -61,15 +61,15 @@ export const TabletScreen8PrintBill: React.FC = () => {
             <CheckCircle2 className="h-6 w-6 text-emerald-600" />
             <div>
               <strong className="text-sm font-black text-slate-950 block">
-                [PAYMENT SUCCESSFUL — BILL SETTLED]
+                Payment Successful — Bill Settled
               </strong>
               <p className="text-[11px] font-bold text-slate-500">
-                [TRANSACTION ID: {txnId} • TIME: {now}]
+                Transaction ID: {txnId} • Time: {now}
               </p>
             </div>
           </div>
           <span className="border-2 border-slate-900 bg-white px-3 py-1 rounded font-black text-xs text-slate-900">
-            [STATUS: PAID ✓]
+            Status: Paid ✓
           </span>
         </div>
 
@@ -152,11 +152,11 @@ export const TabletScreen8PrintBill: React.FC = () => {
 
           {/* RIGHT: BILL ACTIONS */}
           <div className="flex-1 flex flex-col gap-4 justify-start">
-            <span className="font-black text-xs text-slate-900 uppercase">[BILL DISPATCH OPTIONS]:</span>
+            <span className="font-black text-xs text-slate-900 uppercase">BILL DISPATCH OPTIONS:</span>
 
             {/* ITEMIZED INVOICE SUMMARY */}
             <div className="border border-slate-300 bg-white rounded-xl p-4 flex flex-col gap-2">
-              <strong className="text-xs font-black text-slate-900">[TAX INVOICE DETAILS]:</strong>
+              <strong className="text-xs font-black text-slate-900">Tax Invoice Details:</strong>
               <div className="flex flex-col gap-1 font-mono text-xs">
                 {[
                   { name: '1x Donne Mutton Biryani', amt: 520 },
@@ -169,13 +169,13 @@ export const TabletScreen8PrintBill: React.FC = () => {
                   </div>
                 ))}
                 <div className="border-t border-dashed border-slate-300 mt-1 pt-1 flex justify-between text-[10px] text-slate-500">
-                  <span>[CGST 2.5%]:</span><span>₹ {cgst}.00</span>
+                  <span>CGST 2.5%:</span><span>₹ {cgst}.00</span>
                 </div>
                 <div className="flex justify-between text-[10px] text-slate-500">
-                  <span>[SGST 2.5%]:</span><span>₹ {sgst}.00</span>
+                  <span>SGST 2.5%:</span><span>₹ {sgst}.00</span>
                 </div>
                 <div className="border-t-2 border-slate-900 mt-1 pt-1 flex justify-between font-black text-sm text-slate-950">
-                  <span>[NET TOTAL PAID]:</span><span>₹ {netTotal.toLocaleString('en-IN')}.00</span>
+                  <span>Net Total Paid:</span><span>₹ {netTotal.toLocaleString('en-IN')}.00</span>
                 </div>
               </div>
             </div>
@@ -183,13 +183,13 @@ export const TabletScreen8PrintBill: React.FC = () => {
             {/* Print Confirmation */}
             {printSent && (
               <div className="p-3 bg-slate-900 text-white rounded-xl text-xs font-bold text-center font-mono">
-                [PRINT COMMAND SENT DIRECTLY TO MANAGER POS PRINTER — PRINT JOB ID: #PRN-884]
+                Print command sent directly to manager POS printer — Job #PRN-884
               </div>
             )}
 
             {whatsappSent && (
               <div className="p-3 bg-emerald-700 text-white rounded-xl text-xs font-bold text-center font-mono">
-                [SUCCESS: DIGITAL BILL SHARED VIA WHATSAPP TO CUSTOMER]
+                Digital invoice shared with customer via WhatsApp
               </div>
             )}
 
@@ -200,14 +200,14 @@ export const TabletScreen8PrintBill: React.FC = () => {
                 className="flex-1 py-4 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-black text-xs transition shadow-sm flex items-center justify-center gap-2"
               >
                 <MessageCircle className="h-4 w-4" />
-                <span>💬 [SHARE BILL VIA WHATSAPP]</span>
+                <span>Send WhatsApp Receipt</span>
               </button>
               <button
                 onClick={handlePrint}
                 className="flex-1 py-4 bg-slate-900 hover:bg-black text-white rounded-xl font-black text-xs transition shadow-sm flex items-center justify-center gap-2"
               >
                 <Printer className="h-4 w-4" />
-                <span>🖨️ [PRINT PHYSICAL BILL (SENDS TO MANAGER)]</span>
+                <span>Print 80mm Receipt</span>
               </button>
             </div>
 
@@ -233,7 +233,7 @@ export const TabletScreen8PrintBill: React.FC = () => {
                   }`}
                 >
                   <Trash2 className="h-4 w-4" />
-                  <span>🧹 {isPaymentDone ? '[VACATE & RESET TABLE FOR NEXT GUEST]' : '[VACATE DISABLED: PAYMENT PENDING]'}</span>
+                  <span>🧹 {isPaymentDone ? 'Vacate & Reset Table for Next Guest' : 'Vacate Disabled (Payment Pending)'}</span>
                 </button>
               );
             })()}

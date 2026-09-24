@@ -35,7 +35,7 @@ export const ScreenW4TakeOrder: React.FC = () => {
   const cartTotal = orderCart.reduce((s, i) => s + i.totalPrice, 0);
 
   return (
-    <WaiterTabletHousing screenNumber={4} screenTitle="TAKE ORDER MENU (FAST POS)">
+    <WaiterTabletHousing screenNumber={4} screenTitle="MENU ORDER ENTRY & KOT PUNCH">
       <div className="flex-1 flex flex-col p-3 space-y-2 overflow-hidden">
         {/* Top Search & Back */}
         <div className="flex items-center gap-2 shrink-0">
@@ -114,7 +114,7 @@ export const ScreenW4TakeOrder: React.FC = () => {
                           className="flex-1 py-1.5 rounded-lg text-[10px] font-mono font-black flex items-center justify-center gap-1 bg-stone-200 text-slate-400 cursor-not-allowed border border-slate-300"
                         >
                           <Ban className="h-2.5 w-2.5" />
-                          <span>[SOLD OUT]</span>
+                          <span>Sold Out</span>
                         </button>
                       );
                     }
@@ -123,10 +123,10 @@ export const ScreenW4TakeOrder: React.FC = () => {
                       return (
                         <button
                           onClick={() => addToOrderCart(item)}
-                          className="flex-1 py-1.5 rounded-lg text-[10px] font-mono font-black flex items-center justify-center gap-1 transition bg-orange-50 border border-orange-200 text-orange-800 hover:bg-orange-100 shadow-2xs"
+                          className="flex-1 py-1.5 rounded-lg text-[10px] font-mono font-black flex items-center justify-center gap-1 transition bg-orange-50 border border-orange-200 text-orange-800 hover:bg-orange-100 shadow-2xs cursor-pointer active:scale-95"
                         >
                           <Plus className="h-3 w-3" />
-                          <span>[+ ADD]</span>
+                          <span>+ Add</span>
                         </button>
                       );
                     }
@@ -135,7 +135,7 @@ export const ScreenW4TakeOrder: React.FC = () => {
                       <div className="flex-1 flex items-center justify-between rounded-lg border border-orange-300 bg-orange-50 px-1 py-0.5">
                         <button
                           onClick={() => inCart && updateOrderCartQty(inCart.cartItemId, -1)}
-                          className="w-5 h-5 rounded bg-white text-slate-900 font-black flex items-center justify-center text-xs shadow-2xs"
+                          className="w-5 h-5 rounded bg-white text-slate-900 font-black flex items-center justify-center text-xs shadow-2xs cursor-pointer"
                         >
                           <Minus className="h-2.5 w-2.5" />
                         </button>
@@ -144,7 +144,7 @@ export const ScreenW4TakeOrder: React.FC = () => {
                         </span>
                         <button
                           onClick={() => inCart && updateOrderCartQty(inCart.cartItemId, 1)}
-                          className="w-5 h-5 rounded bg-orange-600 text-white font-black flex items-center justify-center text-xs shadow-2xs"
+                          className="w-5 h-5 rounded bg-orange-600 text-white font-black flex items-center justify-center text-xs shadow-2xs cursor-pointer"
                         >
                           <Plus className="h-2.5 w-2.5" />
                         </button>
@@ -157,9 +157,9 @@ export const ScreenW4TakeOrder: React.FC = () => {
                         addToOrderCart(item);
                         setCurrentScreen(5);
                       }}
-                      className="px-2 py-1.5 rounded-lg bg-stone-100 text-slate-700 text-[10px] font-mono font-bold"
+                      className="px-2 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-slate-700 text-[10px] font-mono font-bold transition cursor-pointer"
                     >
-                      Opt
+                      Customize
                     </button>
                   )}
                 </div>
@@ -173,9 +173,9 @@ export const ScreenW4TakeOrder: React.FC = () => {
           <motion.button
             whileTap={{ scale: 0.98 }}
             onClick={() => setCurrentScreen(5)}
-            className="w-full flex items-center justify-between p-3 rounded-xl bg-orange-600 text-white font-mono text-xs font-black shadow-lg shadow-orange-600/30 shrink-0"
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-orange-600 text-white font-mono text-xs font-black shadow-lg shadow-orange-600/30 shrink-0 cursor-pointer"
           >
-            <span>VIEW KOT ORDER ({cartCount} ITEMS)</span>
+            <span>Review KOT Order ({cartCount} items)</span>
             <span>₹ {cartTotal} ➔</span>
           </motion.button>
         )}

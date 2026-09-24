@@ -34,26 +34,26 @@ export const ScreenW7Payment: React.FC = () => {
   };
 
   return (
-    <WaiterTabletHousing screenNumber={7} screenTitle="PAYMENT COLLECTION &amp; GATEWAY">
+    <WaiterTabletHousing screenNumber={7} screenTitle="BILL SETTLEMENT & PAYMENT COLLECTION">
       <div className="flex-1 flex flex-col justify-between p-4 space-y-3 overflow-y-auto">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setCurrentScreen(3)}
-              className="flex items-center gap-1 text-xs font-black text-slate-700"
+              className="flex items-center gap-1 text-xs font-black text-slate-700 hover:text-slate-900 cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span>[BACK TO TABLE]</span>
+              <span>Back to Table</span>
             </button>
             <span className="font-mono text-xs font-black text-slate-900">
-              TABLE: [{selectedTableNumber}]
+              Table: {selectedTableNumber}
             </span>
           </div>
 
           {/* Amount Box */}
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs text-center">
             <div className="font-mono text-[10px] font-bold text-slate-400 uppercase">
-              [TOTAL COLLECTION AMOUNT]
+              Total Collection Amount
             </div>
             <div className="font-mono text-2xl font-black text-orange-600 mt-1">
               ₹ {total}
@@ -66,7 +66,7 @@ export const ScreenW7Payment: React.FC = () => {
           {/* Payment Method Selector */}
           <div className="space-y-2">
             <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-400">
-              [SELECT PAYMENT SETTLEMENT METHOD]
+              Select Settlement Method
             </div>
 
             {[
@@ -77,7 +77,7 @@ export const ScreenW7Payment: React.FC = () => {
               <button
                 key={m.id}
                 onClick={() => setMethod(m.id)}
-                className={`w-full p-3 rounded-xl border flex items-center justify-between transition font-mono text-xs font-black ${
+                className={`w-full p-3 rounded-xl border flex items-center justify-between transition font-mono text-xs font-black cursor-pointer ${
                   method === m.id
                     ? 'border-orange-500 bg-orange-50/70 text-orange-950'
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-stone-50'
@@ -95,14 +95,14 @@ export const ScreenW7Payment: React.FC = () => {
           {/* Staff Tip Selection */}
           <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-2xs">
             <div className="font-mono text-[10px] font-bold uppercase text-slate-400 mb-2">
-              [STAFF TIP PRESET]
+              Staff Tip Preset
             </div>
             <div className="flex gap-2">
               {[0, 30, 50, 100].map((t) => (
                 <button
                   key={t}
                   onClick={() => setTip(t)}
-                  className={`flex-1 py-1.5 rounded-lg font-mono text-xs font-bold transition ${
+                  className={`flex-1 py-1.5 rounded-lg font-mono text-xs font-bold transition cursor-pointer ${
                     tip === t
                       ? 'bg-slate-900 text-white'
                       : 'bg-stone-100 text-slate-700'
@@ -118,9 +118,9 @@ export const ScreenW7Payment: React.FC = () => {
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={handlePay}
-          className="w-full py-3.5 rounded-2xl bg-emerald-600 text-white font-mono text-xs font-black uppercase tracking-wider shadow-lg shadow-emerald-600/30 hover:bg-emerald-700 transition"
+          className="w-full py-3.5 rounded-2xl bg-emerald-600 text-white font-mono text-xs font-black uppercase tracking-wider shadow-lg shadow-emerald-600/30 hover:bg-emerald-700 transition cursor-pointer"
         >
-          {success ? '✓ PAYMENT RECORDED!' : `[CONFIRM & RECORD ₹${total}] ➔`}
+          {success ? '✓ Payment Recorded!' : `Confirm & Record ₹${total} ➔`}
         </motion.button>
       </div>
     </WaiterTabletHousing>

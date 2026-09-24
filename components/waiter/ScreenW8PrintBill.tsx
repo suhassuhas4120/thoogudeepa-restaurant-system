@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { useWaiterStore } from '../../store/useWaiterStore';
@@ -23,19 +23,19 @@ export const ScreenW8PrintBill: React.FC = () => {
   };
 
   return (
-    <WaiterTabletHousing screenNumber={8} screenTitle="PRINT &amp; WHATSAPP DIGITAL BILL">
+    <WaiterTabletHousing screenNumber={8} screenTitle="TAX INVOICE & DIGITAL RECEIPT">
       <div className="flex-1 flex flex-col justify-between p-4 space-y-3 overflow-y-auto">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setCurrentScreen(3)}
-              className="flex items-center gap-1 text-xs font-black text-slate-700"
+              className="flex items-center gap-1 text-xs font-black text-slate-700 hover:text-slate-900 cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span>[BACK TO TABLE]</span>
+              <span>Back to Table</span>
             </button>
             <span className="font-mono text-xs font-black text-slate-900">
-              TABLE: [{selectedTableNumber}]
+              Table: {selectedTableNumber}
             </span>
           </div>
 
@@ -85,7 +85,7 @@ export const ScreenW8PrintBill: React.FC = () => {
           {/* WhatsApp Mobile Number Input */}
           <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-2xs">
             <label className="font-mono text-[10px] font-bold text-slate-500 uppercase">
-              [CUSTOMER WHATSAPP PHONE NUMBER]
+              Customer WhatsApp Mobile Number
             </label>
             <input
               type="text"
@@ -101,24 +101,24 @@ export const ScreenW8PrintBill: React.FC = () => {
           <motion.button
             whileTap={{ scale: 0.98 }}
             onClick={handlePrint}
-            className="w-full py-3 rounded-xl border border-slate-200 bg-white font-mono text-xs font-black text-slate-800 shadow-2xs hover:bg-stone-50 flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl border border-slate-200 bg-white font-mono text-xs font-black text-slate-800 shadow-2xs hover:bg-stone-50 flex items-center justify-center gap-2 cursor-pointer"
           >
             <Printer className="h-4 w-4 text-slate-700" />
-            <span>{printed ? '✓ THERMAL RECEIPT PRINTED!' : '[PRINT 80MM THERMAL BILL]'}</span>
+            <span>{printed ? '✓ Thermal Receipt Printed' : 'Print 80mm Thermal Bill'}</span>
           </motion.button>
 
           <motion.button
             whileTap={{ scale: 0.98 }}
             onClick={handleWhatsApp}
-            className="w-full py-3 rounded-xl bg-emerald-600 font-mono text-xs font-black text-white shadow-md shadow-emerald-600/30 hover:bg-emerald-700 flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl bg-emerald-600 font-mono text-xs font-black text-white shadow-md shadow-emerald-600/30 hover:bg-emerald-700 flex items-center justify-center gap-2 cursor-pointer"
           >
             <Share2 className="h-4 w-4" />
-            <span>{shared ? '✓ SENT VIA WHATSAPP!' : '[DISPATCH TO WHATSAPP]'}</span>
+            <span>{shared ? '✓ Sent via WhatsApp!' : 'Send Receipt via WhatsApp'}</span>
           </motion.button>
 
           <button
             onClick={() => setCurrentScreen(9)}
-            className="w-full py-2.5 font-mono text-xs font-bold text-slate-500 hover:text-slate-800 text-center"
+            className="w-full py-2.5 font-mono text-xs font-bold text-slate-500 hover:text-slate-800 text-center cursor-pointer"
           >
             Proceed to Vacate Table ➔
           </button>

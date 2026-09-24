@@ -21,19 +21,19 @@ export const ScreenW9Vacate: React.FC = () => {
   };
 
   return (
-    <WaiterTabletHousing screenNumber={9} screenTitle="VACATE &amp; TABLE TURNAROUND">
+    <WaiterTabletHousing screenNumber={9} screenTitle="TABLE VACATE & STATION RESET">
       <div className="flex-1 flex flex-col justify-between p-4 space-y-3 overflow-y-auto">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setCurrentScreen(3)}
-              className="flex items-center gap-1 text-xs font-black text-slate-700"
+              className="flex items-center gap-1 text-xs font-black text-slate-700 hover:text-slate-900 cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span>[BACK TO TABLE]</span>
+              <span>Back to Table</span>
             </button>
             <span className="font-mono text-xs font-black text-slate-900">
-              TABLE: [{selectedTableNumber}]
+              Table: {selectedTableNumber}
             </span>
           </div>
 
@@ -42,10 +42,10 @@ export const ScreenW9Vacate: React.FC = () => {
               <Trash2 className="h-6 w-6" />
             </div>
             <h3 className="text-sm font-black text-slate-900">
-              [CHECKOUT VERIFICATION &amp; CLEANING DISPATCH]
+              Checkout Verification &amp; Station Reset
             </h3>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Verify guests have departed table [{selectedTableNumber}]. Clicking below alerts floor
+              Verify guests have departed Table {selectedTableNumber}. Clicking below alerts floor
               busboys for sanitization and resets table status to Vacant.
             </p>
           </div>
@@ -53,7 +53,7 @@ export const ScreenW9Vacate: React.FC = () => {
           {/* Turnaround Checklist */}
           <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs space-y-2 text-xs">
             <div className="font-mono text-[10px] font-bold uppercase text-slate-400">
-              [TURNAROUND CHECKLIST]
+              Turnaround Checklist
             </div>
             {[
               'Bill paid and settlement verified',
@@ -73,9 +73,9 @@ export const ScreenW9Vacate: React.FC = () => {
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={handleVacate}
-          className="w-full py-3.5 rounded-2xl bg-slate-900 text-white font-mono text-xs font-black uppercase tracking-wider shadow-lg hover:bg-slate-800 transition"
+          className="w-full py-3.5 rounded-2xl bg-slate-900 hover:bg-black text-white font-mono text-xs font-black uppercase tracking-wider shadow-lg transition cursor-pointer"
         >
-          {cleared ? '✓ TABLE VACATED &amp; RESET!' : '[DISPATCH BUSBOY &amp; MARK VACANT]'}
+          {cleared ? '✓ Table Vacated & Reset!' : 'Dispatch Busboy & Mark Vacant'}
         </motion.button>
       </div>
     </WaiterTabletHousing>

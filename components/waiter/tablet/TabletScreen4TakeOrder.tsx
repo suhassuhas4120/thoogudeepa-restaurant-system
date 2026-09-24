@@ -5,7 +5,7 @@ import { useWaiterStore } from '../../../store/useWaiterStore';
 import { useSharedBridge } from '../../../store/useSharedBridge';
 import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
 import { INITIAL_MENU_ITEMS } from '../../../data/menuItems';
-import { ArrowLeft, ShoppingBag, Search, Plus, Minus, Check, Ban, Lock } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, ArrowRight, Search, Plus, Minus, Check, Ban, Lock } from 'lucide-react';
 
 export const TabletScreen4TakeOrder: React.FC = () => {
   const {
@@ -49,7 +49,7 @@ export const TabletScreen4TakeOrder: React.FC = () => {
   return (
     <WaiterTabletLandscapeHousing
       screenNumber={4}
-      screenTitle="POS TOUCH MENU ORDERING (2-COLUMN GRID)"
+      screenTitle="MENU ORDER ENTRY & KOT PUNCH"
     >
       <div className="flex flex-col flex-1 min-h-[700px] p-5 font-mono select-none">
         {/* TOP HEADER */}
@@ -57,27 +57,36 @@ export const TabletScreen4TakeOrder: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setCurrentScreen(3)}
-              className="bg-slate-900 hover:bg-black text-white px-3 py-1.5 rounded font-bold transition flex items-center gap-1.5 text-xs shadow-2xs"
+              className="bg-slate-900 hover:bg-black text-white px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 text-xs shadow-2xs cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span>[⬅ BACK TO {selectedTableNumber || 'TABLE'}]</span>
+              <span>Back to Table {selectedTableNumber || 'Overview'}</span>
             </button>
             <h3 className="font-black text-slate-950 text-sm">
-              [SCREEN 4: MENU PAGE — ORDER TAKING FOR {selectedTableNumber || 'TABLE A-04'}]
+              Table {selectedTableNumber || 'A-04'}: Menu Order Entry
             </h3>
           </div>
 
+          {/* Cart Icon Button (styled like Customer Order) */}
           <button
             onClick={() => setCurrentScreen(5)}
-            className="bg-slate-900 hover:bg-black text-white px-4 py-2 rounded-lg font-black text-xs transition flex items-center gap-2 shadow-xs"
+            className="bg-slate-900 hover:bg-black text-white px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2.5 shadow-sm border border-slate-700 active:scale-95 cursor-pointer"
           >
-            <ShoppingBag className="h-4 w-4 text-orange-400" />
-            <span>🛒 [VIEW CART / ITEM CUSTOMIZATION (SCREEN 5) ➔]</span>
-            {cartItemCount > 0 && (
-              <span className="bg-orange-500 text-white rounded-full px-1.5 py-0.2 text-[10px]">
-                {cartItemCount}
+            <div className="relative flex items-center justify-center">
+              <ShoppingCart className="h-4 w-4 text-orange-400 stroke-[2.2]" />
+              {cartItemCount > 0 && (
+                <span className="absolute -top-2 -right-2.5 min-w-[18px] h-[18px] px-1 bg-orange-600 text-white text-[9px] font-black rounded-full flex items-center justify-center ring-2 ring-slate-900 animate-pulse">
+                  {cartItemCount}
+                </span>
+              )}
+            </div>
+            <span className="font-bold text-slate-100">View Cart</span>
+            {cartTotal > 0 && (
+              <span className="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-[11px] font-mono font-bold text-amber-300">
+                ₹{cartTotal}
               </span>
             )}
+            <ArrowRight className="h-3.5 w-3.5 text-slate-400" />
           </button>
         </div>
 
@@ -86,12 +95,12 @@ export const TabletScreen4TakeOrder: React.FC = () => {
           <div className="mb-3 border border-slate-300 bg-slate-100 rounded-xl p-3 flex flex-col gap-1.5 shrink-0 text-xs">
             <span className="flex items-center gap-1.5 font-bold text-slate-700">
               <Lock className="h-3.5 w-3.5 text-slate-500" />
-              [ALREADY ORDERED &amp; FIRED DISHES (LOCKED AGAINST DUPLICATION)]:
+              Already Fired Dishes (Locked against duplication):
             </span>
             <div className="flex flex-wrap gap-2 text-[11px]">
               {activeTable.activeItems.map((it, idx) => (
                 <span key={idx} className="bg-white border border-slate-300 rounded px-2 py-0.5 text-slate-700 font-bold">
-                  • {it.quantity}x {it.name} [{it.status}]
+                  • {it.quantity}x {it.name} • {it.status}
                 </span>
               ))}
             </div>
@@ -104,13 +113,13 @@ export const TabletScreen4TakeOrder: React.FC = () => {
             <button
               key={cat}
               onClick={() => setSelectedCat(cat)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition border ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition border cursor-pointer ${
                 selectedCat === cat
-                  ? 'bg-slate-900 text-white border-slate-900'
+                  ? 'bg-slate-900 text-white border-slate-900 shadow-2xs'
                   : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
               }`}
             >
-              [{cat === 'ALL' ? 'ALL CATEGORIES' : cat}]
+              {cat === 'ALL' ? 'All Categories' : cat}
             </button>
           ))}
 
@@ -120,7 +129,7 @@ export const TabletScreen4TakeOrder: React.FC = () => {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="[SEARCH MENU DISHES...]"
+              placeholder="Search menu dishes..."
               className="w-full pl-9 pr-3 py-1.5 border border-slate-400 rounded-lg text-xs font-mono bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
           </div>
@@ -128,9 +137,9 @@ export const TabletScreen4TakeOrder: React.FC = () => {
 
         {/* Add Notice Toast */}
         {addedItemNotice && (
-          <div className="mb-2 bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded flex items-center gap-2 shrink-0">
+          <div className="mb-2 bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 shrink-0">
             <Check className="h-3.5 w-3.5" />
-            <span>✓ ADDED: {addedItemNotice} (KOT CART UPDATED)</span>
+            <span>✓ Added to Order Cart: {addedItemNotice}</span>
           </div>
         )}
 
@@ -153,7 +162,7 @@ export const TabletScreen4TakeOrder: React.FC = () => {
               >
                 <div className="relative w-full h-24 border-2 border-dashed border-slate-300 bg-slate-50 rounded-lg flex items-center justify-center gap-2 text-slate-600">
                   <span className="text-2xl">{isSoldOut ? '🚫' : '🍛'}</span>
-                  <span className="font-mono text-xs font-bold">[{item.category.toUpperCase()}]</span>
+                  <span className="font-mono text-xs font-bold">{item.category}</span>
                   {isSoldOut && (
                     <span className="absolute top-2 right-2 bg-rose-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded">
                       86 SOLD OUT
@@ -163,10 +172,10 @@ export const TabletScreen4TakeOrder: React.FC = () => {
 
                 <div>
                   <strong className="text-sm font-black text-slate-950 block">
-                    [{item.name}]
+                    {item.name}
                   </strong>
                   <span className="text-[11px] font-bold text-slate-500">
-                    [{item.category}] • [PRICE: ₹ {item.price.toFixed(2)}]
+                    {item.category} • ₹{item.price.toFixed(2)}
                   </span>
                   <p className="text-[10.5px] text-slate-600 mt-1 line-clamp-1">
                     {item.description}
@@ -181,33 +190,33 @@ export const TabletScreen4TakeOrder: React.FC = () => {
                     className="w-full py-2 rounded-lg font-black text-xs flex items-center justify-center gap-1.5 bg-stone-200 text-slate-400 border border-slate-300 cursor-not-allowed mt-1"
                   >
                     <Ban className="h-3.5 w-3.5" />
-                    <span>[SOLD OUT IN KITCHEN]</span>
+                    <span>Sold Out in Kitchen</span>
                   </button>
                 ) : qty === 0 ? (
                   <button
                     type="button"
                     onClick={() => handleAdd(item)}
-                    className="w-full py-2 rounded-lg font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs mt-1 bg-slate-900 hover:bg-black text-white"
+                    className="w-full py-2 rounded-lg font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs mt-1 bg-slate-900 hover:bg-black text-white cursor-pointer active:scale-98"
                   >
                     <Plus className="h-3.5 w-3.5" />
-                    <span>[+ ADD]</span>
+                    <span>Add Item</span>
                   </button>
                 ) : (
                   <div className="w-full flex items-center justify-between rounded-lg border border-slate-400 bg-stone-50 p-1 mt-1">
                     <button
                       type="button"
                       onClick={() => inCart && updateOrderCartQty(inCart.cartItemId, -1)}
-                      className="w-8 h-7 rounded bg-white hover:bg-slate-100 text-slate-900 font-black flex items-center justify-center border border-slate-300 transition"
+                      className="w-8 h-7 rounded bg-white hover:bg-slate-100 text-slate-900 font-black flex items-center justify-center border border-slate-300 transition cursor-pointer"
                     >
                       <Minus className="h-3.5 w-3.5 stroke-[2.5]" />
                     </button>
-                    <span className="font-mono text-sm font-black text-slate-950">
-                      {qty} ADDED
+                    <span className="font-mono text-xs font-black text-slate-950">
+                      {qty} in Cart
                     </span>
                     <button
                       type="button"
                       onClick={() => inCart && updateOrderCartQty(inCart.cartItemId, 1)}
-                      className="w-8 h-7 rounded bg-slate-900 hover:bg-black text-white font-black flex items-center justify-center transition"
+                      className="w-8 h-7 rounded bg-slate-900 hover:bg-black text-white font-black flex items-center justify-center transition cursor-pointer"
                     >
                       <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
                     </button>
@@ -222,19 +231,19 @@ export const TabletScreen4TakeOrder: React.FC = () => {
         <div className="mt-3 border-2 border-slate-800 bg-slate-100 rounded-xl px-5 py-3 flex justify-between items-center shrink-0 shadow-xs">
           <div>
             <strong className="text-xs font-black text-slate-950">
-              [NEW ITEMS TO ORDER: {cartItemCount} ITEMS ADDED]
+              Order Cart: {cartItemCount} items
             </strong>
             <span className="text-xs font-bold text-slate-600 ml-3">
-              [NEW SUBTOTAL: ₹ {cartTotal > 0 ? cartTotal.toFixed(2) : '0.00'}]
+              Subtotal: ₹{cartTotal > 0 ? cartTotal.toFixed(2) : '0.00'}
             </span>
           </div>
 
           <button
             type="button"
             onClick={() => setCurrentScreen(5)}
-            className="bg-slate-900 hover:bg-black text-white px-5 py-2.5 rounded-lg font-black text-xs transition shadow-2xs"
+            className="bg-slate-900 hover:bg-black text-white px-5 py-2.5 rounded-lg font-black text-xs transition shadow-2xs cursor-pointer"
           >
-            [CONFIRM ORDER &amp; CUSTOMIZE ITEMS (SCREEN 5) ➔]
+            Review KOT &amp; Customize ➔
           </button>
         </div>
       </div>

@@ -201,7 +201,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
   return (
     <WaiterTabletLandscapeHousing
       screenNumber={3}
-      screenTitle="DETAILED TABLE VIEW & DYNAMIC COMMAND HUB"
+      screenTitle="TABLE OPERATIONS & DYNAMIC COMMAND HUB"
     >
       <div className="flex flex-col flex-1 min-h-[700px]">
         {/* TOP HEADER */}
@@ -209,15 +209,15 @@ export const TabletScreen3TableDetail: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setCurrentScreen(2)}
-              className="bg-slate-900 hover:bg-black text-white px-3 py-1.5 rounded font-bold transition flex items-center gap-1.5 shadow-2xs"
+              className="bg-slate-900 hover:bg-black text-white px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span>[⬅ BACK TO ALL TABLES (SCREEN 2)]</span>
+              <span>Back to Floor Overview</span>
             </button>
             <h3 className="font-black text-slate-950 text-sm">
               {activeTable.mergedWith
-                ? `[TABLE ${activeTable.number} + ${activeTable.mergedWith} (MERGED)]`
-                : `[${activeTable.number} SELECTED]`}
+                ? `Table ${activeTable.number} + ${activeTable.mergedWith} (Merged)`
+                : `Table ${activeTable.number}`}
             </h3>
             <span className={`px-2 py-0.5 rounded font-bold text-[11px] border ${
               activeTable.status === 'OCCUPIED'
@@ -226,18 +226,18 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 ? 'bg-purple-50 text-purple-950 border-purple-300'
                 : 'border-slate-900 bg-slate-100 text-slate-800'
             }`}>
-              [STATUS: {activeTable.status} • {activeTable.status === 'BILLING' ? 'SETTLED' : 'DINING'}]
+              Status: {activeTable.status} • {activeTable.status === 'BILLING' ? 'Settled' : 'Dining'}
             </span>
           </div>
 
           <div className="flex items-center gap-3">
             {activeTable.mergedWith && (
               <span className="bg-purple-100 border border-purple-300 text-purple-900 px-2 py-0.5 rounded text-[10.5px] font-black">
-                🔗 MERGED TABLE (TOTAL GUESTS: {activeTable.guestCount})
+                🔗 Merged Table ({activeTable.guestCount} Guests)
               </span>
             )}
             <span className="text-slate-600 font-bold text-[11px]">
-              [ASSIGNED FLOOR CAPTAIN: {activeCaptain}]
+              Assigned Captain: {activeCaptain}
             </span>
           </div>
         </div>
@@ -265,26 +265,26 @@ export const TabletScreen3TableDetail: React.FC = () => {
               <div className="bg-white border-2 border-slate-300 rounded-xl p-4 flex justify-between items-center shadow-xs">
                 <div>
                   <strong className="text-sm font-black text-slate-900 block">
-                    [KOT #{activeTable.kotCount || 104} • SEATED {activeTable.seatedTime || '12:52 PM'}]
+                    KOT #{activeTable.kotCount || 104} • Seated {activeTable.seatedTime || '12:52 PM'}
                   </strong>
                   <div className="text-[11px] text-slate-500 font-bold mt-0.5">
-                    [GUEST COUNT: {activeTable.guestCount || 3} GUESTS • SERVER: {activeCaptain}]
+                    Guest Count: {activeTable.guestCount || 3} Guests • Server: {activeCaptain}
                   </div>
                   {activeTable.mergedWith && (
                     <div className="text-[10.5px] text-purple-700 font-black mt-0.5">
-                      • CONSOLIDATED WITH TABLE {activeTable.mergedWith}
+                      • Consolidated with Table {activeTable.mergedWith}
                     </div>
                   )}
                 </div>
                 <span className="border-2 border-slate-900 bg-slate-100 px-3 py-1 rounded-md font-black text-slate-950 text-xs">
-                  [RUNNING BILL: ₹ {runningTotal.toFixed(2)}]
+                  Running Bill: ₹{runningTotal.toFixed(2)}
                 </span>
               </div>
 
               {/* Ordered Items List & Preparation Tracking */}
               <div>
                 <span className="font-black text-xs text-slate-900 uppercase tracking-wider block mb-2">
-                  [ORDERED ITEMS LIST &amp; PREPARATION TRACKING]:
+                  ORDERED ITEMS & PREPARATION STATUS
                 </span>
 
                 <div className="flex flex-col gap-2">
@@ -299,7 +299,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                             {item.quantity}x {item.name}
                           </strong>
                           <div className="text-[10.5px] text-slate-500 font-bold">
-                            [PREPARATION IN KITCHEN • PROTECTED]
+                            Kitchen Prep • Protected
                           </div>
                         </div>
                         <span className={`border px-2 py-0.5 rounded text-[10.5px] font-bold ${
@@ -307,13 +307,13 @@ export const TabletScreen3TableDetail: React.FC = () => {
                             ? 'border-emerald-600 bg-emerald-50 text-emerald-950'
                             : 'border-slate-900 bg-amber-50 text-amber-950'
                         }`}>
-                          [{item.status === 'Ready' ? 'STAGE 3: READY' : item.status === 'Served' ? 'STAGE 4: SERVED' : 'STAGE 2: PREPARING'}]
+                          {item.status === 'Ready' ? 'Ready to Serve' : item.status === 'Served' ? 'Served' : 'Preparing'}
                         </span>
                       </div>
                     ))
                   ) : (
                     <div className="bg-white border border-slate-300 rounded-lg p-3 text-slate-400 italic text-xs">
-                      [No active items placed yet. Click TAKE ORDERS to add dishes.]
+                      No active items placed yet. Click Take Orders to add dishes.
                     </div>
                   )}
                 </div>
@@ -322,13 +322,13 @@ export const TabletScreen3TableDetail: React.FC = () => {
               {/* Special Customer Service Notes */}
               <div className="bg-white border border-slate-300 rounded-xl p-3.5 flex flex-col gap-1 text-[11px] shadow-2xs">
                 <span className="font-black text-slate-500 uppercase text-[10px]">
-                  [SPECIAL CUSTOMER SERVICE NOTES]:
+                  Special Service Notes
                 </span>
                 <div className="text-slate-700">
-                  • [CUSTOMER REQUEST: EXTRA WATER BOTTLE PROVIDED AT 01:05 PM]
+                  • Customer Request: Extra water bottle provided at 01:05 PM
                 </div>
                 <div className="text-slate-700">
-                  • [ALLERGY ALERT: NUT-FREE PREPARATION CONFIRMED WITH HEAD CHEF]
+                  • Allergy Alert: Nut-free preparation confirmed with head chef
                 </div>
               </div>
             </div>
@@ -346,7 +346,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 }`}
               >
                 <Utensils className="h-4 w-4" />
-                <span>🍽️ [TAKE ORDERS BUTTON ➔ SCREEN 4]</span>
+                <span>Take Orders</span>
               </button>
 
               {/* 2. Payment Button */}
@@ -360,7 +360,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 }`}
               >
                 <CreditCard className="h-4 w-4" />
-                <span>💳 [PAYMENT BUTTON (EXPANDS RIGHT 40%)]</span>
+                <span>Bill Payment</span>
               </button>
 
               {/* 3. Merge Tables Button */}
@@ -374,7 +374,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 }`}
               >
                 <Users className="h-4 w-4" />
-                <span>🔗 [MERGE TABLES BUTTON (EXPANDS RIGHT 40%)]</span>
+                <span>Merge Tables</span>
               </button>
 
               {/* 4. Table Vacate Button (ENABLED ONLY WHEN PAYMENT IS DONE) */}
@@ -390,7 +390,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 }`}
               >
                 <Trash2 className="h-4 w-4" />
-                <span>🧹 {canVacate ? '[TABLE VACATE (ENABLED)]' : '[VACATE (LOCKED: PAY PENDING)]'}</span>
+                <span>🧹 {canVacate ? 'Vacate Table' : 'Vacate (Locked: Bill Due)'}</span>
               </button>
             </div>
           </div>
@@ -402,35 +402,35 @@ export const TabletScreen3TableDetail: React.FC = () => {
               <div className="flex flex-col gap-4 flex-1">
                 <div className="flex justify-between items-center border-b border-slate-200 pb-2">
                   <span className="font-black text-xs text-slate-900 uppercase">
-                    [RIGHT CONSOLE — LIVE BILL SUMMARY]:
+                    Live Bill Summary
                   </span>
                   <span className="text-[10px] font-bold text-slate-500">
-                    TABLE [{activeTable.number}]
+                    Table {activeTable.number}
                   </span>
                 </div>
 
                 <div className="border-2 border-slate-800 rounded-xl p-4 flex flex-col gap-2.5 bg-slate-50 shadow-xs">
                   <strong className="text-xs font-black text-slate-900">
-                    [BILL SUMMARY FOR {activeTable.number}]
+                    Bill Summary — Table {activeTable.number}
                   </strong>
                   <div className="flex justify-between text-xs text-slate-600">
-                    <span>[SUBTOTAL]:</span>
+                    <span>Subtotal:</span>
                     <span>₹ {subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-xs text-slate-600">
-                    <span>[CGST 2.5%]:</span>
+                    <span>CGST 2.5%:</span>
                     <span>₹ {(gst / 2).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-xs text-slate-600">
-                    <span>[SGST 2.5%]:</span>
+                    <span>SGST 2.5%:</span>
                     <span>₹ {(gst / 2).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-xs text-slate-600">
-                    <span>[SERVICE CHARGE 5%]:</span>
+                    <span>Service Charge 5%:</span>
                     <span>₹ {serviceCharge.toFixed(2)}</span>
                   </div>
                   <div className="border-t-2 border-slate-900 pt-2 flex justify-between text-sm font-black text-slate-950">
-                    <span>[GRAND TOTAL DUE]:</span>
+                    <span>Grand Total Due:</span>
                     <span>₹ {runningTotal.toFixed(2)}</span>
                   </div>
                 </div>
@@ -442,7 +442,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     className="w-full py-3 bg-slate-900 hover:bg-black text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 shadow-2xs"
                   >
                     <Utensils className="h-4 w-4" />
-                    <span>🍽️ [OPEN ORDER TAKING MENU (SCREEN 4)]</span>
+                    <span>Open Menu Order Entry</span>
                   </button>
                   <button
                     type="button"
@@ -450,7 +450,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 shadow-2xs"
                   >
                     <CreditCard className="h-4 w-4" />
-                    <span>💳 [COLLECT PAYMENT (SCREEN 7)]</span>
+                    <span>Collect Payment</span>
                   </button>
                 </div>
               </div>
@@ -461,7 +461,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
               <div className="flex flex-col gap-3 flex-1 overflow-hidden">
                 <div className="flex justify-between items-center border-b-2 border-slate-800 pb-2">
                   <span className="font-black text-xs text-slate-900 uppercase">
-                    [SCREEN 4: MENU ORDER TAKING FOR {activeTable.number}]
+                    Table {activeTable.number}: Menu Order Entry
                   </span>
                   <button
                     onClick={() => setRightPane('bill_summary')}
@@ -477,7 +477,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   <div className="border border-slate-300 bg-slate-100 rounded-lg p-2.5 flex flex-col gap-1 text-[10.5px]">
                     <span className="flex items-center gap-1 font-bold text-slate-700">
                       <Lock className="h-3 w-3 text-slate-500" />
-                      [ALREADY FIRED ITEMS (LOCKED AGAINST DUPLICATION)]:
+                      Already Fired Items (Locked):
                     </span>
                     <div className="flex flex-wrap gap-1 text-[10px]">
                       {activeTable.activeItems.map((it, idx) => (
@@ -502,7 +502,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                             : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
                         }`}
                       >
-                        [{cat === 'ALL' ? 'ALL' : cat}]
+                        {cat === 'ALL' ? 'All' : cat}
                       </button>
                     ))}
                   </div>
@@ -513,7 +513,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                       type="text"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      placeholder="[SEARCH MENU DISHES...]"
+                      placeholder="Search menu dishes..."
                       className="w-full pl-8 pr-2.5 py-1 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:border-orange-500 font-mono"
                     />
                   </div>
@@ -539,7 +539,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <strong className="text-xs font-black text-slate-950 truncate">
-                              [{item.name}]
+                              {item.name}
                             </strong>
                             {isSoldOut && (
                               <span className="bg-rose-600 text-white text-[8.5px] font-black px-1 rounded">
@@ -548,7 +548,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                             )}
                           </div>
                           <span className="text-[10px] text-slate-500 block">
-                            [₹ {item.price.toFixed(2)}] • {item.category}
+                            ₹{item.price.toFixed(2)} • {item.category}
                           </span>
                         </div>
 
@@ -575,7 +575,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                               }`}
                             >
                               <Plus className="h-3 w-3" />
-                              <span>[+ ADD]</span>
+                              <span>+ Add</span>
                             </button>
                           ) : (
                             <div className="flex items-center gap-1 rounded border border-slate-300 bg-white p-0.5 shadow-2xs">
@@ -608,10 +608,10 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 <div className="border-t-2 border-slate-800 pt-2 shrink-0 flex items-center justify-between gap-2">
                   <div>
                     <span className="text-[10px] font-bold text-slate-500 block">
-                      [NEW SELECTION: {draftItemCount} ITEMS]
+                      New Selection: {draftItemCount} items
                     </span>
                     <strong className="text-xs font-black text-slate-900">
-                      ₹ {draftTotal.toFixed(2)}
+                      ₹{draftTotal.toFixed(2)}
                     </strong>
                   </div>
 
@@ -626,7 +626,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     }`}
                   >
                     <Flame className="h-3.5 w-3.5 fill-white" />
-                    <span>🔥 [FIRE KOT TO KITCHEN ➔]</span>
+                    <span>Fire KOT to Kitchen ➔</span>
                   </button>
                 </div>
               </div>
@@ -637,7 +637,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
               <div className="flex flex-col gap-3 flex-1 overflow-y-auto">
                 <div className="flex justify-between items-center border-b-2 border-slate-800 pb-2">
                   <span className="font-black text-xs text-slate-900 uppercase">
-                    [SCREEN 5: ITEM CUSTOMIZATION]
+                    Order Item Customization
                   </span>
                   <button
                     onClick={() => setRightPane('take_order')}
@@ -649,17 +649,17 @@ export const TabletScreen3TableDetail: React.FC = () => {
 
                 <div className="border border-slate-300 bg-slate-50 rounded-xl p-3">
                   <strong className="text-xs font-black text-slate-950 block">
-                    [{customizingItem.name.toUpperCase()}]
+                    {customizingItem.name.toUpperCase()}
                   </strong>
                   <span className="text-[10px] font-bold text-slate-500">
-                    [BASE PRICE: ₹ {customizingItem.price.toFixed(2)}] • {customizingItem.category}
+                    Base Price: ₹{customizingItem.price.toFixed(2)} • {customizingItem.category}
                   </span>
                 </div>
 
                 {/* Portion Size */}
                 <div className="border border-slate-300 rounded-lg p-2.5">
                   <span className="text-[10px] font-bold text-slate-600 uppercase block mb-1">
-                    [PORTION SIZE]:
+                    PORTION SIZE:
                   </span>
                   <div className="flex gap-2">
                     {(['REGULAR', 'LARGE'] as const).map((p) => (
@@ -672,7 +672,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                             : 'bg-white text-slate-700 border-slate-300'
                         }`}
                       >
-                        [{p} {p === 'LARGE' ? '+₹60' : ''}]
+                        {p} {p === 'LARGE' ? '(+₹60)' : ''}
                       </button>
                     ))}
                   </div>
@@ -681,7 +681,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 {/* Spice Level */}
                 <div className="border border-slate-300 rounded-lg p-2.5">
                   <span className="text-[10px] font-bold text-slate-600 uppercase block mb-1">
-                    [SPICE LEVEL]:
+                    SPICE LEVEL:
                   </span>
                   <div className="flex gap-1.5">
                     {(['MILD', 'MEDIUM', 'VERY SPICY'] as const).map((s) => (
@@ -694,7 +694,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                             : 'bg-white text-slate-700 border-slate-300'
                         }`}
                       >
-                        [{s}]
+                        {s}
                       </button>
                     ))}
                   </div>
@@ -703,7 +703,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 {/* Special Dietary */}
                 <div className="border border-slate-300 rounded-lg p-2.5 space-y-1.5 text-xs">
                   <span className="text-[10px] font-bold text-slate-600 uppercase block">
-                    [PREPARATION OPTIONS]:
+                    PREPARATION OPTIONS:
                   </span>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -712,7 +712,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                       onChange={(e) => setOptions({ ...options, lessSpice: e.target.checked })}
                       className="accent-slate-900"
                     />
-                    <span>[LESS SPICE]</span>
+                    <span>Less Spice</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -721,20 +721,20 @@ export const TabletScreen3TableDetail: React.FC = () => {
                       onChange={(e) => setOptions({ ...options, noOnion: e.target.checked })}
                       className="accent-slate-900"
                     />
-                    <span>[NO ONION / JAIN CUT]</span>
+                    <span>No Onion / Jain Cut</span>
                   </label>
                 </div>
 
                 {/* Chef Notes */}
                 <div>
                   <label className="text-[10px] font-bold text-slate-600 uppercase block mb-1">
-                    [CHEF KOT NOTE]:
+                    CHEF KOT NOTE:
                   </label>
                   <input
                     type="text"
                     value={chefNote}
                     onChange={(e) => setChefNote(e.target.value)}
-                    placeholder="[E.G., CRISPY ROAST, SERVE HOT]"
+                    placeholder="e.g., Crispy roast, serve hot"
                     className="w-full p-2 border border-slate-300 rounded text-xs font-mono"
                   />
                 </div>
@@ -745,7 +745,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-black text-xs transition shadow-2xs mt-auto flex items-center justify-center gap-2"
                 >
                   <Flame className="h-4 w-4 fill-white" />
-                  <span>🔥 [CONFIRM &amp; FIRE KOT TO KITCHEN ➔]</span>
+                  <span>Fire KOT to Kitchen ➔</span>
                 </button>
               </div>
             )}
@@ -755,7 +755,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
               <div className="flex flex-col gap-3 flex-1 overflow-y-auto">
                 <div className="flex justify-between items-center border-b-2 border-slate-800 pb-2">
                   <span className="font-black text-xs text-slate-900 uppercase">
-                    [SCREEN 6: TABLE MERGE CONTROLLER]
+                    Table Merge Controller
                   </span>
                   <button
                     onClick={() => setRightPane('bill_summary')}
@@ -767,10 +767,10 @@ export const TabletScreen3TableDetail: React.FC = () => {
 
                 <div className="border border-slate-300 bg-white rounded-xl p-3.5 flex flex-col gap-2">
                   <span className="text-[11px] font-bold text-slate-700">
-                    [PRIMARY TABLE: {activeTable.number}]
+                    Primary Table: {activeTable.number}
                   </span>
                   <span className="text-[10.5px] font-bold text-slate-500 uppercase">
-                    [SELECT TABLE NUMBER TO MERGE TOGETHER]:
+                    Select Table to Merge:
                   </span>
 
                   <div className="grid grid-cols-3 gap-2">
@@ -784,22 +784,22 @@ export const TabletScreen3TableDetail: React.FC = () => {
                             : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
                         }`}
                       >
-                        [{tbl}]
+                        {tbl}
                       </button>
                     ))}
                   </div>
 
                   <div className="text-[10.5px] font-bold text-purple-700 mt-1">
-                    [MERGE PREVIEW: {activeTable.number} + {selectedMergeChip} COMBINED]
+                    Merge Preview: {activeTable.number} + {selectedMergeChip} Combined
                   </div>
                   <div className="text-[10px] text-slate-500">
-                    [BILLS &amp; ACTIVE ORDERS WILL UNIFY UNDER ONE COMBINED TABLE]
+                    Bills and active orders will unify under one combined table.
                   </div>
 
                   {mergeConfirmed && (
                     <div className="p-2 bg-emerald-50 border border-emerald-400 rounded text-emerald-800 text-xs font-bold flex items-center gap-1.5">
                       <CheckCircle2 className="h-4 w-4" />
-                      <span>✓ TABLES MERGED SUCCESSFULLY!</span>
+                      <span>✓ Tables Merged Successfully!</span>
                     </div>
                   )}
                 </div>
@@ -810,7 +810,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   className="w-full py-3 bg-slate-900 hover:bg-black text-white rounded-lg font-black text-xs transition shadow-2xs mt-auto flex items-center justify-center gap-2"
                 >
                   <Users className="h-4 w-4" />
-                  <span>🔗 [CONFIRM MERGE TABLES WITH {selectedMergeChip}]</span>
+                  <span>Confirm Merge with {selectedMergeChip}</span>
                 </button>
               </div>
             )}
@@ -820,7 +820,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
               <div className="flex flex-col gap-3 flex-1 overflow-y-auto">
                 <div className="flex justify-between items-center border-b-2 border-slate-800 pb-2">
                   <span className="font-black text-xs text-slate-900 uppercase">
-                    [SCREEN 7: PAYMENT SETTLEMENT FOR {activeTable.number}]
+                    Payment Settlement — Table {activeTable.number}
                   </span>
                   <button
                     onClick={() => setRightPane('bill_summary')}
@@ -832,10 +832,10 @@ export const TabletScreen3TableDetail: React.FC = () => {
 
                 <div className="border-2 border-slate-900 bg-slate-50 rounded-xl p-3 text-center">
                   <span className="text-[10.5px] font-bold text-slate-500 block uppercase">
-                    [TOTAL BILL PAYABLE]
+                    TOTAL BILL PAYABLE
                   </span>
                   <strong className="text-xl font-black text-slate-950 font-mono">
-                    ₹ {runningTotal.toFixed(2)}
+                    ₹{runningTotal.toFixed(2)}
                   </strong>
                 </div>
 
@@ -851,7 +851,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                           : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
                       }`}
                     >
-                      {m === 'CASH' ? '💵 CASH' : m === 'UPI' ? '📱 UPI' : '💳 POS'}
+                      {m === 'CASH' ? '💵 Cash' : m === 'UPI' ? '📱 UPI' : '💳 Card POS'}
                     </button>
                   ))}
                 </div>
@@ -864,30 +864,30 @@ export const TabletScreen3TableDetail: React.FC = () => {
                         <QrCode className="h-16 w-16 text-slate-800" />
                       </div>
                       <span className="text-[11px] font-bold text-slate-800">
-                        [SCAN QR CODE TO PAY ₹ {runningTotal.toFixed(2)}]
+                        Scan QR Code to Pay ₹{runningTotal.toFixed(2)}
                       </span>
                       <span className="text-[10px] text-slate-500">
-                        [TIMEOUT: 04:58 MINS REMAINING]
+                        Timeout: 04:58 mins remaining
                       </span>
                     </>
                   ) : payMode === 'CASH' ? (
                     <>
                       <span className="text-4xl">💵</span>
                       <span className="text-xs font-black text-slate-900">
-                        [COLLECT CASH TENDER: ₹ {runningTotal.toFixed(2)}]
+                        Collect Cash Tender: ₹{runningTotal.toFixed(2)}
                       </span>
                       <span className="text-[10px] text-slate-500">
-                        [CONFIRM CURRENCY NOTES FROM GUEST]
+                        Confirm currency notes from guest
                       </span>
                     </>
                   ) : (
                     <>
                       <CreditCard className="h-12 w-12 text-slate-800" />
                       <span className="text-xs font-black text-slate-900">
-                        [SWIPE / TAP CARD ON POS MACHINE]
+                        Swipe / Tap Card on POS Machine
                       </span>
                       <span className="text-[10px] text-slate-500">
-                        [CARD TRANSACTION: ₹ {runningTotal.toFixed(2)}]
+                        Card Transaction: ₹{runningTotal.toFixed(2)}
                       </span>
                     </>
                   )}
@@ -899,7 +899,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   className="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-black text-xs transition shadow-2xs mt-auto flex items-center justify-center gap-2"
                 >
                   <CheckCircle2 className="h-4 w-4" />
-                  <span>✓ [CONFIRM PAYMENT ➔ GENERATE BILL (SCREEN 8)]</span>
+                  <span>Confirm Payment & Generate Bill ➔</span>
                 </button>
               </div>
             )}
@@ -909,7 +909,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
               <div className="flex flex-col gap-3 flex-1 overflow-y-auto">
                 <div className="flex justify-between items-center border-b-2 border-slate-800 pb-2">
                   <span className="font-black text-xs text-slate-900 uppercase">
-                    [SCREEN 8: BILL SETTLEMENT &amp; VACATE]
+                    Bill Settlement & Vacate Table
                   </span>
                   <button
                     onClick={() => setRightPane('bill_summary')}
@@ -923,10 +923,10 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   <CheckCircle2 className="h-5 w-5 text-emerald-700 shrink-0" />
                   <div>
                     <strong className="text-xs font-black text-emerald-950 block">
-                      [PAYMENT SUCCESSFUL — BILL SETTLED]
+                      Payment Successful — Bill Settled
                     </strong>
                     <span className="text-[10px] text-emerald-700 font-bold">
-                      [INV-2026-{activeTable.number} • PAID VIA {payMode}]
+                      INV-2026-{activeTable.number} • Paid via {payMode}
                     </span>
                   </div>
                 </div>
@@ -955,12 +955,12 @@ export const TabletScreen3TableDetail: React.FC = () => {
 
                 {printSent && (
                   <div className="p-2 bg-slate-900 text-white rounded text-[10.5px] font-bold text-center">
-                    [PRINT JOB SENT TO POS PRINTER #PRN-104]
+                    Print job sent to POS Printer #PRN-104
                   </div>
                 )}
                 {whatsappSent && (
                   <div className="p-2 bg-emerald-700 text-white rounded text-[10.5px] font-bold text-center">
-                    [DIGITAL BILL SHARED TO GUEST VIA WHATSAPP]
+                    Digital receipt shared to guest via WhatsApp
                   </div>
                 )}
 
@@ -975,7 +975,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     className="py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs"
                   >
                     <MessageCircle className="h-3.5 w-3.5" />
-                    <span>[WHATSAPP]</span>
+                    <span>WhatsApp</span>
                   </button>
                   <button
                     type="button"
@@ -986,7 +986,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     className="py-2.5 bg-slate-900 hover:bg-black text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs"
                   >
                     <Printer className="h-3.5 w-3.5" />
-                    <span>[PRINT BILL]</span>
+                    <span>Print Bill</span>
                   </button>
                 </div>
 
@@ -1002,7 +1002,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   }`}
                 >
                   <Trash2 className="h-4 w-4" />
-                  <span>🧹 {canVacate ? '[VACATE & RESET TABLE FOR NEXT GUEST]' : '[VACATE DISABLED: PAYMENT PENDING]'}</span>
+                  <span>🧹 {canVacate ? 'Vacate & Reset Table for Next Guest' : 'Vacate Disabled (Payment Pending)'}</span>
                 </button>
               </div>
             )}

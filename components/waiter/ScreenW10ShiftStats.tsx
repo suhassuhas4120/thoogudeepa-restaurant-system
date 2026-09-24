@@ -21,16 +21,16 @@ export const ScreenW10ShiftStats: React.FC = () => {
   const shiftStats = useSharedBridge((s) => s.shiftStats);
 
   return (
-    <WaiterTabletHousing screenNumber={10} screenTitle="SHIFT OVERVIEW &amp; PERFORMANCE">
+    <WaiterTabletHousing screenNumber={10} screenTitle="SHIFT PERFORMANCE & SUMMARY KPIS">
       <div className="flex-1 flex flex-col justify-between p-4 space-y-3 overflow-y-auto">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setCurrentScreen(2)}
-              className="flex items-center gap-1 text-xs font-black text-slate-700"
+              className="flex items-center gap-1 text-xs font-black text-slate-700 hover:text-slate-900 cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span>[BACK TO FLOOR]</span>
+              <span>Back to Floor</span>
             </button>
             <span className="font-mono text-xs font-black text-slate-900">
               {activeCaptain.toUpperCase()}
@@ -40,7 +40,7 @@ export const ScreenW10ShiftStats: React.FC = () => {
           {/* Scorecard Hero */}
           <div className="rounded-2xl border border-orange-200 bg-gradient-to-br from-orange-50 via-white to-amber-50 p-4 shadow-xs text-center">
             <div className="font-mono text-[10px] font-bold text-orange-600 uppercase">
-              [CAPTAIN SHIFT PERFORMANCE SCORECARD]
+              Captain Shift Performance Scorecard
             </div>
             <div className="font-mono text-2xl font-black text-slate-900 mt-1">
               ₹ {shiftStats.totalRevenue.toLocaleString()}
@@ -80,7 +80,7 @@ export const ScreenW10ShiftStats: React.FC = () => {
           {/* Restaurant Metadata */}
           <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-2xs text-xs space-y-1">
             <div className="font-mono text-[10px] font-bold text-slate-400 uppercase">
-              [ESTABLISHMENT LOG]
+              Floor Terminal Info
             </div>
             <div className="font-bold text-slate-800">Thoogudeepa donne biryani mane</div>
             <div className="text-[10.5px] text-slate-500 font-mono">
@@ -93,10 +93,10 @@ export const ScreenW10ShiftStats: React.FC = () => {
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={() => setCurrentScreen(1)}
-          className="w-full py-3.5 rounded-2xl bg-slate-900 text-white font-mono text-xs font-black uppercase tracking-wider shadow-lg hover:bg-slate-800 flex items-center justify-center gap-2"
+          className="w-full py-3.5 rounded-2xl bg-slate-900 hover:bg-black text-white font-mono text-xs font-black uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 cursor-pointer transition"
         >
           <LogOut className="h-4 w-4" />
-          <span>[END SHIFT &amp; CLOCK OUT]</span>
+          <span>End Shift &amp; Clock Out</span>
         </motion.button>
       </div>
     </WaiterTabletHousing>

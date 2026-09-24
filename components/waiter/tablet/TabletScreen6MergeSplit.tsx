@@ -44,7 +44,7 @@ export const TabletScreen6MergeSplit: React.FC = () => {
   return (
     <WaiterTabletLandscapeHousing
       screenNumber={6}
-      screenTitle="TABLE MERGE CONTROLLER & CONSOLIDATION"
+      screenTitle="TABLE TRANSFER & MERGE MANAGEMENT"
     >
       <div className="flex flex-col flex-1 min-h-[700px] p-5 font-mono select-none">
         {/* TOP HEADER */}
@@ -54,13 +54,13 @@ export const TabletScreen6MergeSplit: React.FC = () => {
             className="bg-slate-900 hover:bg-black text-white px-3 py-1.5 rounded font-bold transition flex items-center gap-1.5 text-xs shadow-2xs"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            <span>[⬅ BACK TO {selectedTableNumber || 'TABLE'}]</span>
+            <span>Back to Table</span>
           </button>
           <h3 className="font-black text-slate-950 text-sm">
-            [SCREEN 6: TABLE MERGE &amp; CONSOLIDATION HUB]
+            Table Transfer & Merge Hub
           </h3>
           <span className="border border-slate-400 bg-slate-100 px-3 py-1 rounded font-bold text-xs text-slate-700">
-            [MERGE CONTROLLER]
+            Merge Controller
           </span>
         </div>
 
@@ -70,10 +70,10 @@ export const TabletScreen6MergeSplit: React.FC = () => {
           <div className="flex-1 flex flex-col gap-4 overflow-y-auto">
             <div className="border border-slate-300 bg-white rounded-xl p-5 flex flex-col gap-4 shadow-xs">
               <strong className="text-sm font-black text-slate-900">
-                [MERGE TABLES TO OPERATE AS ONE COMBINED BILL]:
+                Merge Tables for Unified Billing:
               </strong>
               <span className="text-xs font-bold text-slate-600">
-                [SELECT ACTIVE TABLES TO MERGE TOGETHER WITH {selectedTableNumber || 'A-04'}]:
+                Select active tables to merge with {selectedTableNumber || 'A-04'}:
               </span>
 
               <div className="grid grid-cols-4 gap-2.5">
@@ -91,24 +91,24 @@ export const TabletScreen6MergeSplit: React.FC = () => {
                           : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
                       } ${isPrimary ? 'cursor-default opacity-85 ring-2 ring-orange-500/30' : ''}`}
                     >
-                      [{tbl}] {isPrimary ? '★' : ''}
+                      {tbl} {isPrimary ? '★' : ''}
                     </button>
                   );
                 })}
               </div>
 
               <div className="border-t border-dashed border-slate-300 pt-3 text-xs font-bold text-slate-700 space-y-1">
-                <div>[PRIMARY MASTER TABLE: {selectedTableNumber || 'A-04'}]</div>
-                <div>[SELECTED TABLES TO MERGE: {selectedMergeTables.join(' + ')}]</div>
+                <div>Primary Master Table: {selectedTableNumber || 'A-04'}</div>
+                <div>Selected Tables to Merge: {selectedMergeTables.join(' + ')}</div>
                 <div className="text-purple-700 font-black">
-                  [COMBINED GUESTS: {selectedMergeTables.length * 3} GUESTS • CONSOLIDATED BILL: ₹ {(runningBill * selectedMergeTables.length).toLocaleString('en-IN')}.00]
+                  Combined Guests: {selectedMergeTables.length * 3} Guests • Consolidated Bill: ₹{(runningBill * selectedMergeTables.length).toLocaleString('en-IN')}.00
                 </div>
               </div>
 
               {mergeConfirmed && (
                 <div className="p-3 bg-emerald-50 border border-emerald-400 rounded-xl text-emerald-800 text-xs font-bold flex items-center justify-center gap-2">
                   <CheckCircle2 className="h-4 w-4" />
-                  <span>✓ TABLES MERGED SUCCESSFULLY — UNIFIED UNDER TABLE {selectedTableNumber || 'A-04'}!</span>
+                  <span>✓ Tables merged successfully — unified under Table {selectedTableNumber || 'A-04'}!</span>
                 </div>
               )}
             </div>
@@ -118,7 +118,7 @@ export const TabletScreen6MergeSplit: React.FC = () => {
               className="border border-slate-400 bg-white hover:bg-slate-100 text-slate-800 rounded-xl font-bold text-xs px-4 py-3.5 transition flex items-center justify-center gap-2 shadow-2xs"
             >
               <Utensils className="h-4 w-4" />
-              <span>🍽️ [OPEN MENU TO TAKE ORDERS FOR MERGED TABLE ➔]</span>
+              <span>Punch Order for Merged Table ➔</span>
             </button>
           </div>
 
@@ -126,14 +126,14 @@ export const TabletScreen6MergeSplit: React.FC = () => {
           <div className="flex-1 flex flex-col gap-4 overflow-y-auto">
             <div className="border border-slate-300 bg-slate-50 rounded-xl p-5 flex flex-col gap-3">
               <strong className="text-xs font-black text-slate-900 uppercase">
-                [MERGED TABLE PROTOCOL OVERVIEW]:
+                Merged Table Protocol Overview:
               </strong>
               <div className="text-xs text-slate-600 leading-relaxed space-y-2">
                 <p>
                   • When tables are merged, all future KOTs, dish preparation tracking, and payments will be routed as one single combined invoice.
                 </p>
                 <p>
-                  • Floor matrix on Screen 2 will display the merged indicator (e.g., <strong>[{selectedMergeTables.join(' + ')}]</strong>).
+                  • Floor matrix on Screen 2 will display the merged indicator ({selectedMergeTables.join(' + ')}).
                 </p>
                 <p>
                   • When vacating after payment, all merged tables are simultaneously released and returned to clean vacant status.
@@ -147,7 +147,7 @@ export const TabletScreen6MergeSplit: React.FC = () => {
               className="w-full py-4 bg-slate-900 hover:bg-black text-white rounded-xl font-black text-xs transition shadow-sm mt-auto flex items-center justify-center gap-2"
             >
               <Users className="h-4 w-4" />
-              <span>🔗 [CONFIRM TABLE MERGE ➔ UPDATE LIVE STATE]</span>
+              <span>Confirm Table Merge ➔ Update Live State</span>
             </button>
           </div>
         </div>
