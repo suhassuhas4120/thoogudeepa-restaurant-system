@@ -104,33 +104,33 @@ export const ScreenW2TablesFeed: React.FC = () => {
     <WaiterTabletHousing screenNumber={2} screenTitle="TABLES MATRIX &amp; DUAL FEEDS">
       <div className="flex-1 flex flex-col p-2.5 space-y-2.5 overflow-hidden">
         {/* Dynamic Floor Metrics Header */}
-        <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-2xs shrink-0 select-none">
+        <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-2xs shrink-0 select-none">
           <div className="flex items-center justify-between text-[10px] font-mono font-bold text-slate-500 mb-1.5 pb-1 border-b border-slate-100">
-            <span className="uppercase text-slate-900 font-extrabold">[FLOOR METRICS]</span>
-            <span className="text-slate-600">👤 {activeCaptain || 'Captain'}</span>
+            <span className="uppercase text-slate-900 font-extrabold">Floor Overview</span>
+            <span className="text-slate-600 font-medium">👤 {activeCaptain || 'Captain'}</span>
           </div>
-          <div className="grid grid-cols-4 gap-1 text-center font-mono text-[9px]">
-            <div className="bg-slate-900 text-white rounded p-1">
-              <div className="text-[8px] opacity-80 uppercase">OCCUPIED</div>
-              <div className="text-xs font-black">{occupiedCount}</div>
+          <div className="grid grid-cols-4 gap-1.5 text-center font-mono text-[9px]">
+            <div className="bg-slate-900 text-white rounded-lg p-1.5">
+              <div className="text-[8px] opacity-80 uppercase">Occupied</div>
+              <div className="text-sm font-black">{occupiedCount}</div>
             </div>
-            <div className="bg-slate-100 text-slate-800 rounded p-1 border border-slate-200">
-              <div className="text-[8px] text-slate-500 uppercase">VACANT</div>
-              <div className="text-xs font-black">{vacantCount}</div>
+            <div className="bg-slate-100 text-slate-800 rounded-lg p-1.5 border border-slate-200">
+              <div className="text-[8px] text-slate-500 uppercase">Vacant</div>
+              <div className="text-sm font-black">{vacantCount}</div>
             </div>
-            <div className="bg-amber-50 text-amber-900 rounded p-1 border border-amber-200">
-              <div className="text-[8px] text-amber-700 uppercase">ACTIVE KDS</div>
-              <div className="text-xs font-black">{activeOrdersCount}</div>
+            <div className="bg-amber-50 text-amber-900 rounded-lg p-1.5 border border-amber-200">
+              <div className="text-[8px] text-amber-700 uppercase">Orders</div>
+              <div className="text-sm font-black">{activeOrdersCount}</div>
             </div>
-            <div className="bg-emerald-50 text-emerald-900 rounded p-1 border border-emerald-200">
-              <div className="text-[8px] text-emerald-700 uppercase">SEATED</div>
-              <div className="text-xs font-black">{totalGuests}</div>
+            <div className="bg-emerald-50 text-emerald-900 rounded-lg p-1.5 border border-emerald-200">
+              <div className="text-[8px] text-emerald-700 uppercase">Seated</div>
+              <div className="text-sm font-black">{totalGuests}</div>
             </div>
           </div>
         </div>
 
-        {/* Top Section: Tables Matrix with Section Filters */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-2.5 shadow-xs flex flex-col max-h-[300px]">
+        {/* Top Section: Tables Matrix (1 Row = 2 Tables Only) */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-2.5 shadow-xs flex flex-col max-h-[320px]">
           {/* Section Filter Tabs */}
           <div className="flex items-center justify-between gap-1 mb-2 shrink-0">
             <div className="flex gap-1 overflow-x-auto pb-0.5 scrollbar-none">
@@ -139,23 +139,23 @@ export const ScreenW2TablesFeed: React.FC = () => {
                   key={sec}
                   type="button"
                   onClick={() => setSelectedSection(sec)}
-                  className={`px-2 py-0.5 rounded text-[9.5px] font-mono font-bold shrink-0 transition cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold shrink-0 transition cursor-pointer ${
                     selectedSection === sec
-                      ? 'bg-slate-900 text-white'
+                      ? 'bg-slate-900 text-white shadow-xs'
                       : 'bg-stone-100 border border-slate-200 text-slate-600 hover:bg-stone-200'
                   }`}
                 >
-                  {sec.replace('SECTION ', 'SEC-')}
+                  {sec === 'ALL' ? 'All Tables' : sec}
                 </button>
               ))}
             </div>
-            <span className="font-mono text-[9px] text-slate-400 font-bold shrink-0">
-              {filteredTables.length} TBLS
+            <span className="font-mono text-[9.5px] text-slate-400 font-bold shrink-0">
+              {filteredTables.length} Tables
             </span>
           </div>
 
-          {/* Tables Grid */}
-          <div className="grid grid-cols-3 gap-1.5 overflow-y-auto pr-0.5">
+          {/* Tables Grid: 2 Tables per Row with Proper Height */}
+          <div className="grid grid-cols-2 gap-2 overflow-y-auto pr-0.5">
             {filteredTables.map((t: SharedTable) => {
               const isOccupied = t.status === 'OCCUPIED';
               const isBilling = t.status === 'BILLING';
@@ -167,83 +167,85 @@ export const ScreenW2TablesFeed: React.FC = () => {
               return (
                 <motion.div
                   key={t.id}
-                  whileTap={{ scale: 0.96 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={() => handleTableClick(t.number)}
-                  className={`rounded-xl border p-1.5 text-center cursor-pointer transition shadow-2xs flex flex-col justify-between min-h-[90px] ${
+                  className={`rounded-xl border p-2.5 text-center cursor-pointer transition shadow-2xs flex flex-col justify-between min-h-[114px] ${
                     hasReadyItem
-                      ? 'border-emerald-500 bg-emerald-50/50 hover:bg-emerald-50'
+                      ? 'border-emerald-500 bg-emerald-50/60 hover:bg-emerald-50 ring-1 ring-emerald-500/30'
                       : isBilling
-                      ? 'border-purple-300 bg-purple-50/40 hover:bg-purple-50/70'
+                      ? 'border-purple-300 bg-purple-50/50 hover:bg-purple-50/80 ring-1 ring-purple-400/20'
                       : isOccupied
                       ? 'border-slate-300 bg-white hover:border-slate-400'
-                      : 'border-slate-200 bg-stone-50/60 hover:bg-white'
+                      : 'border-slate-200 bg-stone-50/70 hover:bg-white'
                   }`}
                 >
                   <div>
                     <div className="flex items-center justify-between font-mono">
                       <span className="text-xs font-black text-slate-900">
-                        {t.mergedWith ? `${t.number}+${t.mergedWith}` : t.number}
+                        {t.mergedWith ? `${t.number} + ${t.mergedWith}` : t.number}
                       </span>
-                      <span className="text-[8.5px] font-bold text-slate-400">
-                        {t.section.replace('Section ', 'S-')}
+                      <span className="text-[9px] font-bold text-slate-400">
+                        {t.section}
                       </span>
                     </div>
 
-                    {t.mergedWith ? (
-                      <span className="inline-block mt-0.5 px-1 py-0.2 rounded text-[8px] font-mono font-black border bg-purple-100 text-purple-900 border-purple-300">
-                        🔗 MERGED
-                      </span>
-                    ) : (
-                      <span
-                        className={`inline-block mt-0.5 px-1 py-0.2 rounded text-[8px] font-mono font-bold border ${getStatusBadge(
-                          t.status
-                        )}`}
-                      >
-                        {t.status}
-                      </span>
-                    )}
-
-                    <div className="text-[8.5px] font-mono text-slate-500 mt-1 leading-tight">
-                      {isOccupied || isBilling ? (
-                        <>
-                          <div className="font-bold text-slate-800">₹{t.currentBill}</div>
-                          <div>⏱️ {t.seatedTime}</div>
-                        </>
+                    <div className="flex items-center justify-center gap-1 mt-1">
+                      {t.mergedWith ? (
+                        <span className="px-1.5 py-0.5 rounded text-[8.5px] font-mono font-black border bg-purple-100 text-purple-900 border-purple-300">
+                          Merged
+                        </span>
                       ) : (
-                        <div>Cap: {t.capacity}p</div>
+                        <span
+                          className={`px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold border uppercase ${getStatusBadge(
+                            t.status
+                          )}`}
+                        >
+                          {t.status}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="text-[9.5px] font-mono text-slate-600 mt-1 leading-tight">
+                      {isOccupied || isBilling ? (
+                        <div className="flex justify-between items-center px-1">
+                          <span className="font-extrabold text-slate-900">₹{t.currentBill}</span>
+                          <span className="text-slate-500">⏱ {t.seatedTime}</span>
+                        </div>
+                      ) : (
+                        <div className="text-slate-400">Capacity: {t.capacity} guests</div>
                       )}
                     </div>
                   </div>
 
                   {/* Contextual Action Button */}
-                  <div className="mt-1 pt-1 border-t border-slate-100">
+                  <div className="mt-1.5 pt-1.5 border-t border-slate-100">
                     {isBilling ? (
                       <button
                         type="button"
                         onClick={(e) => handleVacateTable(e, t.number)}
-                        className="w-full py-0.5 rounded bg-purple-600 hover:bg-purple-700 text-white font-mono text-[8px] font-black tracking-wider transition cursor-pointer"
+                        className="w-full py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-mono text-[9px] font-black tracking-wider transition cursor-pointer"
                       >
-                        🧹 VACATE
+                        Vacate Table
                       </button>
                     ) : hasReadyItem ? (
                       <button
                         type="button"
                         onClick={(e) => handleServeReadyTable(e, t.number)}
-                        className="w-full py-0.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-mono text-[8px] font-black tracking-wider transition cursor-pointer animate-pulse"
+                        className="w-full py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-mono text-[9px] font-black tracking-wider transition cursor-pointer animate-pulse"
                       >
-                        🍽️ SERVE
+                        Serve Food 🍽️
                       </button>
                     ) : isOccupied ? (
-                      <div className="text-[7.5px] font-mono text-slate-400 font-bold">
-                        🔒 IN SERVICE
+                      <div className="text-[8.5px] font-mono text-slate-500 font-bold py-0.5">
+                        Dining in Service
                       </div>
                     ) : isVacant ? (
-                      <div className="text-[7.5px] font-mono text-emerald-600 font-bold">
-                        + SEAT
+                      <div className="text-[8.5px] font-mono text-emerald-700 font-bold py-0.5">
+                        Ready to Seat
                       </div>
                     ) : (
-                      <div className="text-[7.5px] font-mono text-slate-400 font-bold">
-                        CLEANING
+                      <div className="text-[8.5px] font-mono text-slate-400 font-bold py-0.5">
+                        Cleaning
                       </div>
                     )}
                   </div>
@@ -257,37 +259,37 @@ export const ScreenW2TablesFeed: React.FC = () => {
         <div className="flex-1 rounded-2xl border border-slate-200 bg-white p-2.5 shadow-xs flex flex-col overflow-hidden">
           {/* Tabs */}
           <div className="flex items-center justify-between pb-2 border-b border-slate-100 shrink-0">
-            <div className="flex gap-1">
+            <div className="flex gap-1.5">
               <button
                 type="button"
                 onClick={() => setActiveFeedTab('KITCHEN')}
-                className={`px-2.5 py-1 rounded-lg font-mono text-[9.5px] font-black transition cursor-pointer ${
+                className={`px-3 py-1 rounded-lg font-mono text-[10px] font-bold transition cursor-pointer flex items-center gap-1 ${
                   activeFeedTab === 'KITCHEN'
-                    ? 'bg-slate-900 text-white shadow-2xs'
+                    ? 'bg-slate-900 text-white shadow-2xs font-black'
                     : 'text-slate-600 hover:bg-stone-100'
                 }`}
               >
-                🍳 KITCHEN PASS ({activeKdsTickets.length})
+                <span>🍳 Kitchen Orders ({activeKdsTickets.length})</span>
                 {readyPickupCount > 0 && (
-                  <span className="ml-1 bg-emerald-500 text-white px-1 rounded-full text-[8px]">
-                    {readyPickupCount} READY
+                  <span className="ml-1 bg-emerald-500 text-white px-1.5 py-0.2 rounded-full text-[8.5px] font-black animate-pulse">
+                    {readyPickupCount} Ready
                   </span>
                 )}
               </button>
               <button
                 type="button"
                 onClick={() => setActiveFeedTab('CUSTOMER')}
-                className={`px-2.5 py-1 rounded-lg font-mono text-[9.5px] font-black transition cursor-pointer ${
+                className={`px-3 py-1 rounded-lg font-mono text-[10px] font-bold transition cursor-pointer flex items-center gap-1 ${
                   activeFeedTab === 'CUSTOMER'
-                    ? 'bg-orange-600 text-white shadow-2xs'
+                    ? 'bg-orange-600 text-white shadow-2xs font-black'
                     : 'text-slate-600 hover:bg-stone-100'
                 }`}
               >
-                🔔 CALLS ({pings.length})
+                <span>🔔 Guest Calls ({pings.length})</span>
               </button>
             </div>
-            <span className="text-[8.5px] font-mono text-slate-400 font-bold">
-              {activeFeedTab === 'KITCHEN' ? 'QUEUED ➔ COOKING ➔ READY' : 'TABLE CALLS'}
+            <span className="text-[9px] font-mono text-slate-400 font-bold">
+              {activeFeedTab === 'KITCHEN' ? 'Kitchen Pass Live' : 'Table Calls'}
             </span>
           </div>
 
@@ -298,29 +300,30 @@ export const ScreenW2TablesFeed: React.FC = () => {
                 pings.map((p) => (
                   <div
                     key={p.id}
-                    className="flex items-center justify-between p-2 rounded-xl bg-orange-50/70 border border-orange-200 text-xs shadow-2xs"
+                    className="flex items-center justify-between p-2.5 rounded-xl bg-orange-50/70 border border-orange-200 text-xs shadow-2xs"
                   >
                     <div>
                       <div className="font-mono font-black text-slate-900 flex items-center gap-1 text-[11px]">
-                        <span>TABLE [{p.tableNumber}]</span>
+                        <span>Table {p.tableNumber}</span>
                         <span className="text-orange-700 font-bold">• {p.type}</span>
                       </div>
-                      <div className="text-[9.5px] text-slate-500 font-mono mt-0.5">
+                      <div className="text-[10px] text-slate-500 font-mono mt-0.5">
                         {p.guestName} • {p.timestamp}
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => waiterResolvePing(p.id)}
-                      className="rounded-lg bg-orange-600 hover:bg-orange-700 text-white px-2 py-1 text-[9.5px] font-mono font-bold transition cursor-pointer"
+                      className="rounded-lg bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 text-[10px] font-mono font-bold transition cursor-pointer shadow-2xs"
                     >
-                      [RESOLVE]
+                      Resolve
                     </button>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8 text-slate-400 font-mono text-[10.5px]">
-                  [NO PENDING CUSTOMER CALLS]
+                <div className="text-center py-8 text-slate-400 font-mono text-[11px] flex flex-col items-center justify-center gap-1">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                  <span>No pending customer assistance calls</span>
                 </div>
               )
             ) : activeKdsTickets.length > 0 ? (
@@ -332,7 +335,7 @@ export const ScreenW2TablesFeed: React.FC = () => {
                 return (
                   <div
                     key={kr.id}
-                    className={`flex items-center justify-between p-2 rounded-xl border text-xs shadow-2xs transition ${
+                    className={`flex items-center justify-between p-2.5 rounded-xl border text-xs shadow-2xs transition ${
                       isReady
                         ? 'bg-emerald-50/90 border-emerald-300'
                         : isCooking
@@ -342,54 +345,54 @@ export const ScreenW2TablesFeed: React.FC = () => {
                   >
                     <div className="flex-1 mr-2">
                       <div className="flex items-center gap-1.5 font-mono">
-                        <span className="font-black text-slate-900 text-[11px]">
-                          [{kr.tableNumber}]
+                        <span className="font-black text-slate-900 text-xs">
+                          Table {kr.tableNumber}
                         </span>
                         {isReady ? (
-                          <span className="px-1.5 py-0.2 rounded text-[8.5px] font-mono font-black bg-emerald-600 text-white">
-                            READY FOR PICKUP
+                          <span className="px-1.5 py-0.5 rounded text-[8.5px] font-mono font-black bg-emerald-600 text-white">
+                            Ready for Pickup
                           </span>
                         ) : isCooking ? (
-                          <span className="px-1.5 py-0.2 rounded text-[8.5px] font-mono font-bold bg-amber-200 text-amber-900">
-                            COOKING
+                          <span className="px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold bg-amber-200 text-amber-900">
+                            Cooking
                           </span>
                         ) : (
-                          <span className="px-1.5 py-0.2 rounded text-[8.5px] font-mono font-bold bg-slate-200 text-slate-700">
-                            QUEUED
+                          <span className="px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold bg-slate-200 text-slate-700">
+                            Queued
                           </span>
                         )}
                       </div>
 
-                      <div className="font-mono text-[10px] text-slate-800 font-medium mt-1">
+                      <div className="font-mono text-[10.5px] text-slate-800 font-medium mt-1">
                         {kr.items.map((it) => `${it.name} × ${it.quantity}`).join(', ')}
                       </div>
 
-                      <div className="text-[9px] text-slate-500 font-mono mt-0.5">
+                      <div className="text-[9.5px] text-slate-500 font-mono mt-0.5">
                         {isReady
-                          ? `Ready at ${kr.timestamp} • Pass window hot`
+                          ? `Ready at ${kr.timestamp} • Hot on pass window`
                           : isCooking
                           ? `In preparation • Cook time: ${kr.elapsedMinutes || 8}m`
                           : `Order ticket received at ${kr.timestamp}`}
                       </div>
                     </div>
 
-                    {/* Action Button: Strictly ONLY active and clickable when READY */}
+                    {/* Action Button */}
                     <div>
                       {isReady ? (
                         <button
                           type="button"
                           onClick={() => waiterMarkKitchenItemServed(kr.id)}
-                          className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1.5 text-[9.5px] font-mono font-black transition cursor-pointer shadow-2xs whitespace-nowrap"
+                          className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 text-[10px] font-mono font-black transition cursor-pointer shadow-2xs whitespace-nowrap"
                         >
-                          [SERVE FOOD]
+                          Serve Food
                         </button>
                       ) : isCooking ? (
-                        <span className="inline-block px-2 py-1 rounded bg-amber-100 text-amber-800 text-[9px] font-mono font-bold border border-amber-200 whitespace-nowrap">
-                          COOKING...
+                        <span className="inline-block px-2.5 py-1 rounded-md bg-amber-100 text-amber-800 text-[9.5px] font-mono font-bold border border-amber-200 whitespace-nowrap">
+                          Cooking...
                         </span>
                       ) : (
-                        <span className="inline-block px-2 py-1 rounded bg-slate-100 text-slate-600 text-[9px] font-mono font-bold border border-slate-200 whitespace-nowrap">
-                          QUEUED
+                        <span className="inline-block px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 text-[9.5px] font-mono font-bold border border-slate-200 whitespace-nowrap">
+                          Queued
                         </span>
                       )}
                     </div>
@@ -397,8 +400,9 @@ export const ScreenW2TablesFeed: React.FC = () => {
                 );
               })
             ) : (
-              <div className="text-center py-8 text-slate-400 font-mono text-[10.5px]">
-                [NO ACTIVE KITCHEN TICKETS]
+              <div className="text-center py-8 text-slate-400 font-mono text-[11px] flex flex-col items-center justify-center gap-1">
+                <Utensils className="h-5 w-5 text-slate-300" />
+                <span>No active kitchen orders</span>
               </div>
             )}
           </div>
