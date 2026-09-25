@@ -72,22 +72,22 @@ export const TabletScreen1Login: React.FC = () => {
               THOOGUDEEPA DONNE BIRYANI MANE
             </h1>
             <p className="font-mono text-xs font-extrabold text-orange-600 mt-1 uppercase tracking-wider">
-              [FLOOR CAPTAIN / WAITER SERVICE CONSOLE]
+              Floor Captain / Waiter Service Console
             </p>
 
             {/* Active Shift Announcement */}
             <div className="mt-6 border border-slate-300 bg-white rounded-xl p-4 flex flex-col gap-2 font-mono text-xs shadow-2xs">
               <span className="font-bold text-slate-500 uppercase text-[10px]">
-                [ACTIVE SHIFT ANNOUNCEMENT]:
+                Active Shift Announcement
               </span>
               <div className="font-bold text-slate-900 text-sm">
-                [SHIFT A: 08:00 AM - 04:00 PM]
+                Shift A: 08:00 AM – 04:00 PM
               </div>
               <div className="text-slate-600 text-[11px]">
-                [ASSIGNED ZONE: MAIN DINING HALL • SECTION A &amp; B]
+                Assigned Zone: Main Dining Hall • Section A &amp; B
               </div>
               <div className="text-slate-600 text-[11px]">
-                [TABLES UNDER MANAGEMENT: 16 ACTIVE TABLES]
+                Tables Under Management: 16 Active Tables
               </div>
             </div>
 
@@ -97,7 +97,7 @@ export const TabletScreen1Login: React.FC = () => {
           {/* Bottom Company Platform Tag */}
           <div className="border-t border-dashed border-slate-400 pt-4 text-center">
             <span className="font-mono text-[10px] text-slate-500 font-bold">
-              [POWERED BY Nelja-UrQR • TABLET CLIENT v2.4]
+              Powered by Nelja-UrQR • Tablet Client v2.4
             </span>
           </div>
         </div>
@@ -106,18 +106,18 @@ export const TabletScreen1Login: React.FC = () => {
         <div className="w-[58%] bg-white p-10 flex flex-col justify-center gap-5">
           <div className="max-w-[440px] mx-auto w-full">
             <span className="font-mono text-xs font-bold text-slate-500 uppercase">
-              [AUTHENTICATION CREDENTIALS]:
+              Authentication Credentials
             </span>
             <h2 className="text-lg font-black text-slate-950 font-mono mt-1">
-              [ENTER WAITER NAME &amp; NUMBER LOCK PIN]
+              Enter Captain Name &amp; Security PIN
             </h2>
           </div>
 
           {/* Waiter Name Input & Quick Selector */}
           <div className="max-w-[440px] mx-auto w-full">
             <div className="flex justify-between items-center mb-1.5">
-              <label className="font-mono text-[11px] font-bold text-slate-600">
-                [SELECT OR ENTER CAPTAIN NAME]:
+              <label className="font-mono text-[11px] font-bold text-slate-600 uppercase">
+                Select or Enter Captain Name
               </label>
               <span className="font-mono text-[10px] text-slate-400">QUICK TAP PROFILE</span>
             </div>
@@ -157,8 +157,8 @@ export const TabletScreen1Login: React.FC = () => {
 
           {/* Floor Section Selection */}
           <div className="max-w-[440px] mx-auto w-full">
-            <label className="block font-mono text-[11px] font-bold text-slate-600 mb-1.5">
-              [ASSIGNED FLOOR SECTION]:
+            <label className="block font-mono text-[11px] font-bold text-slate-600 mb-1.5 uppercase">
+              Assigned Floor Section
             </label>
             <div className="grid grid-cols-2 gap-2">
               {sections.map((sec) => (
@@ -166,7 +166,7 @@ export const TabletScreen1Login: React.FC = () => {
                   key={sec}
                   type="button"
                   onClick={() => setActiveSection(sec)}
-                  className={`py-2 px-3 rounded-lg border text-xs font-mono font-bold transition ${
+                  className={`py-2 px-3 rounded-lg border text-xs font-mono font-bold transition cursor-pointer ${
                     activeSection === sec
                       ? 'border-slate-900 bg-slate-900 text-white shadow-xs'
                       : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100'
@@ -181,22 +181,22 @@ export const TabletScreen1Login: React.FC = () => {
           {/* PIN Lock Indicator */}
           <div className="max-w-[440px] mx-auto w-full">
             <div className="flex justify-between items-center mb-1.5 font-mono text-[11px]">
-              <label className="font-bold text-slate-600">[NUMBER LOCK PASSWORD / PIN]:</label>
+              <label className="font-bold text-slate-600 uppercase">Security PIN / Passcode:</label>
               {errorMsg ? (
                 <span className="font-bold text-rose-600 animate-pulse">
-                  [{errorMsg}]
+                  {errorMsg}
                 </span>
               ) : pin === '1234' ? (
                 <span className="font-bold text-emerald-600">
-                  [PIN VERIFIED • ACCESS GRANTED]
+                  PIN Verified • Access Granted ✓
                 </span>
               ) : pin.length === 4 ? (
                 <span className="font-bold text-rose-600">
-                  [INVALID PIN • ENTER 1234]
+                  Invalid PIN (Enter 1234)
                 </span>
               ) : (
                 <span className="font-bold text-orange-600">
-                  [{4 - pin.length} DIGITS REQUIRED • DEFAULT: 1234]
+                  {4 - pin.length} digits required • Default: 1234
                 </span>
               )}
             </div>
@@ -233,7 +233,7 @@ export const TabletScreen1Login: React.FC = () => {
                 key={num}
                 type="button"
                 onClick={() => handleNum(num)}
-                className="h-12 font-mono text-lg font-black bg-white border-2 border-slate-800 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition shadow-2xs flex items-center justify-center text-slate-950"
+                className="h-12 font-mono text-lg font-black bg-white border-2 border-slate-800 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition shadow-2xs flex items-center justify-center text-slate-950 cursor-pointer"
               >
                 {num}
               </button>
@@ -241,27 +241,27 @@ export const TabletScreen1Login: React.FC = () => {
             <button
               type="button"
               onClick={handleDel}
-              className="h-12 font-mono text-xs font-black bg-slate-100 border-2 border-slate-800 rounded-lg hover:bg-slate-200 active:bg-slate-300 transition text-slate-800"
+              className="h-12 font-mono text-xs font-black bg-slate-100 border-2 border-slate-800 rounded-lg hover:bg-slate-200 active:bg-slate-300 transition text-slate-800 cursor-pointer"
             >
-              [⌫ DEL]
+              DEL
             </button>
             <button
               type="button"
               onClick={() => handleNum('0')}
-              className="h-12 font-mono text-lg font-black bg-white border-2 border-slate-800 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition text-slate-950"
+              className="h-12 font-mono text-lg font-black bg-white border-2 border-slate-800 rounded-lg hover:bg-slate-100 active:bg-slate-200 transition text-slate-950 cursor-pointer"
             >
               0
             </button>
             <button
               type="button"
               onClick={handleClear}
-              className="h-12 font-mono text-xs font-black bg-slate-100 border-2 border-slate-800 rounded-lg hover:bg-slate-200 active:bg-slate-300 transition text-slate-800"
+              className="h-12 font-mono text-xs font-black bg-slate-100 border-2 border-slate-800 rounded-lg hover:bg-slate-200 active:bg-slate-300 transition text-slate-800 cursor-pointer"
             >
-              [✕ CLR]
+              CLR
             </button>
           </div>
 
-          {/* Action Button (Reset removed) */}
+          {/* Action Button */}
           <div className="max-w-[440px] mx-auto w-full">
             <button
               type="button"
@@ -272,7 +272,7 @@ export const TabletScreen1Login: React.FC = () => {
                   : 'border-slate-900 bg-slate-900 text-white hover:bg-black cursor-pointer'
               }`}
             >
-              <span>[GO TO DASHBOARD]</span>
+              <span>Login to Floor Console</span>
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
