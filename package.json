@@ -10,6 +10,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.117.1",
     "@tanstack/react-query": "^5.103.2",
     "autoprefixer": "^10.6.1",
     "framer-motion": "^13.4.0",

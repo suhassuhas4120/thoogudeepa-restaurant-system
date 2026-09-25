@@ -1,0 +1,18 @@
+### 1. Test Local Customer Web Portal
+GET http://localhost:3000/
+
+### 2. Test Local Kitchen Display System (KDS)
+GET http://localhost:3000/kitchen
+
+### 3. Test Local Waiter Floor Command Console
+GET http://localhost:3000/waiter
+
+### 4. Test Local Manager Analytics Dashboard
+GET http://localhost:3000/manager
+
+### 5. Test Live Cloud Deployment
+GET https://thoogudeepa-mane.surge.sh/
+
+### 6. Test GitHub Repository Status
+GET https://api.github.com/repos/suhassuhas4120/thoogudeepa-restaurant-system
+User-Agent: VSCode-RestClient

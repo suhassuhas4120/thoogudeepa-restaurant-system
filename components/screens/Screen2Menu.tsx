@@ -43,7 +43,8 @@ export const Screen2Menu: React.FC = () => {
     const matchesFilter =
       selectedFilter === 'All' ||
       (selectedFilter === 'Chef Special' && item.badge === 'Chef Special') ||
-      (selectedFilter === 'Pure Veg');
+      (selectedFilter === 'Pure Veg' && !!item.isVeg) ||
+      (selectedFilter === 'Quick Serve' && (item.category === 'Starters' || item.category === 'Breads' || item.category === 'Desserts'));
     return matchesSearch && matchesCategory && matchesFilter;
   });
 
