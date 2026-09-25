@@ -242,7 +242,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setCurrentScreen(2)}
-              className="bg-slate-900 hover:bg-black text-white px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
+              className="bg-slate-100 hover:bg-slate-900 hover:text-white text-slate-800 border border-slate-300 px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               <span>Back to Floor Overview</span>
@@ -252,25 +252,25 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 ? `Table ${activeTable.number} + ${activeTable.mergedWith} (Merged)`
                 : `Table ${activeTable.number}`}
             </h3>
-            <span className={`px-2 py-0.5 rounded font-bold text-[11px] border ${
+            <span className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] border ${
               activeTable.status === 'OCCUPIED'
-                ? 'bg-orange-50 text-orange-950 border-orange-300'
+                ? 'bg-amber-50 text-amber-950 border-amber-300'
                 : activeTable.status === 'BILLING'
                 ? 'bg-purple-50 text-purple-950 border-purple-300'
-                : 'border-slate-900 bg-slate-100 text-slate-800'
+                : 'border-emerald-300 bg-emerald-50 text-emerald-950'
             }`}>
-              Status: {activeTable.status} • {activeTable.status === 'BILLING' ? 'Settled' : 'Dining'}
+              ● Status: {activeTable.status} • {activeTable.status === 'BILLING' ? 'Settled' : 'Dining'}
             </span>
           </div>
 
           <div className="flex items-center gap-3">
             {activeTable.mergedWith && (
-              <span className="bg-purple-100 border border-purple-300 text-purple-900 px-2 py-0.5 rounded text-[10.5px] font-black">
+              <span className="bg-purple-100 border border-purple-300 text-purple-900 px-2.5 py-0.5 rounded-md text-[10.5px] font-black">
                 🔗 Merged Table ({activeTable.guestCount} Guests)
               </span>
             )}
-            <span className="text-slate-600 font-bold text-[11px]">
-              Assigned Captain: {activeCaptain}
+            <span className="text-slate-600 font-bold text-[11px] bg-slate-100 px-2.5 py-0.5 rounded border border-slate-200">
+              Assigned Captain: {activeCaptain || 'Staff Captain'}
             </span>
           </div>
         </div>
@@ -315,7 +315,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     </div>
                   )}
                 </div>
-                <span className="border-2 border-slate-900 bg-slate-100 px-3 py-1 rounded-md font-black text-slate-950 text-xs">
+                <span className="border border-orange-300 bg-orange-50 px-3 py-1 rounded-lg font-black text-orange-950 text-xs shadow-2xs">
                   Running Bill: ₹{runningTotal.toFixed(2)}
                 </span>
               </div>
@@ -331,20 +331,22 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     breakdown.items.map((item, idx) => (
                       <div
                         key={idx}
-                        className="bg-white border border-slate-300 rounded-lg p-3 flex justify-between items-center shadow-2xs"
+                        className="bg-white border border-slate-300 rounded-lg p-3 flex justify-between items-center shadow-2xs gap-3"
                       >
-                        <div>
-                          <strong className="text-xs font-black text-slate-900">
+                        <div className="flex-1 min-w-0">
+                          <strong className="text-xs font-black text-slate-900 truncate block">
                             {item.quantity}x {item.name}
                           </strong>
-                          <div className="text-[10.5px] text-slate-500 font-bold">
-                            ₹{item.lineTotal} (₹{item.unitPrice} ea) • Kitchen Prep
+                          <div className="text-[10.5px] text-slate-500 font-bold mt-0.5">
+                            ₹{item.lineTotal.toFixed(2)} (₹{item.unitPrice.toFixed(2)} ea) • Kitchen Prep
                           </div>
                         </div>
-                        <span className={`border px-2 py-0.5 rounded text-[10.5px] font-bold ${
-                          item.status === 'Ready' || item.status === 'Served'
-                            ? 'border-emerald-600 bg-emerald-50 text-emerald-950'
-                            : 'border-slate-900 bg-amber-50 text-amber-950'
+                        <span className={`border px-2.5 py-0.5 rounded-full text-[10.5px] font-bold shrink-0 ${
+                          item.status === 'Ready'
+                            ? 'border-emerald-300 bg-emerald-50 text-emerald-950'
+                            : item.status === 'Served'
+                            ? 'border-blue-300 bg-blue-50 text-blue-950'
+                            : 'border-amber-300 bg-amber-50 text-amber-950'
                         }`}>
                           {item.status === 'Ready' ? 'Ready to Serve' : item.status === 'Served' ? 'Served' : 'Preparing'}
                         </span>
@@ -386,7 +388,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 className={`py-3 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
                   rightPane === 'take_order' || rightPane === 'item_custom'
                     ? 'bg-orange-600 text-white ring-2 ring-orange-400'
-                    : 'bg-slate-900 hover:bg-black text-white'
+                    : 'bg-orange-50 text-orange-950 border border-orange-300 hover:bg-orange-600 hover:text-white'
                 }`}
               >
                 <Utensils className="h-4 w-4" />
@@ -399,12 +401,12 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 onClick={() => setRightPane(rightPane === 'payment' ? 'bill_summary' : 'payment')}
                 className={`py-3 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
                   rightPane === 'payment'
-                    ? 'bg-orange-600 text-white ring-2 ring-orange-400'
-                    : 'bg-slate-900 hover:bg-black text-white'
+                    ? 'bg-emerald-600 text-white ring-2 ring-emerald-400'
+                    : 'bg-emerald-50 text-emerald-950 border border-emerald-300 hover:bg-emerald-600 hover:text-white'
                 }`}
               >
                 <CreditCard className="h-4 w-4" />
-                <span>Bill Payment</span>
+                <span>Collect Payment</span>
               </button>
 
               {/* 3. Merge Tables Button */}
@@ -413,10 +415,10 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 onClick={() => setRightPane(rightPane === 'merge' ? 'bill_summary' : 'merge')}
                 className={`py-3 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
                   rightPane === 'merge'
-                    ? 'bg-orange-600 text-white ring-2 ring-orange-400'
+                    ? 'bg-purple-700 text-white ring-2 ring-purple-400'
                     : isAlreadyMerged
-                    ? 'bg-purple-100 border border-purple-400 text-purple-900 hover:bg-purple-200'
-                    : 'bg-white hover:bg-slate-100 text-slate-900 border border-slate-300'
+                    ? 'bg-purple-100 border border-purple-400 text-purple-950 hover:bg-purple-700 hover:text-white'
+                    : 'bg-purple-50 hover:bg-purple-600 hover:text-white text-purple-950 border border-purple-300'
                 }`}
               >
                 <Users className="h-4 w-4" />
@@ -429,8 +431,8 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 onClick={() => setRightPane(rightPane === 'bill_done' ? 'bill_summary' : 'bill_done')}
                 className={`py-3 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
                   rightPane === 'bill_done'
-                    ? 'bg-orange-600 text-white ring-2 ring-orange-400'
-                    : 'bg-white hover:bg-slate-100 text-slate-900 border border-slate-300'
+                    ? 'bg-blue-600 text-white ring-2 ring-blue-400'
+                    : 'bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-950 border border-blue-300'
                 }`}
               >
                 <Printer className="h-4 w-4" />
@@ -444,11 +446,11 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 className={`py-2.5 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
                   rightPane === 'bill_summary'
                     ? 'bg-slate-800 text-white ring-2 ring-slate-600'
-                    : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300'
+                    : 'bg-slate-100 hover:bg-slate-800 hover:text-white text-slate-800 border border-slate-300'
                 }`}
               >
                 <Receipt className="h-3.5 w-3.5" />
-                <span>Bill Breakdown</span>
+                <span>Live Bill Summary</span>
               </button>
 
               {/* 6. Table Vacate Button (ENABLED ONLY WHEN PAYMENT IS DONE) */}
@@ -459,8 +461,8 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 title={canVacate ? 'Vacate table immediately' : 'Payment required before table can be vacated'}
                 className={`py-2.5 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs ${
                   canVacate
-                    ? 'bg-rose-700 hover:bg-rose-800 text-white cursor-pointer'
-                    : 'bg-slate-200 text-slate-400 border border-slate-300 cursor-not-allowed opacity-70'
+                    ? 'bg-rose-50 text-rose-950 border border-rose-300 hover:bg-rose-700 hover:text-white cursor-pointer'
+                    : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-60'
                 }`}
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -509,7 +511,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setRightPane('take_order')}
-                    className="w-full py-3 bg-slate-900 hover:bg-black text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 shadow-2xs"
+                    className="w-full py-3 bg-orange-50 text-orange-950 border border-orange-300 hover:bg-orange-600 hover:text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
                   >
                     <Utensils className="h-4 w-4" />
                     <span>Open Menu Order Entry</span>
@@ -517,7 +519,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setRightPane('payment')}
-                    className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 shadow-2xs"
+                    className="w-full py-3 bg-emerald-50 text-emerald-950 border border-emerald-300 hover:bg-emerald-600 hover:text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
                   >
                     <CreditCard className="h-4 w-4" />
                     <span>Collect Payment</span>
@@ -536,11 +538,11 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => setCurrentScreen(4)}
-                      className="text-[10px] font-bold text-slate-600 hover:text-slate-900 border border-slate-300 rounded px-2 py-0.5 flex items-center gap-1 bg-stone-50 cursor-pointer"
+                      className="text-[10px] font-bold text-slate-700 hover:text-slate-900 border border-slate-300 rounded px-2.5 py-1 flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
                       title="Open full dedicated Menu Screen 4"
                     >
                       <ExternalLink className="h-3 w-3" />
-                      <span>Full Matrix</span>
+                      <span>Full Screen Menu</span>
                     </button>
                     <button
                       onClick={() => setRightPane('bill_summary')}
@@ -913,11 +915,11 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => setCurrentScreen(6)}
-                      className="text-[10px] font-bold text-slate-600 hover:text-slate-900 border border-slate-300 rounded px-2 py-0.5 flex items-center gap-1 bg-stone-50 cursor-pointer"
+                      className="text-[10px] font-bold text-slate-700 hover:text-slate-900 border border-slate-300 rounded px-2.5 py-1 flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
                       title="Open full dedicated Merge Screen 6"
                     >
                       <ExternalLink className="h-3 w-3" />
-                      <span>Full Studio</span>
+                      <span>Full Merge Screen</span>
                     </button>
                     <button
                       onClick={() => setRightPane('bill_summary')}
@@ -955,7 +957,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     <button
                       type="button"
                       onClick={handleUnmerge}
-                      className="w-full py-3 bg-rose-700 hover:bg-rose-800 text-white rounded-lg font-black text-xs transition shadow-2xs mt-2 flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full py-3 bg-rose-50 text-rose-950 border border-rose-300 hover:bg-rose-700 hover:text-white rounded-lg font-black text-xs transition-all shadow-2xs mt-2 flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Users className="h-4 w-4" />
                       <span>Unmerge / Separate Table {activeTable.number} &amp; {activeTable.mergedWith}</span>
@@ -983,8 +985,8 @@ export const TabletScreen3TableDetail: React.FC = () => {
                               onClick={() => setSelectedMergeChip(tbl.number)}
                               className={`py-2 px-1.5 border rounded-lg text-xs font-bold transition flex flex-col items-center justify-center cursor-pointer ${
                                 isSelected
-                                  ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                                  : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
+                                  ? 'bg-purple-700 text-white border-purple-700 shadow-xs'
+                                  : 'bg-purple-50 text-purple-950 border-purple-200 hover:bg-purple-100'
                               }`}
                             >
                               <span className="font-black">{tbl.number}</span>
@@ -1036,11 +1038,11 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => setCurrentScreen(7)}
-                      className="text-[10px] font-bold text-slate-600 hover:text-slate-900 border border-slate-300 rounded px-2 py-0.5 flex items-center gap-1 bg-stone-50 cursor-pointer"
+                      className="text-[10px] font-bold text-slate-700 hover:text-slate-900 border border-slate-300 rounded px-2.5 py-1 flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
                       title="Open full dedicated Payment Screen 7"
                     >
                       <ExternalLink className="h-3 w-3" />
-                      <span>Terminal Hub</span>
+                      <span>Full Payment Screen</span>
                     </button>
                     <button
                       onClick={() => setRightPane('bill_summary')}
@@ -1141,11 +1143,11 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => setCurrentScreen(8)}
-                      className="text-[10px] font-bold text-slate-600 hover:text-slate-900 border border-slate-300 rounded px-2 py-0.5 flex items-center gap-1 bg-stone-50 cursor-pointer"
+                      className="text-[10px] font-bold text-slate-700 hover:text-slate-900 border border-slate-300 rounded px-2.5 py-1 flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
                       title="Open full dedicated Tax Invoice Screen 8"
                     >
                       <ExternalLink className="h-3 w-3" />
-                      <span>Full Invoice Hub</span>
+                      <span>Full Invoice Screen</span>
                     </button>
                     <button
                       onClick={() => setRightPane('bill_summary')}
@@ -1231,7 +1233,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                       setWhatsappSent(true);
                       setTimeout(() => setWhatsappSent(false), 2500);
                     }}
-                    className="py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
+                    className="py-2.5 bg-emerald-50 text-emerald-950 border border-emerald-300 hover:bg-emerald-700 hover:text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
                   >
                     <MessageCircle className="h-3.5 w-3.5" />
                     <span>WhatsApp</span>
@@ -1242,7 +1244,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                       setPrintSent(true);
                       setTimeout(() => setPrintSent(false), 2500);
                     }}
-                    className="py-2.5 bg-slate-900 hover:bg-black text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
+                    className="py-2.5 bg-blue-50 text-blue-950 border border-blue-300 hover:bg-blue-700 hover:text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
                   >
                     <Printer className="h-3.5 w-3.5" />
                     <span>Print Bill</span>
@@ -1254,10 +1256,10 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   type="button"
                   disabled={!canVacate}
                   onClick={handleDirectVacate}
-                  className={`w-full py-3.5 rounded-lg font-black text-xs transition shadow-sm mt-auto flex items-center justify-center gap-2 ${
+                  className={`w-full py-3.5 rounded-lg font-black text-xs transition shadow-2xs mt-auto flex items-center justify-center gap-2 ${
                     canVacate
-                      ? 'bg-rose-700 hover:bg-rose-800 text-white cursor-pointer'
-                      : 'bg-slate-200 text-slate-400 border border-slate-300 cursor-not-allowed opacity-60'
+                      ? 'bg-rose-50 text-rose-950 border border-rose-300 hover:bg-rose-700 hover:text-white cursor-pointer'
+                      : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-60'
                   }`}
                 >
                   <Trash2 className="h-4 w-4" />
