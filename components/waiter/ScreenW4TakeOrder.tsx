@@ -142,6 +142,8 @@ export const ScreenW4TakeOrder: React.FC = () => {
               const item86 = inventory86.find((i) => i.id === item.id);
               const isSoldOut = !!item86?.is86;
               const prepDelay = item86?.prepDelayMinutes || 0;
+              const inCart = orderCart.find((ci) => ci.menuItem.id === item.id);
+              const qty = inCart ? inCart.quantity : 0;
 
               return (
                 <div
@@ -174,58 +176,47 @@ export const ScreenW4TakeOrder: React.FC = () => {
                     </div>
                   </div>
                   <div className="mt-2 flex gap-1">
-                    {(() => {
-                      const inCart = orderCart.find((ci) => ci.menuItem.id === item.id);
-                      const qty = inCart ? inCart.quantity : 0;
-
-                      if (isSoldOut) {
-                        return (
-                          <button
-                            disabled
-                            className="flex-1 py-1.5 rounded-lg text-[10px] font-mono font-black flex items-center justify-center gap-1 bg-stone-200 text-slate-400 cursor-not-allowed border border-slate-300"
-                          >
-                            <Ban className="h-2.5 w-2.5" />
-                            <span>Sold Out</span>
-                          </button>
-                        );
-                      }
-
-                      if (qty === 0) {
-                        return (
-                          <button
-                            onClick={() => addToOrderCart(item)}
-                            className="flex-1 py-1.5 rounded-lg text-[10px] font-mono font-black flex items-center justify-center gap-1 transition bg-orange-50 border border-orange-200 text-orange-800 hover:bg-orange-100 shadow-2xs cursor-pointer active:scale-95"
-                          >
-                            <Plus className="h-3 w-3" />
-                            <span>+ Add</span>
-                          </button>
-                        );
-                      }
-
-                      return (
-                        <div className="flex-1 flex items-center justify-between rounded-lg border border-orange-300 bg-orange-50 px-1 py-0.5">
-                          <button
-                            onClick={() => inCart && updateOrderCartQty(inCart.cartItemId, -1)}
-                            className="w-5 h-5 rounded bg-white text-slate-900 font-black flex items-center justify-center text-xs shadow-2xs cursor-pointer"
-                          >
-                            <Minus className="h-2.5 w-2.5" />
-                          </button>
-                          <span className="font-mono text-xs font-black text-orange-950">
-                            {qty}
-                          </span>
-                          <button
-                            onClick={() => inCart && updateOrderCartQty(inCart.cartItemId, 1)}
-                            className="w-5 h-5 rounded bg-orange-600 text-white font-black flex items-center justify-center text-xs shadow-2xs cursor-pointer"
-                          >
-                            <Plus className="h-2.5 w-2.5" />
-                          </button>
-                        </div>
-                      );
-                    })()}
+                    {isSoldOut ? (
+                      <button
+                        disabled
+                        className="flex-1 py-1.5 rounded-lg text-[10px] font-mono font-black flex items-center justify-center gap-1 bg-stone-200 text-slate-400 cursor-not-allowed border border-slate-300"
+                      >
+                        <Ban className="h-2.5 w-2.5" />
+                        <span>Sold Out</span>
+                      </button>
+                    ) : qty === 0 ? (
+                      <button
+                        onClick={() => addToOrderCart(item)}
+                        className="flex-1 py-1.5 rounded-lg text-[10px] font-mono font-black flex items-center justify-center gap-1 transition bg-orange-50 border border-orange-200 text-orange-800 hover:bg-orange-100 shadow-2xs cursor-pointer active:scale-95"
+                      >
+                        <Plus className="h-3 w-3" />
+                        <span>+ Add</span>
+                      </button>
+                    ) : (
+                      <div className="flex-1 flex items-center justify-between rounded-lg border border-orange-300 bg-orange-50 px-1 py-0.5">
+                        <button
+                          onClick={() => inCart && updateOrderCartQty(inCart.cartItemId, -1)}
+                          className="w-5 h-5 rounded bg-white text-slate-900 font-black flex items-center justify-center text-xs shadow-2xs cursor-pointer"
+                        >
+                          <Minus className="h-2.5 w-2.5" />
+                        </button>
+                        <span className="font-mono text-xs font-black text-orange-950">
+                          {qty}
+                        </span>
+                        <button
+                          onClick={() => inCart && updateOrderCartQty(inCart.cartItemId, 1)}
+                          className="w-5 h-5 rounded bg-orange-600 text-white font-black flex items-center justify-center text-xs shadow-2xs cursor-pointer"
+                        >
+                          <Plus className="h-2.5 w-2.5" />
+                        </button>
+                      </div>
+                    )}
                     {!isSoldOut && (
                       <button
                         onClick={() => {
-                          addToOrderCart(item);
+                          if (qty === 0) {
+                            addToOrderCart(item);
+                          }
                           setCurrentScreen(5);
                         }}
                         className="px-2 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-slate-700 text-[10px] font-mono font-bold transition cursor-pointer"
