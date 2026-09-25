@@ -1,9 +1,10 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { useKitchenStore } from '../../store/useKitchenStore';
 import { useSharedBridge } from '../../store/useSharedBridge';
 import { KitchenTabletHousing } from './KitchenTabletHousing';
+import { OrderStage } from '../../types/customer';
 import {
   ArrowLeft,
   Clock,
@@ -21,38 +22,36 @@ export const ScreenK3Detail: React.FC = () => {
     setCurrentScreen,
     selectedTableNumber,
     tickets: localTickets,
-    bumpItemStage,
-    bumpTable,
-    callFloorWaiter,
   } = useKitchenStore();
 
-  // Bridge store for cross-section sync
   const {
     kdsTickets: bridgeTickets,
     inventory86,
     kitchenToggle86,
     kitchenUpdatePrepDelay,
-    kitchenBumpItemStage,
     kitchenBumpTable,
+    kitchenSetItemStage,
+    callFloorWaiter,
   } = useSharedBridge();
 
-  // ── Lock state for inventory panel ──────────────────────────────
-  const [inventoryLocked, setInventoryLocked] = useState(true);
-  const [pendingChanges, setPendingChanges] = useState<Record<string, boolean>>({}); // itemId → desired is86
-  const [pendingDelays, setPendingDelays] = useState<Record<string, number>>({}); // itemId → delay delta
+  // ✅ Inventory defaults UNLOCKED for easier UX
+  const [inventoryLocked, setInventoryLocked] = useState(false);
+  const [pendingChanges, setPendingChanges] = useState<Record<string, boolean>>({});
+  const [pendingDelays, setPendingDelays] = useState<Record<string, number>>({});
   const [updateSuccess, setUpdateSuccess] = useState(false);
 
-  // Use bridge tickets if available (customer/waiter placed orders), else local seed tickets
-  const allTickets = bridgeTickets.length > 0 ? bridgeTickets : localTickets.map((t) => ({
-    ...t,
-    source: 'WAITER' as const,
-  }));
+  const allTickets =
+    bridgeTickets.length > 0
+      ? bridgeTickets
+      : localTickets.map((t) => ({ ...t, source: 'WAITER' as const }));
 
   const currentTicket =
+    allTickets.find(
+      (t) => t.tableNumber === selectedTableNumber.replace('TABLE ', '')
+    ) ||
     allTickets.find((t) => t.tableNumber === selectedTableNumber) ||
     allTickets[0];
 
-  // ── Pending toggle 86 (only allowed when unlocked) ──────────────
   const handlePendingToggle = (itemId: string, currentIs86: boolean) => {
     if (inventoryLocked) return;
     setPendingChanges((prev) => ({
@@ -69,23 +68,17 @@ export const ScreenK3Detail: React.FC = () => {
     }));
   };
 
-  // ── Apply all pending changes on UPDATE ─────────────────────────
   const handleUpdate = () => {
-    // Apply 86 toggles
     Object.entries(pendingChanges).forEach(([itemId, newIs86]) => {
       const currentItem = inventory86.find((i) => i.id === itemId);
       if (currentItem && currentItem.is86 !== newIs86) {
         kitchenToggle86(itemId);
       }
     });
-    // Apply delay changes
     Object.entries(pendingDelays).forEach(([itemId, delta]) => {
-      if (delta !== 0) {
-        kitchenUpdatePrepDelay(itemId, delta);
-      }
+      if (delta !== 0) kitchenUpdatePrepDelay(itemId, delta);
     });
 
-    // Reset pending
     setPendingChanges({});
     setPendingDelays({});
     setInventoryLocked(true);
@@ -93,7 +86,6 @@ export const ScreenK3Detail: React.FC = () => {
     setTimeout(() => setUpdateSuccess(false), 3000);
   };
 
-  // ── Discard pending changes ──────────────────────────────────────
   const handleDiscard = () => {
     setPendingChanges({});
     setPendingDelays({});
@@ -101,7 +93,26 @@ export const ScreenK3Detail: React.FC = () => {
   };
 
   const hasPendingChanges =
-    Object.keys(pendingChanges).length > 0 || Object.keys(pendingDelays).length > 0;
+    Object.keys(pendingChanges).length > 0 ||
+    Object.keys(pendingDelays).length > 0;
+
+  // ✅ 4-stage stepper for individual items
+  const stageOrder: OrderStage[] = ['PLACED', 'PREP', 'PLATED', 'SERVED'];
+  const stageLabels: Record<OrderStage, string> = {
+    PLACED: '1.REC',
+    PREP: '2.PREP',
+    PLATED: '3.READY',
+    SERVED: '4.SERVED',
+  };
+
+  const handleItemStageSet = (
+    ticketId: string,
+    itemId: string,
+    newStage: OrderStage
+  ) => {
+    // ✅ Only call the bridge — bridge is source of truth
+    kitchenSetItemStage(ticketId, itemId, newStage);
+  };
 
   return (
     <KitchenTabletHousing
@@ -128,50 +139,57 @@ export const ScreenK3Detail: React.FC = () => {
             <span className="text-xs font-mono font-bold text-slate-500">
               SERVER: {currentTicket?.serverName ?? '—'}
             </span>
-            <button
-              onClick={() =>
-                callFloorWaiter(
-                  currentTicket?.tableNumber || selectedTableNumber,
-                  'Urgent Pickup Required for Table'
-                )
-              }
-              className="flex items-center gap-1 rounded-xl border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-black text-orange-800 hover:bg-orange-100 transition shadow-2xs"
-            >
-              <Bell className="h-3.5 w-3.5 text-orange-600" />
-              <span>[FIRE RUNNER TO TABLE {currentTicket?.tableNumber ?? selectedTableNumber}]</span>
-            </button>
+           <button
+  onClick={() => {
+    const tbl = currentTicket?.tableNumber || selectedTableNumber;
+    // ✅ FIXED: callFloorWaiter from bridge + local store notice
+    callFloorWaiter(tbl, 'Urgent Pickup Required for Table');
+    useKitchenStore.getState().callFloorWaiter(tbl, 'Urgent Pickup Required');
+  }}
+  className="flex items-center gap-1 rounded-xl border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-black text-orange-800 hover:bg-orange-100 transition shadow-2xs"
+>
+  <Bell className="h-3.5 w-3.5 text-orange-600" />
+  <span>
+    [FIRE RUNNER TO TABLE{' '}
+    {currentTicket?.tableNumber ?? selectedTableNumber}]
+  </span>
+</button>
           </div>
         </div>
 
-        {/* Main 55/45 Split */}
         <div className="flex-1 flex overflow-hidden">
-          {/* ── Left 55%: Table Deep Dive ───────────────────────── */}
+          {/* LEFT 55% */}
           <div className="w-[55%] border-r border-slate-200 p-5 overflow-y-auto bg-stone-50/50 flex flex-col justify-between">
             <div className="space-y-4">
-              {/* No ticket state */}
               {!currentTicket && (
                 <div className="flex flex-col items-center justify-center h-48 text-slate-400 gap-3">
                   <CheckCircle2 className="h-12 w-12 text-slate-300" />
                   <div className="font-mono text-xs font-bold text-center">
-                    [NO ACTIVE KDS TICKETS]<br />
-                    <span className="text-[10px] font-normal">Orders will appear here when customers or waiters place them</span>
+                    [NO ACTIVE KDS TICKETS]
+                    <br />
+                    <span className="text-[10px] font-normal">
+                      Orders appear here when customers or waiters place them
+                    </span>
                   </div>
                 </div>
               )}
 
               {currentTicket && (
                 <>
-                  {/* Ticket Summary Card */}
                   <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs flex items-center justify-between">
                     <div>
                       <div className="font-mono text-[10px] font-bold text-slate-400 uppercase">
                         [TICKET #{currentTicket?.id}]
                       </div>
                       <div className="text-base font-black text-slate-900 mt-0.5">
-                        Table [{currentTicket?.tableNumber}] • {currentTicket?.items.length} Dishes
+                        Table [{currentTicket?.tableNumber}] •{' '}
+                        {currentTicket?.items.length} Dishes
                       </div>
                       <div className="text-[10px] font-mono text-slate-500 mt-0.5">
-                        Source: {currentTicket?.source === 'CUSTOMER' ? '📱 Customer App' : '📟 Waiter Tablet'}
+                        Source:{' '}
+                        {currentTicket?.source === 'CUSTOMER'
+                          ? '📱 Customer App'
+                          : '📟 Waiter Tablet'}
                       </div>
                     </div>
                     <div className="text-right">
@@ -180,12 +198,12 @@ export const ScreenK3Detail: React.FC = () => {
                         <span>ELAPSED: {currentTicket?.elapsedMinutes} MIN</span>
                       </div>
                       <div className="text-[10px] font-mono text-slate-500 mt-0.5">
-                        Order Fired at {currentTicket?.timestamp}
+                        Fired at {currentTicket?.timestamp}
                       </div>
                     </div>
                   </div>
 
-                  {/* Items List */}
+                  {/* Items List with 4-stage stepper */}
                   <div className="space-y-3">
                     <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-400">
                       [ORDERED ITEMS &amp; PREPARATION STAGES]
@@ -194,30 +212,30 @@ export const ScreenK3Detail: React.FC = () => {
                     {currentTicket?.items.map((it) => (
                       <div
                         key={it.id}
-                        className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xs flex items-center justify-between gap-3"
+                        className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xs space-y-2.5"
                       >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs font-black text-orange-600">
-                              {it.quantity}×
-                            </span>
-                            <span className="text-xs font-black text-slate-900 truncate">
-                              {it.name}
-                            </span>
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-xs font-black text-orange-600">
+                                {it.quantity}×
+                              </span>
+                              <span className="text-xs font-black text-slate-900 truncate">
+                                {it.name}
+                              </span>
+                            </div>
+                            <div className="text-[10.5px] text-slate-500 mt-1 font-mono">
+                              Prep: {it.prepMode}
+                              {it.options ? ` • Option: ${it.options}` : ''}
+                              {it.addOns && it.addOns.length > 0
+                                ? ` • Add-ons: ${it.addOns.join(', ')}`
+                                : ''}
+                              {it.notes ? ` • Note: ${it.notes}` : ''}
+                            </div>
                           </div>
-                          <div className="text-[10.5px] text-slate-500 mt-1 font-mono">
-                            Prep: {it.prepMode}
-                            {it.options ? ` • Option: ${it.options}` : ''}
-                            {it.addOns && it.addOns.length > 0
-                              ? ` • Add-ons: ${it.addOns.join(', ')}`
-                              : ''}
-                          </div>
-                        </div>
 
-                        {/* Stage Advancer Button */}
-                        <div className="flex items-center gap-2 shrink-0">
                           <span
-                            className={`font-mono text-[10.5px] font-bold px-2 py-1 rounded-lg border ${
+                            className={`font-mono text-[10.5px] font-bold px-2 py-1 rounded-lg border shrink-0 ${
                               it.stage === 'PLATED'
                                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                 : it.stage === 'PREP'
@@ -229,18 +247,37 @@ export const ScreenK3Detail: React.FC = () => {
                           >
                             [{it.stage}]
                           </span>
-                          {it.stage !== 'SERVED' && (
-                            <motion.button
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => {
-                                kitchenBumpItemStage(currentTicket.id, it.id);
-                                bumpItemStage(currentTicket.id, it.id);
-                              }}
-                              className="rounded-xl bg-slate-900 px-3 py-1.5 font-mono text-xs font-black text-white hover:bg-slate-800 transition shadow-2xs"
-                            >
-                              BUMP STAGE ➔
-                            </motion.button>
-                          )}
+                        </div>
+
+                        {/* ✅ 4-stage stepper for each individual item */}
+                        <div className="grid grid-cols-4 gap-1.5 font-mono text-[9.5px] font-black">
+                          {stageOrder.map((stg) => {
+                            const isActive = it.stage === stg;
+                            const idx = stageOrder.indexOf(stg);
+                            const curIdx = stageOrder.indexOf(it.stage);
+                            const isPast = idx < curIdx;
+                            return (
+                              <button
+                                key={stg}
+                                onClick={() =>
+                                  handleItemStageSet(
+                                    currentTicket.id,
+                                    it.id,
+                                    stg
+                                  )
+                                }
+                                className={`py-1.5 rounded text-center transition border ${
+                                  isActive
+                                    ? 'bg-orange-600 text-white border-orange-700 shadow-xs ring-1 ring-orange-500'
+                                    : isPast
+                                    ? 'bg-emerald-100 text-emerald-700 border-emerald-300'
+                                    : 'bg-stone-50 text-slate-600 border-slate-300 hover:bg-orange-50'
+                                }`}
+                              >
+                                {stageLabels[stg]}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     ))}
@@ -249,14 +286,10 @@ export const ScreenK3Detail: React.FC = () => {
               )}
             </div>
 
-            {/* Bottom Actions */}
             {currentTicket && (
               <div className="pt-4 border-t border-slate-200 flex gap-3">
                 <button
-                  onClick={() => {
-                    kitchenBumpTable(currentTicket?.id || '');
-                    bumpTable(currentTicket?.id || '');
-                  }}
+                  onClick={() => kitchenBumpTable(currentTicket?.id || '')}
                   className="flex-1 rounded-xl bg-emerald-600 py-3 text-xs font-black uppercase tracking-wider text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700 transition"
                 >
                   [MARK ALL DISHES PLATED &amp; READY ✓]
@@ -265,23 +298,26 @@ export const ScreenK3Detail: React.FC = () => {
             )}
           </div>
 
-          {/* ── Right 45%: Menu 86 Inventory & Delay Controller ─── */}
+          {/* RIGHT 45% — Inventory */}
           <div className="w-[45%] bg-white p-5 overflow-y-auto flex flex-col gap-4">
-            {/* Header with lock toggle */}
             <div className="flex items-center justify-between pb-2 border-b border-slate-200">
               <div className="flex items-center gap-1.5 font-mono text-[10.5px] font-black uppercase text-slate-700">
                 <Sliders className="h-4 w-4 text-orange-600" />
-                <span>[MENU 86 / OUT-OF-STOCK &amp; PREP DELAY CONTROLLER]</span>
+                <span>[MENU 86 / OUT-OF-STOCK &amp; PREP DELAY]</span>
               </div>
-              <span className="text-[10px] font-mono font-bold text-slate-400">REAL-TIME SYNC</span>
+              <span className="text-[10px] font-mono font-bold text-slate-400">
+                REAL-TIME SYNC
+              </span>
             </div>
 
             {/* Lock / Unlock control */}
-            <div className={`flex items-center justify-between rounded-xl border p-3 transition ${
-              inventoryLocked
-                ? 'border-slate-200 bg-stone-50'
-                : 'border-orange-300 bg-orange-50'
-            }`}>
+            <div
+              className={`flex items-center justify-between rounded-xl border p-3 transition ${
+                inventoryLocked
+                  ? 'border-slate-200 bg-stone-50'
+                  : 'border-orange-300 bg-orange-50'
+              }`}
+            >
               <div className="flex items-center gap-2">
                 {inventoryLocked ? (
                   <Lock className="h-4 w-4 text-slate-500" />
@@ -290,12 +326,14 @@ export const ScreenK3Detail: React.FC = () => {
                 )}
                 <div>
                   <div className="font-mono text-[10.5px] font-black text-slate-800">
-                    {inventoryLocked ? '[INVENTORY LOCKED — CLICK TO EDIT]' : '[EDITING UNLOCKED — MAKE CHANGES THEN UPDATE]'}
+                    {inventoryLocked
+                      ? '[INVENTORY LOCKED — CLICK TO EDIT]'
+                      : '[EDITING UNLOCKED — MAKE CHANGES THEN UPDATE]'}
                   </div>
                   <div className="font-mono text-[10px] text-slate-500">
                     {inventoryLocked
                       ? 'Unlock to mark items Available or Out of Stock'
-                      : 'Changes are staged until you click UPDATE below'}
+                      : 'Changes are staged until you click UPDATE'}
                   </div>
                 </div>
               </div>
@@ -327,13 +365,12 @@ export const ScreenK3Detail: React.FC = () => {
               </button>
             </div>
 
-            {/* Description */}
             <p className="text-xs text-slate-500 leading-relaxed -mt-2">
-              Toggling a dish to <strong>86 SOLD OUT</strong> immediately grays it out on all
-              Customer QR menus and Waiter tablets. Adding prep delays updates live customer ETA.
+              Toggling a dish to <strong>86 SOLD OUT</strong> immediately grays it
+              out on all Customer QR menus and Waiter tablets. Adding prep delays
+              updates live customer ETA.
             </p>
 
-            {/* Update success banner */}
             <AnimatePresence>
               {updateSuccess && (
                 <motion.div
@@ -343,15 +380,13 @@ export const ScreenK3Detail: React.FC = () => {
                   className="flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-300 p-3 text-emerald-800 text-xs font-black"
                 >
                   <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                  ✓ MENU INVENTORY UPDATED — CHANGES SYNCED TO ALL SECTIONS
+                  ✓ MENU INVENTORY UPDATED — SYNCED TO ALL SECTIONS
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Inventory Items */}
             <div className="space-y-2.5 flex-1">
               {inventory86.map((item) => {
-                // Get effective values (pending overrides the saved state)
                 const effectiveIs86 =
                   item.id in pendingChanges ? pendingChanges[item.id] : item.is86;
                 const effectiveDelay =
@@ -374,7 +409,9 @@ export const ScreenK3Detail: React.FC = () => {
                       <div className="text-xs font-extrabold text-slate-900 truncate">
                         {item.name}
                         {hasPending && !inventoryLocked && (
-                          <span className="ml-1.5 text-orange-600 text-[10px] font-black">[PENDING]</span>
+                          <span className="ml-1.5 text-orange-600 text-[10px] font-black">
+                            [PENDING]
+                          </span>
                         )}
                       </div>
                       <div className="text-[10px] font-mono text-slate-400 mt-0.5">
@@ -387,9 +424,7 @@ export const ScreenK3Detail: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Delay & 86 Controls */}
                     <div className="flex items-center gap-2 shrink-0">
-                      {/* Prep Delay */}
                       <div
                         className={`flex items-center gap-1 bg-white p-0.5 rounded-lg border text-xs font-mono transition ${
                           inventoryLocked
@@ -413,11 +448,9 @@ export const ScreenK3Detail: React.FC = () => {
                         </button>
                       </div>
 
-                      {/* 86 Toggle Button */}
                       <button
                         onClick={() => handlePendingToggle(item.id, item.is86)}
                         disabled={inventoryLocked}
-                        title={inventoryLocked ? 'Unlock inventory to make changes' : undefined}
                         className={`rounded-xl px-3 py-1.5 font-mono text-[10.5px] font-black uppercase transition ${
                           inventoryLocked
                             ? 'opacity-40 cursor-not-allowed border border-slate-200 bg-stone-50 text-slate-500'
@@ -434,7 +467,6 @@ export const ScreenK3Detail: React.FC = () => {
               })}
             </div>
 
-            {/* UPDATE Button — only visible when unlocked */}
             <AnimatePresence>
               {!inventoryLocked && (
                 <motion.div
@@ -447,7 +479,7 @@ export const ScreenK3Detail: React.FC = () => {
                     onClick={handleDiscard}
                     className="flex-1 rounded-xl border border-slate-300 bg-stone-50 py-3 font-mono text-xs font-black text-slate-600 hover:bg-stone-100 transition"
                   >
-                    DISCARD CHANGES
+                    DISCARD
                   </button>
                   <button
                     onClick={handleUpdate}
@@ -459,21 +491,29 @@ export const ScreenK3Detail: React.FC = () => {
                   >
                     <RefreshCw className="h-4 w-4" />
                     <span>
-                      UPDATE &amp; SYNC MENU{hasPendingChanges ? ` (${
-                        Object.keys(pendingChanges).length + Object.keys(pendingDelays).length
-                      } change${
-                        Object.keys(pendingChanges).length + Object.keys(pendingDelays).length > 1 ? 's' : ''
-                      })` : ''}
+                      UPDATE &amp; SYNC MENU
+                      {hasPendingChanges
+                        ? ` (${
+                            Object.keys(pendingChanges).length +
+                            Object.keys(pendingDelays).length
+                          } change${
+                            Object.keys(pendingChanges).length +
+                              Object.keys(pendingDelays).length >
+                            1
+                              ? 's'
+                              : ''
+                          })`
+                        : ''}
                     </span>
                   </button>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Inventory Notice */}
             <div className="p-3 rounded-xl bg-orange-50/60 border border-orange-200/80 text-[11px] text-orange-950 font-medium shrink-0">
-              ⚡ <strong>Thoogudeepa Donne Biryani Inventory Notice:</strong> Marking items 86
-              reflects instantaneously across all floor POS and live customer ordering pages.
+              ⚡ <strong>Thoogudeepa Inventory Notice:</strong> Marking items 86
+              reflects instantaneously across all floor POS and live customer
+              ordering pages.
             </div>
           </div>
         </div>

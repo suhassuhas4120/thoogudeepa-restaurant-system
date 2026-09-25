@@ -1,8 +1,10 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
-import { Wifi, Bell, Flame, ChefHat } from 'lucide-react';
+import { Wifi, Bell, Flame } from 'lucide-react';
 import { useKitchenStore } from '../../store/useKitchenStore';
+import { STATION_LABELS } from '../../types/kitchen';
+import { KitchenProfileDropdown } from './KitchenProfileDropdown';
 
 interface KitchenTabletHousingProps {
   children: React.ReactNode;
@@ -19,7 +21,6 @@ export const KitchenTabletHousing: React.FC<KitchenTabletHousingProps> = ({
 }) => {
   const {
     activeStation,
-    chefName,
     callFloorWaiter,
     waiterAlertNotice,
     dismissWaiterAlert,
@@ -56,21 +57,18 @@ export const KitchenTabletHousing: React.FC<KitchenTabletHousingProps> = ({
             </div>
             <span className="text-slate-300">|</span>
             <span className="rounded-md border border-slate-200 bg-stone-50 px-2 py-0.5 text-[10.5px] font-mono text-slate-700">
-              STATION: {activeStation}
+              STATION: {STATION_LABELS[activeStation] || 'Master Dispatch'}
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 text-slate-600 font-medium text-[11px]">
-              <ChefHat className="h-3.5 w-3.5 text-slate-500" />
-              <span>{chefName}</span>
-            </div>
+          <div className="flex items-center gap-2.5">
+            <KitchenProfileDropdown />
             <button
-              onClick={() => callFloorWaiter('ALL', 'Kitchen Dispatch Calling')}
-              className="flex items-center gap-1 rounded-lg border border-orange-200 bg-orange-50 px-2.5 py-1 text-[10.5px] font-extrabold text-orange-800 hover:bg-orange-100 transition shadow-2xs"
+              onClick={() => callFloorWaiter('ALL', 'Dishes Ready for Floor Pickup')}
+              className="flex items-center gap-1 rounded-lg border border-orange-200 bg-orange-50 px-2.5 py-1 text-[10.5px] font-extrabold text-orange-800 hover:bg-orange-100 transition shadow-2xs cursor-pointer"
             >
               <Bell className="h-3 w-3 text-orange-600" />
-              <span>[CALL WAITER]</span>
+              <span>[CALL RUNNER]</span>
             </button>
             <div className="flex items-center gap-1 text-emerald-600 font-mono text-[10px] font-bold">
               <Wifi className="h-3.5 w-3.5" />
@@ -85,7 +83,7 @@ export const KitchenTabletHousing: React.FC<KitchenTabletHousingProps> = ({
             <span>⚡ {waiterAlertNotice}</span>
             <button
               onClick={dismissWaiterAlert}
-              className="text-[10px] text-slate-400 hover:text-white underline ml-2"
+              className="text-[10px] text-slate-400 hover:text-white underline ml-2 cursor-pointer"
             >
               Dismiss
             </button>

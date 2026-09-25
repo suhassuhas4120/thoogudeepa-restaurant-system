@@ -1,8 +1,109 @@
-﻿import { OrderStage } from './customer';
+import { OrderStage } from './customer';
 
 export type KitchenScreenId = 1 | 2 | 3;
 
-export type KitchenStation = 'MAIN' | 'DUM_BIRYANI' | 'TANDOOR_BHATTI' | 'DESSERT_PANTRY';
+export type KitchenStation =
+  | 'DUM_BIRYANI'
+  | 'KEBAB_TANDOOR'
+  | 'DESSERTS'
+  | 'MASTER_DISPATCH';
+
+export const STATION_LABELS: Record<KitchenStation, string> = {
+  DUM_BIRYANI: 'Dum Biryani',
+  KEBAB_TANDOOR: 'Kebab & Tandoor',
+  DESSERTS: 'Desserts',
+  MASTER_DISPATCH: 'Master Dispatch',
+};
+
+// Universal Kitchen PIN
+export const KITCHEN_MASTER_PIN = '1234';
+
+export const ALL_STATIONS: KitchenStation[] = [
+  'DUM_BIRYANI',
+  'KEBAB_TANDOOR',
+  'DESSERTS',
+  'MASTER_DISPATCH',
+];
+
+// Map item name keywords to appropriate kitchen preparation station
+export function getStationForItem(itemName: string): KitchenStation {
+  const n = itemName.toLowerCase();
+  if (n.includes('biryani') || n.includes('rice') || n.includes('donne')) {
+    return 'DUM_BIRYANI';
+  }
+  if (
+    n.includes('kebab') ||
+    n.includes('tandoor') ||
+    n.includes('chops') ||
+    n.includes('wings') ||
+    n.includes('fry')
+  ) {
+    return 'KEBAB_TANDOOR';
+  }
+  if (
+    n.includes('dessert') ||
+    n.includes('gulab') ||
+    n.includes('jamun') ||
+    n.includes('ice') ||
+    n.includes('sweet') ||
+    n.includes('payasam')
+  ) {
+    return 'DESSERTS';
+  }
+  return 'MASTER_DISPATCH';
+}
+
+// Category list for Screen 2 filter
+export type MenuCategory =
+  | 'ALL CATEGORIES'
+  | 'DUM BIRYANI'
+  | 'STARTERS & KEBABS'
+  | 'CURRY & SIDES'
+  | 'BEVERAGES'
+  | 'DESSERTS';
+
+export const ALL_CATEGORIES: MenuCategory[] = [
+  'ALL CATEGORIES',
+  'DUM BIRYANI',
+  'STARTERS & KEBABS',
+  'CURRY & SIDES',
+  'BEVERAGES',
+  'DESSERTS',
+];
+
+// Map item -> category for filter logic
+export function getCategoryForItem(itemName: string): MenuCategory {
+  const n = itemName.toLowerCase();
+  if (n.includes('biryani') || n.includes('rice') || n.includes('donne')) return 'DUM BIRYANI';
+  if (
+    n.includes('kebab') ||
+    n.includes('tandoor') ||
+    n.includes('chops') ||
+    n.includes('wings') ||
+    n.includes('fry')
+  )
+    return 'STARTERS & KEBABS';
+  if (n.includes('curry') || n.includes('salna') || n.includes('gravy') || n.includes('saaru'))
+    return 'CURRY & SIDES';
+  if (
+    n.includes('juice') ||
+    n.includes('lassi') ||
+    n.includes('coffee') ||
+    n.includes('tea') ||
+    n.includes('drink') ||
+    n.includes('water')
+  )
+    return 'BEVERAGES';
+  if (
+    n.includes('gulab') ||
+    n.includes('jamun') ||
+    n.includes('ice') ||
+    n.includes('sweet') ||
+    n.includes('payasam')
+  )
+    return 'DESSERTS';
+  return 'ALL CATEGORIES';
+}
 
 export interface KDSItem {
   id: string;
@@ -23,6 +124,7 @@ export interface KDSTicket {
   elapsedMinutes: number;
   status: 'NEW' | 'PREP' | 'READY' | 'COMPLETED';
   items: KDSItem[];
+  source?: 'CUSTOMER' | 'WAITER';
 }
 
 export interface MenuItem86 {

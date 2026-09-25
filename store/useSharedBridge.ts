@@ -27,6 +27,7 @@ export interface SharedKDSItem {
   prepMode: string;
   options?: string;
   addOns?: string[];
+  notes?: string;
 }
 
 export interface SharedKDSTicket {
@@ -79,6 +80,13 @@ export interface SharedShiftStats {
   totalRevenue: number;
   tipsEarned: number;
   avgTurnaroundMinutes: number;
+}
+
+export interface SharedWaiterAlert {
+  id: string;
+  tableNumber: string;
+  reason: string;
+  timestamp: number;
 }
 
 /* ── Initial Data ───────────────────────────────────────────────── */
@@ -278,6 +286,12 @@ interface SharedBridgeState {
   kitchenToggle86: (itemId: string) => void;
   kitchenUpdatePrepDelay: (itemId: string, deltaMinutes: number) => void;
 
+  /** Kitchen alerts floor runners to pick up hot food */
+  callFloorWaiter: (tableNumber: string, reason?: string) => void;
+  waiterAlerts: SharedWaiterAlert[];
+  acknowledgeWaiterAlert: (alertId: string) => void;
+  clearWaiterAlerts: () => void;
+
   // ── Waiter actions ──────────────────────────────────────────────
   /** Waiter fires KOT → adds KDS ticket to kitchen */
   waiterFiresKOT: (
@@ -320,6 +334,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
     tipsEarned: 0,
     avgTurnaroundMinutes: 38,
   },
+  waiterAlerts: [],
 
   /* ─── Customer Places Order ──────────────────────────────────── */
   customerPlacesOrder: (tableNumber, guestName, guestCount, items) => {
@@ -538,6 +553,27 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
     }));
   },
 
+  /* ─── Kitchen Calls Floor Waiter ─────────────────────────────── */
+  callFloorWaiter: (tableNumber, reason = 'Dishes Ready for Pickup') => {
+    const alert: SharedWaiterAlert = {
+      id: `ALERT-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      tableNumber,
+      reason,
+      timestamp: Date.now(),
+    };
+    set((state) => ({ waiterAlerts: [...state.waiterAlerts, alert] }));
+  },
+
+  /* ─── Acknowledge Waiter Alert ───────────────────────────────── */
+  acknowledgeWaiterAlert: (alertId) => {
+    set((state) => ({
+      waiterAlerts: state.waiterAlerts.filter((a) => a.id !== alertId),
+    }));
+  },
+
+  /* ─── Clear All Waiter Alerts ────────────────────────────────── */
+  clearWaiterAlerts: () => set({ waiterAlerts: [] }),
+
   /* ─── Waiter Fires KOT ───────────────────────────────────────── */
   waiterFiresKOT: (tableNumber, captainName, items) => {
     const ticket: SharedKDSTicket = {
@@ -732,6 +768,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
         tipsEarned: 0,
         avgTurnaroundMinutes: 38,
       },
+      waiterAlerts: [],
     });
   },
 }));
@@ -773,6 +810,7 @@ if (typeof window !== 'undefined') {
             pings: state.pings,
             inventory86: state.inventory86,
             shiftStats: state.shiftStats,
+            waiterAlerts: state.waiterAlerts,
           })
         );
       } catch {}
@@ -787,6 +825,7 @@ if (typeof window !== 'undefined') {
             pings: state.pings,
             inventory86: state.inventory86,
             shiftStats: state.shiftStats,
+            waiterAlerts: state.waiterAlerts,
           },
         });
       } catch {
