@@ -598,27 +598,34 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     })}
                   </div>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-3 pr-3 pt-1">
                     <div className="relative flex-1">
-                      <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400" />
+                      <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
                       <input
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search menu dishes..."
-                        className="w-full pl-8 pr-2.5 py-1 border border-slate-300 rounded text-xs bg-white focus:outline-none focus:border-orange-500 font-mono"
+                        className="w-full pl-8 pr-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white focus:outline-none focus:border-orange-500 font-mono shadow-2xs"
                       />
                     </div>
-                    {/* Cart Icon only with proper number — directly after search */}
+                    {/* Cart Icon only with proper number — with proper spacing and contained badge */}
                     <button
                       type="button"
-                      onClick={() => setRightPane('item_custom')}
-                      className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-white hover:bg-black transition cursor-pointer"
-                      title="View Order Cart"
+                      onClick={() => {
+                        if (draftCart.length > 0) {
+                          if (!customizingItem && draftCart[0]?.item) {
+                            setCustomizingItem(draftCart[0].item);
+                          }
+                          setRightPane('item_custom');
+                        }
+                      }}
+                      className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-white hover:bg-black transition-all cursor-pointer shadow-2xs"
+                      title={draftItemCount > 0 ? `View Order Cart (${draftItemCount})` : 'Cart is empty'}
                     >
-                      <ShoppingCart className="h-3.5 w-3.5 text-orange-400 stroke-[2.2]" />
+                      <ShoppingCart className="h-4 w-4 text-orange-400 stroke-[2.2]" />
                       {draftItemCount > 0 && (
-                        <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] px-0.5 bg-orange-600 text-white text-[8.5px] font-black rounded-full flex items-center justify-center ring-2 ring-white animate-pulse">
+                        <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-orange-600 text-white text-[9px] font-black rounded-full flex items-center justify-center ring-2 ring-white shadow-xs pointer-events-none">
                           {draftItemCount}
                         </span>
                       )}
