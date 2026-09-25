@@ -537,8 +537,24 @@ const freshInventory86: SharedMenuItem86[] = INITIAL_MENU_ITEMS.map((item) => ({
   prepDelayMinutes: item.id === 'item-2' ? 15 : 0, // Mutton Biryani (Fresh batch in prep)
 }));
 
-let ticketCounter = 4;
-const makeTicketId = () => `KDS-${String(100 + ticketCounter++).padStart(3, '0')}`;
+let globalTicketCounter = 104;
+const makeTicketId = () => {
+  try {
+    const currentTickets = useSharedBridge?.getState?.()?.kdsTickets;
+    if (Array.isArray(currentTickets)) {
+      currentTickets.forEach((tk) => {
+        const match = String(tk.id).match(/KDS-(\d+)/);
+        if (match) {
+          const num = parseInt(match[1], 10);
+          if (!isNaN(num) && num >= globalTicketCounter) {
+            globalTicketCounter = num + 1;
+          }
+        }
+      });
+    }
+  } catch {}
+  return `KDS-${String(globalTicketCounter++).padStart(3, '0')}`;
+};
 const nowTime = () => new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
 /* ── Store Interface ────────────────────────────────────────────── */
@@ -1135,6 +1151,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
       const targetTicket = state.kdsTickets.find((t) => t.id === ticketId);
       const ticketDishNames = targetTicket?.items.map((i) => i.name) || [];
       const tableNumber = targetTicket?.tableNumber;
+      const cleanNum = (tableNumber || '').replace(/\D/g, '');
 
       const updatedTickets = state.kdsTickets.map((t) => {
         if (t.id !== ticketId) return t;
@@ -1146,12 +1163,22 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
       });
 
       const updatedTables = state.tables.map((tbl) => {
-        if (!tableNumber || tbl.number !== tableNumber) return tbl;
+        const tblNum = (tbl.number || '').replace(/\D/g, '');
+        const isMatch = tableNumber && (
+          tbl.number === tableNumber ||
+          (cleanNum && tblNum === cleanNum)
+        );
+        if (!isMatch) return tbl;
         return {
           ...tbl,
-          activeItems: (tbl.activeItems || []).map((it) =>
-            ticketDishNames.includes(it.name) ? { ...it, status: 'Served' } : it
-          ),
+          activeItems: (tbl.activeItems || []).map((it) => {
+            const matchesDish = !ticketDishNames.length || ticketDishNames.some((dn) =>
+              dn.toLowerCase().trim() === it.name.toLowerCase().trim()
+            );
+            return matchesDish || it.status === 'Ready' || it.status === 'READY'
+              ? { ...it, status: 'Served' }
+              : it;
+          }),
         };
       });
 
@@ -1165,8 +1192,11 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
   /* ─── Waiter Marks Table Food Served ─────────────────────────── */
   waiterMarkTableFoodServed: (tableNumber) => {
     set((state) => {
+      const cleanNum = (tableNumber || '').replace(/\D/g, '');
       const updatedTickets = state.kdsTickets.map((t) => {
-        if (t.tableNumber !== tableNumber) return t;
+        const tNum = (t.tableNumber || '').replace(/\D/g, '');
+        const isMatch = t.tableNumber === tableNumber || (cleanNum && tNum === cleanNum);
+        if (!isMatch) return t;
         const newItems = t.items.map((it) => ({
           ...it,
           stage: 'SERVED' as OrderStage,
@@ -1179,7 +1209,9 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
       });
 
       const updatedTables = state.tables.map((tbl) => {
-        if (tbl.number !== tableNumber) return tbl;
+        const tblNum = (tbl.number || '').replace(/\D/g, '');
+        const isMatch = tbl.number === tableNumber || (cleanNum && tblNum === cleanNum);
+        if (!isMatch) return tbl;
         return {
           ...tbl,
           activeItems: (tbl.activeItems || []).map((ai) => ({
@@ -1225,8 +1257,24 @@ if (typeof window !== 'undefined') {
     if (saved) {
       const parsed = JSON.parse(saved);
       if (parsed && Array.isArray(parsed.tables) && parsed.tables.length >= 10) {
+        // Guarantee all kdsTickets have strictly unique IDs and no duplicate keys
+        const seenTicketIds = new Set<string>();
+        const sanitizedKdsTickets = (parsed.kdsTickets || []).map(
+          (tk: SharedKDSTicket, idx: number) => {
+            if (!tk || !tk.id) return tk;
+            if (!seenTicketIds.has(tk.id)) {
+              seenTicketIds.add(tk.id);
+              return tk;
+            }
+            const uniqueId = `KDS-${String(200 + idx).padStart(3, '0')}`;
+            seenTicketIds.add(uniqueId);
+            return { ...tk, id: uniqueId };
+          }
+        );
+
         useSharedBridge.setState({
           ...parsed,
+          kdsTickets: sanitizedKdsTickets,
           settlementRecords:
             Array.isArray(parsed.settlementRecords) && parsed.settlementRecords.length > 0
               ? parsed.settlementRecords

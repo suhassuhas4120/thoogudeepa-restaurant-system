@@ -25,6 +25,7 @@ export const ScreenW2TablesFeed: React.FC = () => {
     kdsTickets,
     waiterResolvePing,
     waiterMarkKitchenItemServed,
+    waiterMarkTableFoodServed,
     waiterVacatesTable,
     waiterSeatsTable,
   } = useSharedBridge();
@@ -110,12 +111,19 @@ export const ScreenW2TablesFeed: React.FC = () => {
 
   const handleServeReadyTable = (e: React.MouseEvent, tableNumber: string) => {
     e.stopPropagation();
-    const readyTicket = kdsTickets.find(
-      (tk) => tk.tableNumber === tableNumber && tk.status === 'READY'
-    );
-    if (readyTicket) {
-      waiterMarkKitchenItemServed(readyTicket.id);
-    }
+    // 1. Mark table's food as Served directly in shared tables
+    waiterMarkTableFoodServed(tableNumber);
+
+    // 2. Also mark any matching KDS tickets for this table as served
+    const cleanNum = tableNumber.replace(/\D/g, '');
+    kdsTickets
+      .filter((tk) => {
+        const tkNum = (tk.tableNumber || '').replace(/\D/g, '');
+        return tk.tableNumber === tableNumber || (cleanNum && tkNum === cleanNum);
+      })
+      .forEach((tk) => {
+        waiterMarkKitchenItemServed(tk.id);
+      });
   };
 
   const getStatusBadge = (status: string) => {
@@ -433,7 +441,12 @@ export const ScreenW2TablesFeed: React.FC = () => {
                       {isReady ? (
                         <button
                           type="button"
-                          onClick={() => waiterMarkKitchenItemServed(kr.id)}
+                          onClick={() => {
+                            waiterMarkKitchenItemServed(kr.id);
+                            if (kr.tableNumber) {
+                              waiterMarkTableFoodServed(kr.tableNumber);
+                            }
+                          }}
                           className="rounded-lg bg-emerald-100 hover:bg-emerald-600 text-emerald-900 hover:text-white border border-emerald-400 hover:border-emerald-600 px-3 py-1.5 text-[10px] font-mono font-black transition duration-150 cursor-pointer shadow-2xs whitespace-nowrap"
                         >
                           Serve Food
