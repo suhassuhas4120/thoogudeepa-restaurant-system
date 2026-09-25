@@ -24,6 +24,7 @@ export function ScreenM1Login() {
   const [authError, setAuthError] = useState(false);
   const [floatInput, setFloatInput] = useState('');
   const [floatError, setFloatError] = useState('');
+  const [isEditingFloat, setIsEditingFloat] = useState(false);
 
   const handlePress = (d: string) => {
     setAuthError(false);
@@ -51,6 +52,7 @@ export function ScreenM1Login() {
     verifyOpeningFloat(amount);
     setFloatInput('');
     setFloatError('');
+    setIsEditingFloat(false);
   };
 
   return (
@@ -112,7 +114,30 @@ export function ScreenM1Login() {
             </span>
           </div>
           {openingFloat ? (
-            <div className="text-2xl font-black font-mono text-slate-900 mt-1">₹ {openingFloat.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+            <div className="mt-1">
+              {!isEditingFloat ? (
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-2xl font-black font-mono text-slate-900">₹ {openingFloat.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFloatInput(String(openingFloat.amount));
+                      setFloatError('');
+                      setIsEditingFloat(true);
+                    }}
+                    className="border border-slate-900 rounded-lg px-2.5 py-1.5 text-[11px] font-bold text-slate-900 hover:bg-slate-100"
+                  >
+                    ADJUST FLOAT
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input type="number" min="0" step="0.01" value={floatInput} onChange={(e) => setFloatInput(e.target.value)} autoFocus className="min-w-0 flex-1 border border-slate-900 rounded-lg p-2 font-mono text-sm" />
+                  <button type="button" onClick={handleVerifyFloat} className="bg-slate-900 text-white rounded-lg px-3 text-xs font-bold">UPDATE</button>
+                  <button type="button" onClick={() => { setFloatInput(''); setFloatError(''); setIsEditingFloat(false); }} className="border border-slate-300 rounded-lg px-2 text-xs font-bold text-slate-600">CANCEL</button>
+                </div>
+              )}
+            </div>
           ) : (
             <div className="mt-2 flex gap-2">
               <input type="number" min="0" step="0.01" value={floatInput} onChange={(e) => setFloatInput(e.target.value)} placeholder="Count till amount" className="min-w-0 flex-1 border border-slate-900 rounded-lg p-2 font-mono text-sm" />
