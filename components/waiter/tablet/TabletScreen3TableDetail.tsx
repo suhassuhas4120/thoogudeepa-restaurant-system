@@ -208,7 +208,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
 
   // Payment confirmation (Screen 7 -> Screen 8)
   const handleConfirmPayment = () => {
-    waiterRecordsPayment(activeTable.number, payMode, runningTotal);
+    waiterRecordsPayment(activeTable.number, payMode, runningTotal, breakdown.tip, activeCaptain || 'Waiter 1');
     setIsPaymentDone(true);
     setRightPane('bill_done');
   };

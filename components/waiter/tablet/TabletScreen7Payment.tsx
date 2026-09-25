@@ -19,7 +19,8 @@ import {
 type PayMode = 'CASH' | 'UPI' | 'POS';
 
 export const TabletScreen7Payment: React.FC = () => {
-  const { setCurrentScreen, selectedTableNumber, settlementTip, setSettlementTip } = useWaiterStore();
+  const { setCurrentScreen, selectedTableNumber, settlementTip, setSettlementTip, activeCaptain } =
+    useWaiterStore();
   const { tables, waiterRecordsPayment } = useSharedBridge();
   const [payMode, setPayMode] = useState<PayMode>('CASH');
   const [paidConfirmed, setPaidConfirmed] = useState(false);
@@ -39,7 +40,13 @@ export const TabletScreen7Payment: React.FC = () => {
   const qrTimer = '04:58';
 
   const handleConfirmPay = () => {
-    waiterRecordsPayment(activeTable?.number || selectedTableNumber, payMode, breakdown.grandTotal);
+    waiterRecordsPayment(
+      activeTable?.number || selectedTableNumber,
+      payMode,
+      breakdown.grandTotal,
+      breakdown.tip,
+      activeCaptain || 'Waiter 1'
+    );
     setPaidConfirmed(true);
     setTimeout(() => {
       setPaidConfirmed(false);

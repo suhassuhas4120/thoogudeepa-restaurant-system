@@ -22,7 +22,8 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const ScreenW7Payment: React.FC = () => {
-  const { setCurrentScreen, selectedTableNumber, settlementTip, setSettlementTip } = useWaiterStore();
+  const { setCurrentScreen, selectedTableNumber, settlementTip, setSettlementTip, activeCaptain } =
+    useWaiterStore();
   const { tables, waiterRecordsPayment } = useSharedBridge();
 
   const [method, setMethod] = useState<'UPI' | 'CARD' | 'CASH'>('UPI');
@@ -49,7 +50,13 @@ export const ScreenW7Payment: React.FC = () => {
   }, [breakdown.grandTotal]);
 
   const handlePay = () => {
-    waiterRecordsPayment(activeTable?.number || currentTableNum, method, breakdown.grandTotal);
+    waiterRecordsPayment(
+      activeTable?.number || currentTableNum,
+      method,
+      breakdown.grandTotal,
+      breakdown.tip,
+      activeCaptain || 'Waiter 1'
+    );
     setSuccess(true);
     setTimeout(() => {
       setCurrentScreen(8);

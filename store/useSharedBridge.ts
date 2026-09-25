@@ -17,6 +17,7 @@ import { create } from 'zustand';
 import { INITIAL_MENU_ITEMS } from '../data/menuItems';
 import { MenuItem } from '../types/customer';
 import { OrderStage } from '../types/customer';
+import { SAVED_WAITERS, WaiterProfile } from '../types/waiter';
 
 /* ── Shared Types ──────────────────────────────────────────────── */
 export interface SharedKDSItem {
@@ -180,6 +181,200 @@ export interface SharedShiftStats {
   tipsEarned: number;
   avgTurnaroundMinutes: number;
 }
+
+export interface SharedSettlementRecord {
+  id: string;
+  tableNumber: string;
+  section: string;
+  serverName: string;
+  amount: number;
+  tip: number;
+  method: 'CASH' | 'UPI' | 'CARD' | 'POS';
+  timestamp: string;
+}
+
+export interface WaiterShiftPerformance {
+  waiterId: string;
+  waiterName: string;
+  displayName: string;
+  section: string;
+  tablesServed: number;
+  completedSettlementsCount: number;
+  totalRevenue: number;
+  cashCollected: number;
+  digitalCollected: number;
+  tipsEarned: number;
+  avgTurnaroundMinutes: number;
+  recentSettlements: SharedSettlementRecord[];
+  activeTables: SharedTable[];
+}
+
+export const resolveWaiterProfile = (nameOrId?: string): WaiterProfile => {
+  if (!nameOrId) return SAVED_WAITERS[0];
+  const clean = nameOrId.toLowerCase().trim();
+  const found = SAVED_WAITERS.find(
+    (w) =>
+      w.name.toLowerCase() === clean ||
+      w.displayName.toLowerCase() === clean ||
+      w.id.toLowerCase() === clean ||
+      clean.includes(w.name.toLowerCase()) ||
+      w.name.toLowerCase().includes(clean) ||
+      clean.includes(w.section.toLowerCase()) ||
+      (clean.includes('ramesh') && w.id === 'w-1') ||
+      (clean.includes('suresh') && w.id === 'w-2') ||
+      (clean.includes('vijay') && w.id === 'w-3') ||
+      (clean.includes('kiran') && w.id === 'w-4')
+  );
+  return found || SAVED_WAITERS[0];
+};
+
+export const freshSettlementRecords: SharedSettlementRecord[] = [
+  // Waiter 1 (Ramesh) - SECTION A
+  {
+    id: 'set-w1-1',
+    tableNumber: 'A-05',
+    section: 'SECTION A',
+    serverName: 'Waiter 1 (Ramesh)',
+    amount: 1120,
+    tip: 50,
+    method: 'UPI',
+    timestamp: '11:45 AM',
+  },
+  {
+    id: 'set-w1-2',
+    tableNumber: 'A-06',
+    section: 'SECTION A',
+    serverName: 'Waiter 1 (Ramesh)',
+    amount: 780,
+    tip: 30,
+    method: 'CASH',
+    timestamp: '12:15 PM',
+  },
+  // Waiter 2 (Suresh) - SECTION B
+  {
+    id: 'set-w2-1',
+    tableNumber: 'B-04',
+    section: 'SECTION B',
+    serverName: 'Waiter 2 (Suresh)',
+    amount: 1450,
+    tip: 50,
+    method: 'CASH',
+    timestamp: '11:30 AM',
+  },
+  {
+    id: 'set-w2-2',
+    tableNumber: 'B-05',
+    section: 'SECTION B',
+    serverName: 'Waiter 2 (Suresh)',
+    amount: 980,
+    tip: 40,
+    method: 'UPI',
+    timestamp: '12:05 PM',
+  },
+  // Waiter 3 (Vijay) - TERRACE
+  {
+    id: 'set-w3-1',
+    tableNumber: 'T-03',
+    section: 'TERRACE',
+    serverName: 'Waiter 3 (Vijay)',
+    amount: 1680,
+    tip: 80,
+    method: 'CARD',
+    timestamp: '11:50 AM',
+  },
+  {
+    id: 'set-w3-2',
+    tableNumber: 'T-04',
+    section: 'TERRACE',
+    serverName: 'Waiter 3 (Vijay)',
+    amount: 850,
+    tip: 40,
+    method: 'CASH',
+    timestamp: '12:25 PM',
+  },
+  // Waiter 4 (Kiran) - FAMILY DINING
+  {
+    id: 'set-w4-1',
+    tableNumber: 'FD-03',
+    section: 'FAMILY DINING',
+    serverName: 'Waiter 4 (Kiran)',
+    amount: 2150,
+    tip: 100,
+    method: 'UPI',
+    timestamp: '11:20 AM',
+  },
+  {
+    id: 'set-w4-2',
+    tableNumber: 'FD-04',
+    section: 'FAMILY DINING',
+    serverName: 'Waiter 4 (Kiran)',
+    amount: 1340,
+    tip: 50,
+    method: 'CASH',
+    timestamp: '12:10 PM',
+  },
+];
+
+export const getWaiterShiftPerformance = (
+  waiterIdentifier: string,
+  state: { settlementRecords?: SharedSettlementRecord[]; tables?: SharedTable[] }
+): WaiterShiftPerformance => {
+  const profile = resolveWaiterProfile(waiterIdentifier);
+  const allRecords =
+    state.settlementRecords && state.settlementRecords.length > 0
+      ? state.settlementRecords
+      : freshSettlementRecords;
+  const allTables = state.tables && state.tables.length > 0 ? state.tables : freshTables;
+
+  // Filter records matching this waiter
+  const waiterRecords = allRecords.filter((rec) => {
+    const recProfile = resolveWaiterProfile(rec.serverName);
+    return recProfile.id === profile.id || rec.section.toUpperCase() === profile.section.toUpperCase();
+  });
+
+  // Filter tables in waiter's assigned section
+  const waiterTables = allTables.filter((t) => {
+    return t.section.toUpperCase() === profile.section.toUpperCase();
+  });
+
+  const totalRevenue = waiterRecords.reduce((sum, r) => sum + r.amount, 0);
+  const cashCollected = waiterRecords
+    .filter((r) => r.method === 'CASH')
+    .reduce((sum, r) => sum + r.amount, 0);
+  const digitalCollected = waiterRecords
+    .filter((r) => r.method !== 'CASH')
+    .reduce((sum, r) => sum + r.amount, 0);
+  const tipsEarned = waiterRecords.reduce((sum, r) => sum + (r.tip || 0), 0);
+
+  const activeDiningCount = waiterTables.filter(
+    (t) => t.status === 'OCCUPIED' || t.status === 'BILLING'
+  ).length;
+  const tablesServed = waiterRecords.length + activeDiningCount;
+
+  const benchmarkTurnaround: Record<string, number> = {
+    'w-1': 34,
+    'w-2': 38,
+    'w-3': 32,
+    'w-4': 42,
+  };
+  const avgTurnaroundMinutes = benchmarkTurnaround[profile.id] || 36;
+
+  return {
+    waiterId: profile.id,
+    waiterName: profile.name,
+    displayName: profile.displayName,
+    section: profile.section,
+    tablesServed,
+    completedSettlementsCount: waiterRecords.length,
+    totalRevenue,
+    cashCollected,
+    digitalCollected,
+    tipsEarned,
+    avgTurnaroundMinutes,
+    recentSettlements: waiterRecords,
+    activeTables: waiterTables,
+  };
+};
 
 /* ── Initial Data ───────────────────────────────────────────────── */
 const freshTables: SharedTable[] = [
@@ -415,6 +610,7 @@ interface SharedBridgeState {
   pings: SharedPing[];
   inventory86: SharedMenuItem86[];
   shiftStats: SharedShiftStats;
+  settlementRecords: SharedSettlementRecord[];
 
   // ── Customer actions ────────────────────────────────────────────
   /** Customer places order → adds KDS ticket + sets table as OCCUPIED */
@@ -461,7 +657,13 @@ interface SharedBridgeState {
   waiterResolvePing: (pingId: string) => void;
 
   /** Waiter records payment */
-  waiterRecordsPayment: (tableNumber: string, method: string, amount: number) => void;
+  waiterRecordsPayment: (
+    tableNumber: string,
+    method: string,
+    amount: number,
+    tip?: number,
+    serverName?: string
+  ) => void;
 
   /** Waiter vacates table → sets to CLEANING then VACANT */
   waiterVacatesTable: (tableNumber: string) => void;
@@ -482,6 +684,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
   kdsTickets: freshKDSTickets,
   pings: freshPings,
   inventory86: freshInventory86,
+  settlementRecords: freshSettlementRecords,
   shiftStats: {
     tablesServed: 0,
     totalRevenue: 0,
@@ -889,20 +1092,47 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
   },
 
   /* ─── Waiter Records Payment ─────────────────────────────────── */
-  waiterRecordsPayment: (tableNumber, method, amount) => {
+  waiterRecordsPayment: (tableNumber, method, amount, tip = 0, serverName) => {
     set((state) => {
       const targetTbl = state.tables.find((t) => t.number === tableNumber);
       const partner = targetTbl?.mergedWith;
+      const effectiveServer = serverName || targetTbl?.serverName || 'Waiter 1';
+      const upperMethod = (method || 'CASH').toUpperCase();
+      const cleanMethod: 'CASH' | 'UPI' | 'CARD' | 'POS' =
+        upperMethod === 'CASH'
+          ? 'CASH'
+          : upperMethod.includes('UPI')
+          ? 'UPI'
+          : upperMethod.includes('CARD')
+          ? 'CARD'
+          : 'POS';
+
+      const newRecord: SharedSettlementRecord = {
+        id: `set-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        tableNumber,
+        section: targetTbl?.section || 'SECTION A',
+        serverName: effectiveServer,
+        amount,
+        tip,
+        method: cleanMethod,
+        timestamp: nowTime(),
+      };
+
+      const currentRecords = state.settlementRecords || freshSettlementRecords;
+      const updatedRecords = [newRecord, ...currentRecords];
+
       return {
         tables: state.tables.map((t) =>
           t.number === tableNumber || (partner && t.number === partner)
             ? { ...t, status: 'BILLING' }
             : t
         ),
+        settlementRecords: updatedRecords,
         shiftStats: {
           ...state.shiftStats,
           totalRevenue: state.shiftStats.totalRevenue + amount,
           tablesServed: state.shiftStats.tablesServed + 1,
+          tipsEarned: (state.shiftStats.tipsEarned || 0) + tip,
         },
       };
     });
@@ -1009,6 +1239,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
       kdsTickets: [],
       pings: [],
       inventory86: freshInventory86,
+      settlementRecords: freshSettlementRecords,
       shiftStats: {
         tablesServed: 0,
         totalRevenue: 0,
@@ -1027,7 +1258,13 @@ if (typeof window !== 'undefined') {
     if (saved) {
       const parsed = JSON.parse(saved);
       if (parsed && Array.isArray(parsed.tables)) {
-        useSharedBridge.setState(parsed);
+        useSharedBridge.setState({
+          ...parsed,
+          settlementRecords:
+            Array.isArray(parsed.settlementRecords) && parsed.settlementRecords.length > 0
+              ? parsed.settlementRecords
+              : freshSettlementRecords,
+        });
       }
     }
   } catch {}
@@ -1056,6 +1293,7 @@ if (typeof window !== 'undefined') {
             pings: state.pings,
             inventory86: state.inventory86,
             shiftStats: state.shiftStats,
+            settlementRecords: state.settlementRecords,
           })
         );
       } catch {}
@@ -1070,6 +1308,7 @@ if (typeof window !== 'undefined') {
             pings: state.pings,
             inventory86: state.inventory86,
             shiftStats: state.shiftStats,
+            settlementRecords: state.settlementRecords,
           },
         });
       } catch {
