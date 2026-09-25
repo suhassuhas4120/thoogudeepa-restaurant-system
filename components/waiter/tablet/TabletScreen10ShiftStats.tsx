@@ -7,12 +7,11 @@ import {
   getWaiterShiftPerformance,
   resolveWaiterProfile,
 } from '../../../store/useSharedBridge';
-import { SAVED_WAITERS, WaiterProfile } from '../../../types/waiter';
 import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
 import { ArrowLeft, TrendingUp, CheckCircle2, ShieldCheck, Banknote, Smartphone, Utensils } from 'lucide-react';
 
 export const TabletScreen10ShiftStats: React.FC = () => {
-  const { setCurrentScreen, activeCaptain, setActiveCaptain, setActiveSection } = useWaiterStore();
+  const { setCurrentScreen, activeCaptain } = useWaiterStore();
   const { tables, settlementRecords } = useSharedBridge();
 
   const currentProfile = resolveWaiterProfile(activeCaptain);
@@ -22,11 +21,6 @@ export const TabletScreen10ShiftStats: React.FC = () => {
     (t) => t.status === 'OCCUPIED' || t.status === 'BILLING'
   );
   const activeCount = activeDiningTables.length;
-
-  const handleSelectWaiter = (waiter: WaiterProfile) => {
-    setActiveCaptain(waiter.name);
-    setActiveSection(waiter.section);
-  };
 
   const kpiCards = [
     {
@@ -82,39 +76,6 @@ export const TabletScreen10ShiftStats: React.FC = () => {
           <span className="border border-slate-400 bg-slate-100 px-3 py-1 rounded font-bold text-xs text-slate-700">
             {currentProfile.displayName} • Active Shift
           </span>
-        </div>
-
-        {/* WAITER PROFILE SWITCHER CHIPS */}
-        <div className="mb-3.5 flex items-center gap-2 shrink-0">
-          <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">
-            Switch Waiter:
-          </span>
-          <div className="flex gap-2 flex-wrap">
-            {SAVED_WAITERS.map((w) => {
-              const isSelected = resolveWaiterProfile(w.name).id === currentProfile.id;
-              return (
-                <button
-                  key={w.id}
-                  type="button"
-                  onClick={() => handleSelectWaiter(w)}
-                  className={`px-3 py-1.5 rounded-lg border-2 font-mono text-xs font-bold transition cursor-pointer flex items-center gap-2 ${
-                    isSelected
-                      ? 'border-slate-900 bg-slate-900 text-white shadow-xs'
-                      : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50'
-                  }`}
-                >
-                  <span>{w.name}</span>
-                  <span
-                    className={`text-[10px] px-1.5 py-0.5 rounded ${
-                      isSelected ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-500'
-                    }`}
-                  >
-                    {w.section}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
         </div>
 
         {/* CAPTAIN INFO BANNER */}

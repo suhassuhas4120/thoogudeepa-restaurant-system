@@ -114,18 +114,35 @@ export const ScreenW1Login: React.FC = () => {
             })}
           </div>
 
-          {/* Assigned Section: 2 in one row (Row 1: All & Section A, Row 2: Section B & Terrace, Row 3: Family Dining) */}
+          {/* Selected Captain Name Input with Dynamic Placeholder */}
+          <div className="pt-0.5">
+            <label className="block font-mono text-[9.5px] font-bold text-slate-600 mb-1">
+              CAPTAIN NAME:
+            </label>
+            <div className="relative">
+              <UserCheck className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-orange-600" />
+              <input
+                type="text"
+                readOnly
+                value={selectedWaiter ? selectedWaiter.displayName : ''}
+                placeholder="Select Captain Profile"
+                className="w-full pl-8 pr-3 py-1.5 rounded-xl border-2 border-slate-900 font-mono text-xs font-black bg-stone-50 text-slate-900 shadow-2xs focus:outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Assigned Section */}
           <div>
-            <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-500 mb-1.5">
+            <div className="text-[9.5px] font-bold font-mono uppercase tracking-wider text-slate-500 mb-1">
               ASSIGNED FLOOR SECTION
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1.5">
               {sections.map((sec, idx) => (
                 <button
                   key={sec}
                   type="button"
                   onClick={() => setActiveSection(sec)}
-                  className={`py-2 px-3 rounded-xl border text-center text-xs font-mono font-bold transition ${
+                  className={`py-1.5 px-2 rounded-lg border text-center text-[10.5px] font-mono font-bold transition ${
                     idx === 4 ? 'col-span-2' : ''
                   } ${
                     activeSection === sec
@@ -140,28 +157,47 @@ export const ScreenW1Login: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom Section: PIN entry display, keypad, and verify button grouped together */}
-        <div className="space-y-2 pt-2">
-          {/* Passcode PIN Display */}
+        {/* Bottom Section: Password Input with dynamic placeholder, Keypad, and Verify button */}
+        <div className="space-y-1.5 pt-1">
+          {/* Password Input with Dynamic Placeholder */}
           <div>
-            <div className="flex items-center justify-between text-[10px] font-bold font-mono text-slate-600 mb-1">
-              <span>SECURITY PIN ({selectedWaiter?.name?.toUpperCase()}):</span>
-              <span className="text-orange-600 font-extrabold flex items-center gap-1">
-                <Lock className="h-2.5 w-2.5" />
-                <span>PIN: {selectedWaiter?.pin}</span>
+            <div className="flex items-center justify-between text-[9.5px] font-bold font-mono text-slate-600 mb-1">
+              <span>ENTER PASSWORD / PIN:</span>
+              <span className="text-orange-600 font-bold">
+                {selectedWaiter ? `PIN: ${selectedWaiter.pin}` : 'PIN Required'}
               </span>
             </div>
-
-            <div className="h-10 rounded-xl bg-white border-2 border-slate-900 flex items-center justify-center gap-3 shadow-2xs">
-              {[0, 1, 2, 3].map((idx) => (
-                <div
-                  key={idx}
-                  className={`h-3 w-3 rounded-full border-2 border-slate-900 transition-all ${
-                    pin.length > idx ? 'bg-slate-900 scale-110' : 'bg-transparent'
-                  }`}
-                />
-              ))}
+            <div className="relative">
+              <Lock className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+              <input
+                type="password"
+                maxLength={4}
+                value={pin}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                  setPin(val);
+                  setErrorMessage(null);
+                }}
+                placeholder={
+                  selectedWaiter
+                    ? `Enter password for ${selectedWaiter.name}`
+                    : 'Enter 4-digit PIN'
+                }
+                className="w-full pl-8 pr-3 py-1.5 rounded-xl border-2 border-slate-900 font-mono text-xs font-black tracking-widest bg-white text-slate-900 shadow-2xs focus:outline-none"
+              />
             </div>
+          </div>
+
+          {/* PIN Lock Dot Indicator */}
+          <div className="h-7 rounded-lg bg-stone-100 border border-slate-300 flex items-center justify-center gap-3">
+            {[0, 1, 2, 3].map((idx) => (
+              <div
+                key={idx}
+                className={`h-2.5 w-2.5 rounded-full border border-slate-800 transition-all ${
+                  pin.length > idx ? 'bg-slate-900 scale-110' : 'bg-white'
+                }`}
+              />
+            ))}
           </div>
 
           {/* Error Message */}
@@ -171,9 +207,9 @@ export const ScreenW1Login: React.FC = () => {
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
-                className="p-2 rounded-lg bg-rose-50 border border-rose-300 text-rose-800 text-[10.5px] font-mono font-bold flex items-center gap-1.5"
+                className="p-1.5 rounded-lg bg-rose-50 border border-rose-300 text-rose-800 text-[10px] font-mono font-bold flex items-center gap-1.5"
               >
-                <AlertCircle className="h-3.5 w-3.5 text-rose-600 shrink-0" />
+                <AlertCircle className="h-3 w-3 text-rose-600 shrink-0" />
                 <span>{errorMessage}</span>
               </motion.div>
             )}

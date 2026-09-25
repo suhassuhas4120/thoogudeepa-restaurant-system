@@ -7,7 +7,6 @@ import {
   getWaiterShiftPerformance,
   resolveWaiterProfile,
 } from '../../store/useSharedBridge';
-import { SAVED_WAITERS, WaiterProfile } from '../../types/waiter';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
 import {
   Users,
@@ -19,25 +18,21 @@ import {
   Banknote,
   Smartphone,
   UtensilsCrossed,
+  ShieldCheck,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const ScreenW10ShiftStats: React.FC = () => {
-  const { setCurrentScreen, activeCaptain, setActiveCaptain, setActiveSection } = useWaiterStore();
+  const { setCurrentScreen, activeCaptain } = useWaiterStore();
   const { tables, settlementRecords } = useSharedBridge();
 
-  // Active waiter calculation
+  // Strictly compute for the logged-in waiter
   const currentProfile = resolveWaiterProfile(activeCaptain);
   const perf = getWaiterShiftPerformance(currentProfile.name, { settlementRecords, tables });
 
   const activeDiningCount = perf.activeTables.filter(
     (t) => t.status === 'OCCUPIED' || t.status === 'BILLING'
   ).length;
-
-  const handleSelectWaiter = (waiter: WaiterProfile) => {
-    setActiveCaptain(waiter.name);
-    setActiveSection(waiter.section);
-  };
 
   return (
     <WaiterTabletHousing screenNumber={10} screenTitle="SHIFT PERFORMANCE & SUMMARY KPIS">
@@ -57,37 +52,28 @@ export const ScreenW10ShiftStats: React.FC = () => {
             </span>
           </div>
 
-          {/* Waiter Switcher Tabs */}
-          <div>
-            <div className="font-mono text-[9.5px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center justify-between">
-              <span>SELECT WAITER SCORECARD:</span>
-              <span className="text-orange-600 font-bold">{currentProfile.section}</span>
+          {/* Logged-In Captain Verified Shift Header */}
+          <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-2xs flex items-center justify-between font-mono">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-full bg-slate-900 text-white font-black text-xs flex items-center justify-center">
+                {currentProfile.name.charAt(currentProfile.name.length - 1)}
+              </div>
+              <div>
+                <div className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                  <span>{currentProfile.displayName}</span>
+                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                    Logged In
+                  </span>
+                </div>
+                <div className="text-[10px] text-slate-500">
+                  Floor: {currentProfile.section} • Afternoon Peak
+                </div>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-1.5">
-              {SAVED_WAITERS.map((w) => {
-                const isSelected = resolveWaiterProfile(w.name).id === currentProfile.id;
-                return (
-                  <button
-                    key={w.id}
-                    type="button"
-                    onClick={() => handleSelectWaiter(w)}
-                    className={`py-1.5 px-2 rounded-lg border font-mono text-[10.5px] font-bold transition cursor-pointer text-left flex items-center justify-between ${
-                      isSelected
-                        ? 'bg-slate-900 text-white border-slate-900 shadow-2xs'
-                        : 'bg-white text-slate-700 border-slate-200 hover:bg-stone-50'
-                    }`}
-                  >
-                    <span>{w.name}</span>
-                    <span
-                      className={`text-[9px] px-1 py-0.5 rounded ${
-                        isSelected ? 'bg-slate-800 text-slate-200' : 'bg-stone-100 text-slate-500'
-                      }`}
-                    >
-                      {w.section.replace('SECTION ', 'Sec ')}
-                    </span>
-                  </button>
-                );
-              })}
+            <div className="text-right">
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-300 px-2 py-0.5 rounded">
+                Active Shift
+              </span>
             </div>
           </div>
 
