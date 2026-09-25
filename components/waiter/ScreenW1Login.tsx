@@ -157,47 +157,28 @@ export const ScreenW1Login: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom Section: Password Input with dynamic placeholder, Keypad, and Verify button */}
-        <div className="space-y-1.5 pt-1">
-          {/* Password Input with Dynamic Placeholder */}
+        {/* Bottom Section: Passcode PIN Display, Keypad, and Verify button */}
+        <div className="space-y-2 pt-1">
+          {/* Passcode PIN Display */}
           <div>
-            <div className="flex items-center justify-between text-[9.5px] font-bold font-mono text-slate-600 mb-1">
-              <span>ENTER PASSWORD / PIN:</span>
-              <span className="text-orange-600 font-bold">
-                {selectedWaiter ? `PIN: ${selectedWaiter.pin}` : 'PIN Required'}
+            <div className="flex items-center justify-between text-[10px] font-bold font-mono text-slate-600 mb-1">
+              <span>SECURITY PIN ({selectedWaiter?.name?.toUpperCase()}):</span>
+              <span className="text-orange-600 font-extrabold flex items-center gap-1">
+                <Lock className="h-2.5 w-2.5" />
+                <span>PIN: {selectedWaiter?.pin}</span>
               </span>
             </div>
-            <div className="relative">
-              <Lock className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
-              <input
-                type="password"
-                maxLength={4}
-                value={pin}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, '').slice(0, 4);
-                  setPin(val);
-                  setErrorMessage(null);
-                }}
-                placeholder={
-                  selectedWaiter
-                    ? `Enter password for ${selectedWaiter.name}`
-                    : 'Enter 4-digit PIN'
-                }
-                className="w-full pl-8 pr-3 py-1.5 rounded-xl border-2 border-slate-900 font-mono text-xs font-black tracking-widest bg-white text-slate-900 shadow-2xs focus:outline-none"
-              />
-            </div>
-          </div>
 
-          {/* PIN Lock Dot Indicator */}
-          <div className="h-7 rounded-lg bg-stone-100 border border-slate-300 flex items-center justify-center gap-3">
-            {[0, 1, 2, 3].map((idx) => (
-              <div
-                key={idx}
-                className={`h-2.5 w-2.5 rounded-full border border-slate-800 transition-all ${
-                  pin.length > idx ? 'bg-slate-900 scale-110' : 'bg-white'
-                }`}
-              />
-            ))}
+            <div className="h-10 rounded-xl bg-white border-2 border-slate-900 flex items-center justify-center gap-3 shadow-2xs">
+              {[0, 1, 2, 3].map((idx) => (
+                <div
+                  key={idx}
+                  className={`h-3 w-3 rounded-full border-2 border-slate-900 transition-all ${
+                    pin.length > idx ? 'bg-slate-900 scale-110' : 'bg-transparent'
+                  }`}
+                />
+              ))}
+            </div>
           </div>
 
           {/* Error Message */}
