@@ -327,8 +327,8 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 </span>
 
                 <div className="flex flex-col gap-2">
-                  {activeTable.activeItems && activeTable.activeItems.length > 0 ? (
-                    activeTable.activeItems.map((item, idx) => (
+                  {breakdown.items && breakdown.items.length > 0 ? (
+                    breakdown.items.map((item, idx) => (
                       <div
                         key={idx}
                         className="bg-white border border-slate-300 rounded-lg p-3 flex justify-between items-center shadow-2xs"
@@ -338,7 +338,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                             {item.quantity}x {item.name}
                           </strong>
                           <div className="text-[10.5px] text-slate-500 font-bold">
-                            ₹{(item.price || 260) * item.quantity} (₹{item.price || 260} ea) • Kitchen Prep
+                            ₹{item.lineTotal} (₹{item.unitPrice} ea) • Kitchen Prep
                           </div>
                         </div>
                         <span className={`border px-2 py-0.5 rounded text-[10.5px] font-bold ${

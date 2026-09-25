@@ -174,8 +174,7 @@ export const ScreenW3TableDetail: React.FC = () => {
                 disabled={!isPaymentDone}
                 onClick={() => {
                   if (isPaymentDone) {
-                    waiterVacatesTable(table.number);
-                    setCurrentScreen(2);
+                    setCurrentScreen(9);
                   }
                 }}
                 className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-mono text-xs font-black transition shadow-xs ${
@@ -185,7 +184,7 @@ export const ScreenW3TableDetail: React.FC = () => {
                 }`}
               >
                 <Trash2 className="h-3.5 w-3.5" />
-                <span>{isPaymentDone ? 'Checkout & Vacate Table' : 'Vacate Disabled (Payment Pending)'}</span>
+                <span>{isPaymentDone ? 'Checkout & Vacate Table (Screen 9)' : 'Vacate Disabled (Payment Pending)'}</span>
               </motion.button>
             );
           })()}

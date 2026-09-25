@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useWaiterStore } from '../../store/useWaiterStore';
 import { useSharedBridge, getTableBillBreakdown } from '../../store/useSharedBridge';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
-import { ArrowLeft, Printer, Share2, CheckCircle2, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Printer, Share2, CheckCircle2, RotateCcw, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const ScreenW8PrintBill: React.FC = () => {
@@ -135,10 +135,18 @@ export const ScreenW8PrintBill: React.FC = () => {
           </motion.button>
 
           <button
-            onClick={() => setCurrentScreen(3)}
-            className="w-full py-2.5 font-mono text-xs font-bold text-slate-500 hover:text-slate-800 text-center cursor-pointer"
+            onClick={() => setCurrentScreen(9)}
+            className="w-full py-2.5 rounded-xl border border-dashed border-rose-300 bg-rose-50/60 hover:bg-rose-100 font-mono text-xs font-black text-rose-700 text-center cursor-pointer flex items-center justify-center gap-1.5 transition"
           >
-            Return to Table Management ➔
+            <Trash2 className="h-3.5 w-3.5" />
+            <span>Proceed to Table Vacate (Screen 9) ➔</span>
+          </button>
+
+          <button
+            onClick={() => setCurrentScreen(3)}
+            className="w-full py-1.5 font-mono text-[11px] font-bold text-slate-500 hover:text-slate-800 text-center cursor-pointer"
+          >
+            Return to Table Management
           </button>
         </div>
       </div>
