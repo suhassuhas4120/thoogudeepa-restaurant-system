@@ -2,48 +2,21 @@
 
 import React, { useState } from 'react';
 import { useWaiterStore } from '../../../store/useWaiterStore';
-import { useSharedBridge } from '../../../store/useSharedBridge';
+import { useSharedBridge, getTableBillBreakdown } from '../../../store/useSharedBridge';
 import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
 import { INITIAL_MENU_ITEMS } from '../../../data/menuItems';
 import { ArrowLeft, Printer, MessageCircle, CheckCircle2, Trash2 } from 'lucide-react';
 
 export const TabletScreen8PrintBill: React.FC = () => {
-  const { setCurrentScreen, selectedTableNumber, orderCart, activeCaptain } = useWaiterStore();
+  const { setCurrentScreen, selectedTableNumber, orderCart, activeCaptain, settlementTip } = useWaiterStore();
   const { tables, waiterVacatesTable } = useSharedBridge();
   const [printSent, setPrintSent] = useState(false);
   const [whatsappSent, setWhatsappSent] = useState(false);
   const [tableVacated, setTableVacated] = useState(false);
 
   const activeTable = tables.find((t) => t.number === (selectedTableNumber || 'A-04')) || tables[0];
-  const items = (activeTable.activeItems && activeTable.activeItems.length > 0)
-    ? activeTable.activeItems.map((ai) => {
-        const found = INITIAL_MENU_ITEMS.find((m) => m.name.toLowerCase() === ai.name.toLowerCase());
-        const unitPrice = found ? found.price : 260;
-        return {
-          name: ai.name,
-          qty: ai.quantity,
-          price: unitPrice * ai.quantity,
-          status: ai.status,
-        };
-      })
-    : (orderCart.length > 0
-        ? orderCart.map((c) => ({
-            name: c.menuItem.name,
-            qty: c.quantity,
-            price: c.menuItem.price * c.quantity,
-            status: 'Served',
-          }))
-        : [
-            { name: 'Donne Mutton Biryani', qty: 1, price: 320, status: 'Served' },
-            { name: 'Donne Chicken Biryani', qty: 1, price: 240, status: 'Served' },
-          ]);
+  const breakdown = getTableBillBreakdown(activeTable, settlementTip);
 
-  const subtotal = activeTable.currentBill || items.reduce((sum, item) => sum + (item.price || 0), 0);
-  const netBeforeGst = Math.round(subtotal / 1.05);
-  const totalGst = subtotal - netBeforeGst;
-  const cgst = Math.round(totalGst / 2);
-  const sgst = totalGst - cgst;
-  const netTotal = subtotal;
   const invoiceNum = `INV-2026-${activeTable.number.replace(/\D/g, '') || '104'}`;
   const txnId = `TXN_${(activeTable.number.replace(/\D/g, '') || '104').padStart(4, '0')}7892`;
   const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
@@ -134,34 +107,49 @@ export const TabletScreen8PrintBill: React.FC = () => {
               {/* Itemized Bill */}
               <div className="border-b border-dashed border-slate-300 pb-2 mb-2">
                 <div className="flex justify-between font-bold text-[10px] border-b border-slate-200 pb-1 mb-1">
-                  <span>ITEM</span><span>QTY</span><span>AMT</span>
+                  <span>ITEM</span><span>QTY</span><span>RATE</span><span>AMT</span>
                 </div>
-                {items.map((item, idx) => (
-                  <div key={idx} className="flex justify-between text-[10px] text-slate-700 py-0.5">
-                    <span className="flex-1 truncate pr-2">{item.name}</span>
-                    <span className="w-6 text-center">{item.qty}</span>
-                    <span className="w-14 text-right">₹{item.price}</span>
+                {breakdown.items.length > 0 ? (
+                  breakdown.items.map((item, idx) => (
+                    <div key={idx} className="flex justify-between text-[10px] text-slate-700 py-0.5">
+                      <span className="flex-1 truncate pr-1">{item.name}</span>
+                      <span className="w-5 text-center">{item.quantity}</span>
+                      <span className="w-10 text-right">₹{item.unitPrice}</span>
+                      <span className="w-12 text-right">₹{item.lineTotal}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex justify-between text-[10px] text-slate-700 py-0.5">
+                    <span className="flex-1 truncate pr-1">Dine-In F&B Service</span>
+                    <span className="w-5 text-center">1</span>
+                    <span className="w-10 text-right">₹{breakdown.foodSubtotal}</span>
+                    <span className="w-12 text-right">₹{breakdown.foodSubtotal}</span>
                   </div>
-                ))}
+                )}
               </div>
 
               {/* GST Breakdown */}
               <div className="text-[10px] text-slate-600 flex flex-col gap-0.5 border-b border-dashed border-slate-300 pb-2 mb-2">
                 <div className="flex justify-between">
-                  <span>Subtotal (Net):</span><span>₹ {netBeforeGst.toLocaleString('en-IN')}</span>
+                  <span>Subtotal (Net):</span><span>₹ {breakdown.foodSubtotal.toLocaleString('en-IN')}.00</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>CGST @ 2.5%:</span><span>₹ {cgst}</span>
+                  <span>CGST @ 2.5%:</span><span>₹ {breakdown.cgst}.00</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>SGST @ 2.5%:</span><span>₹ {sgst}</span>
+                  <span>SGST @ 2.5%:</span><span>₹ {breakdown.sgst}.00</span>
                 </div>
+                {breakdown.tip > 0 && (
+                  <div className="flex justify-between text-orange-600 font-bold">
+                    <span>Staff Tip:</span><span>₹ {breakdown.tip}.00</span>
+                  </div>
+                )}
               </div>
 
               {/* Grand Total */}
               <div className="flex justify-between font-black text-sm text-slate-950 border-t-2 border-slate-800 pt-2 mb-3">
                 <span>NET TOTAL PAID:</span>
-                <span>₹ {netTotal.toLocaleString('en-IN')}</span>
+                <span>₹ {breakdown.grandTotal.toLocaleString('en-IN')}.00</span>
               </div>
 
               {/* Payment Mode */}
@@ -180,23 +168,35 @@ export const TabletScreen8PrintBill: React.FC = () => {
             <div className="border border-slate-300 bg-white rounded-xl p-4 flex flex-col gap-2">
               <strong className="text-xs font-black text-slate-900">Tax Invoice Details:</strong>
               <div className="flex flex-col gap-1 font-mono text-xs">
-                {items.map((row, i) => (
-                  <div key={i} className="flex justify-between text-slate-700">
-                    <span>{row.qty}x {row.name}</span>
-                    <span>₹ {row.price}.00</span>
+                {breakdown.items.length > 0 ? (
+                  breakdown.items.map((row, i) => (
+                    <div key={i} className="flex justify-between text-slate-700">
+                      <span>{row.quantity}x {row.name}</span>
+                      <span>₹ {row.lineTotal}.00</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex justify-between text-slate-700">
+                    <span>1x Dine-In F&amp; Beverage Service</span>
+                    <span>₹ {breakdown.foodSubtotal}.00</span>
                   </div>
-                ))}
+                )}
                 <div className="border-t border-dashed border-slate-300 mt-1 pt-1 flex justify-between text-[10px] text-slate-500">
-                  <span>Subtotal (Net):</span><span>₹ {netBeforeGst}.00</span>
+                  <span>Subtotal (Net):</span><span>₹ {breakdown.foodSubtotal}.00</span>
                 </div>
                 <div className="flex justify-between text-[10px] text-slate-500">
-                  <span>CGST 2.5%:</span><span>₹ {cgst}.00</span>
+                  <span>CGST 2.5%:</span><span>₹ {breakdown.cgst}.00</span>
                 </div>
                 <div className="flex justify-between text-[10px] text-slate-500">
-                  <span>SGST 2.5%:</span><span>₹ {sgst}.00</span>
+                  <span>SGST 2.5%:</span><span>₹ {breakdown.sgst}.00</span>
                 </div>
+                {breakdown.tip > 0 && (
+                  <div className="flex justify-between text-[10px] text-orange-600 font-bold">
+                    <span>Staff Tip:</span><span>₹ {breakdown.tip}.00</span>
+                  </div>
+                )}
                 <div className="border-t-2 border-slate-900 mt-1 pt-1 flex justify-between font-black text-sm text-slate-950">
-                  <span>Net Total Paid:</span><span>₹ {netTotal.toLocaleString('en-IN')}.00</span>
+                  <span>Net Total Paid:</span><span>₹ {breakdown.grandTotal}.00</span>
                 </div>
               </div>
             </div>

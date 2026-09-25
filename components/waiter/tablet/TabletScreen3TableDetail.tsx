@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useWaiterStore } from '../../../store/useWaiterStore';
-import { useSharedBridge } from '../../../store/useSharedBridge';
+import { useSharedBridge, getTableBillBreakdown } from '../../../store/useSharedBridge';
 import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
 import { INITIAL_MENU_ITEMS } from '../../../data/menuItems';
 import { MenuItem } from '../../../types/customer';
@@ -80,10 +80,10 @@ export const TabletScreen3TableDetail: React.FC = () => {
   const currentTable = selectedTableNumber || 'A-04';
   const activeTable = tables.find((t) => t.number === currentTable) || tables[0];
   const isAlreadyMerged = Boolean(activeTable?.mergedWith);
-  const runningTotal = activeTable?.currentBill || 0;
-  const subtotal = Math.round(runningTotal / 1.05);
-  const gst = runningTotal - subtotal;
-  const serviceCharge = Math.round(subtotal * 0.05);
+  const breakdown = getTableBillBreakdown(activeTable);
+  const runningTotal = breakdown.grandTotal;
+  const subtotal = breakdown.foodSubtotal;
+  const gst = breakdown.totalTax;
 
   const canVacate = isPaymentDone || activeTable?.status === 'BILLING';
 
@@ -483,19 +483,19 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   </strong>
                   <div className="flex justify-between text-xs text-slate-600">
                     <span>Net Subtotal:</span>
-                    <span>₹ {subtotal.toFixed(2)}</span>
+                    <span>₹ {breakdown.foodSubtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-xs text-slate-600">
                     <span>CGST @ 2.5%:</span>
-                    <span>₹ {Math.round(gst / 2).toFixed(2)}</span>
+                    <span>₹ {breakdown.cgst.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-xs text-slate-600">
                     <span>SGST @ 2.5%:</span>
-                    <span>₹ {(gst - Math.round(gst / 2)).toFixed(2)}</span>
+                    <span>₹ {breakdown.sgst.toFixed(2)}</span>
                   </div>
                   <div className="border-t-2 border-slate-900 pt-2 flex justify-between text-sm font-black text-slate-950">
                     <span>Grand Total Due:</span>
-                    <span>₹ {runningTotal.toFixed(2)}</span>
+                    <span>₹ {breakdown.grandTotal.toFixed(2)}</span>
                   </div>
                 </div>
 
@@ -1030,12 +1030,12 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     TOTAL BILL PAYABLE
                   </span>
                   <strong className="text-xl font-black text-slate-950 font-mono">
-                    ₹{runningTotal.toFixed(2)}
+                    ₹{breakdown.grandTotal.toFixed(2)}
                   </strong>
                   <div className="flex justify-center gap-4 text-[10.5px] font-bold text-slate-600 mt-1 pt-1 border-t border-slate-200">
-                    <span>Subtotal: ₹{subtotal.toFixed(2)}</span>
-                    <span>CGST (2.5%): ₹{(gst / 2).toFixed(2)}</span>
-                    <span>SGST (2.5%): ₹{(gst / 2).toFixed(2)}</span>
+                    <span>Subtotal: ₹{breakdown.foodSubtotal.toFixed(2)}</span>
+                    <span>CGST (2.5%): ₹{breakdown.cgst.toFixed(2)}</span>
+                    <span>SGST (2.5%): ₹{breakdown.sgst.toFixed(2)}</span>
                   </div>
                 </div>
 
@@ -1156,32 +1156,32 @@ export const TabletScreen3TableDetail: React.FC = () => {
 
                   {/* Dynamic Itemized Dishes */}
                   <div className="border-t border-b border-dashed border-slate-200 py-1.5 my-1 space-y-1">
-                    {activeTable.activeItems && activeTable.activeItems.length > 0 ? (
-                      activeTable.activeItems.map((item, idx) => (
+                    {breakdown.items.length > 0 ? (
+                      breakdown.items.map((item, idx) => (
                         <div key={idx} className="flex justify-between text-slate-800">
                           <span className="truncate pr-2">{item.quantity}x {item.name}</span>
-                          <span className="font-bold">₹{item.quantity * 260}</span>
+                          <span className="font-bold">₹{item.lineTotal.toFixed(2)}</span>
                         </div>
                       ))
                     ) : (
                       <div className="flex justify-between text-slate-800">
                         <span>1x F&amp;B Dine-In Service</span>
-                        <span className="font-bold">₹{subtotal.toFixed(2)}</span>
+                        <span className="font-bold">₹{breakdown.foodSubtotal.toFixed(2)}</span>
                       </div>
                     )}
                   </div>
 
                   <div className="flex justify-between text-slate-600">
-                    <span>Subtotal:</span><span>₹ {subtotal.toFixed(2)}</span>
+                    <span>Subtotal:</span><span>₹ {breakdown.foodSubtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-slate-600">
-                    <span>CGST (2.5%):</span><span>₹ {(gst / 2).toFixed(2)}</span>
+                    <span>CGST (2.5%):</span><span>₹ {breakdown.cgst.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-slate-600">
-                    <span>SGST (2.5%):</span><span>₹ {(gst / 2).toFixed(2)}</span>
+                    <span>SGST (2.5%):</span><span>₹ {breakdown.sgst.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between font-black text-slate-950 border-t border-slate-300 pt-1 text-xs">
-                    <span>TOTAL PAID:</span><span>₹ {runningTotal.toFixed(2)}</span>
+                    <span>TOTAL PAID:</span><span>₹ {breakdown.grandTotal.toFixed(2)}</span>
                   </div>
                 </div>
 

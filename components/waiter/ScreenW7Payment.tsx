@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWaiterStore } from '../../store/useWaiterStore';
-import { useSharedBridge } from '../../store/useSharedBridge';
+import { useSharedBridge, getTableBillBreakdown } from '../../store/useSharedBridge';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
 import {
   ArrowLeft,
@@ -17,15 +17,15 @@ import {
   Clock,
   Zap,
   Wifi,
+  UtensilsCrossed,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const ScreenW7Payment: React.FC = () => {
-  const { setCurrentScreen, selectedTableNumber } = useWaiterStore();
+  const { setCurrentScreen, selectedTableNumber, settlementTip, setSettlementTip } = useWaiterStore();
   const { tables, waiterRecordsPayment } = useSharedBridge();
 
   const [method, setMethod] = useState<'UPI' | 'CARD' | 'CASH'>('UPI');
-  const [tip, setTip] = useState(50);
   const [success, setSuccess] = useState(false);
 
   // UPI specific states
@@ -36,18 +36,20 @@ export const ScreenW7Payment: React.FC = () => {
   const [posAuthCode, setPosAuthCode] = useState('');
   const [cardAuthorized, setCardAuthorized] = useState(false);
 
-  // Cash specific states
+  // Active table and dynamic mathematical breakdown
   const currentTableNum = selectedTableNumber || 'A-04';
   const activeTable = tables.find((t) => t.number === currentTableNum) || tables[0];
-  const billAmount = activeTable?.currentBill || 0;
-  const subtotal = Math.round(billAmount / 1.05);
-  const tax = billAmount - subtotal;
-  const total = billAmount + (billAmount > 0 ? tip : 0);
+  const breakdown = getTableBillBreakdown(activeTable, settlementTip);
 
-  const [cashReceived, setCashReceived] = useState<number>(total);
+  // Cash specific state - initialized & synchronized with grand total
+  const [cashReceived, setCashReceived] = useState<number>(breakdown.grandTotal);
+
+  useEffect(() => {
+    setCashReceived(breakdown.grandTotal);
+  }, [breakdown.grandTotal]);
 
   const handlePay = () => {
-    waiterRecordsPayment(activeTable?.number || currentTableNum, method, total);
+    waiterRecordsPayment(activeTable?.number || currentTableNum, method, breakdown.grandTotal);
     setSuccess(true);
     setTimeout(() => {
       setCurrentScreen(8);
@@ -76,21 +78,98 @@ export const ScreenW7Payment: React.FC = () => {
               <ArrowLeft className="h-3.5 w-3.5 stroke-[2.5]" />
               <span>Back to Table</span>
             </button>
-            <span className="font-mono text-xs font-black text-slate-900">
-              Table: {currentTableNum}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-xs font-black text-slate-900 bg-stone-100 px-2 py-0.5 rounded border border-slate-200">
+                Table: {currentTableNum}
+              </span>
+              <span className="font-mono text-[10px] text-slate-500 font-bold">
+                {activeTable?.guestCount || 2} Guests
+              </span>
+            </div>
           </div>
 
           {/* Amount Box */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xs text-center">
-            <div className="font-mono text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+          <div className="rounded-2xl border-2 border-orange-500/30 bg-orange-50/40 p-3.5 shadow-xs text-center">
+            <div className="font-mono text-[10px] font-bold text-orange-700 uppercase tracking-wider">
               Total Collection Amount
             </div>
-            <div className="font-mono text-2xl font-black text-orange-600 mt-0.5">
-              ₹ {total}
+            <div className="font-mono text-3xl font-black text-orange-600 mt-0.5">
+              ₹ {breakdown.grandTotal}
             </div>
-            <div className="font-mono text-[10.5px] text-slate-500 mt-0.5">
-              Net Subtotal: ₹{subtotal} + 5% GST: ₹{tax} + Tip: ₹{tip}
+            <div className="font-mono text-[10.5px] text-slate-600 mt-1 font-semibold">
+              Net Food: ₹{breakdown.foodSubtotal} + 5% GST: ₹{breakdown.totalTax}
+              {breakdown.tip > 0 ? ` + Tip: ₹${breakdown.tip}` : ''}
+            </div>
+          </div>
+
+          {/* Selected Food Order Items Breakdown */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-xs">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 mb-2">
+              <div className="flex items-center gap-1.5 font-mono text-[10.5px] font-black text-slate-900 uppercase tracking-wide">
+                <UtensilsCrossed className="h-3.5 w-3.5 text-orange-600" />
+                <span>Selected Food Items ({breakdown.itemCount})</span>
+              </div>
+              <span className="font-mono text-[10px] font-bold text-slate-500">
+                Subtotal: ₹{breakdown.foodSubtotal}
+              </span>
+            </div>
+
+            <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+              {breakdown.items.length > 0 ? (
+                breakdown.items.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between text-xs py-1 border-b border-dashed border-slate-100 last:border-0"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-black text-orange-600 bg-orange-100/60 px-1.5 py-0.5 rounded">
+                        {item.quantity}×
+                      </span>
+                      <span className="font-semibold text-slate-800 text-[11.5px] truncate max-w-[160px]">
+                        {item.name}
+                      </span>
+                    </div>
+                    <div className="text-right font-mono">
+                      <span className="text-[10px] text-slate-400 mr-2">
+                        @ ₹{item.unitPrice}
+                      </span>
+                      <span className="font-black text-slate-900 text-xs">
+                        ₹{item.lineTotal}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-2 font-mono text-[11px] text-slate-400 italic">
+                  Dine-In Food &amp; Beverage Service (₹{breakdown.foodSubtotal})
+                </div>
+              )}
+            </div>
+
+            {/* Micro Math Ledger */}
+            <div className="pt-2 mt-2 border-t border-slate-100 font-mono text-[10.5px] space-y-1 text-slate-600">
+              <div className="flex justify-between">
+                <span>Food Items Subtotal:</span>
+                <span className="font-bold text-slate-900">₹{breakdown.foodSubtotal}.00</span>
+              </div>
+              <div className="flex justify-between text-slate-500">
+                <span>CGST (2.5%):</span>
+                <span>₹{breakdown.cgst}.00</span>
+              </div>
+              <div className="flex justify-between text-slate-500">
+                <span>SGST (2.5%):</span>
+                <span>₹{breakdown.sgst}.00</span>
+              </div>
+              {breakdown.tip > 0 && (
+                <div className="flex justify-between text-orange-600 font-bold">
+                  <span>Staff Gratuity / Tip:</span>
+                  <span>₹{breakdown.tip}.00</span>
+                </div>
+              )}
+              <div className="flex justify-between pt-1 border-t border-slate-200 font-black text-slate-900 text-xs">
+                <span>Total Amount Payable:</span>
+                <span>₹{breakdown.grandTotal}.00</span>
+              </div>
             </div>
           </div>
 
@@ -220,7 +299,7 @@ export const ScreenW7Payment: React.FC = () => {
 
                       {/* Scan Tag */}
                       <span className="font-mono text-[9px] font-black text-slate-800 mt-1 uppercase tracking-wider">
-                        Scan to Pay ₹{total}
+                        Scan to Pay ₹{breakdown.grandTotal}
                       </span>
                     </div>
 
@@ -317,7 +396,7 @@ export const ScreenW7Payment: React.FC = () => {
                       Insert, Swipe or Tap NFC Card
                     </strong>
                     <span className="text-[10px] text-slate-500 font-mono">
-                      Charge: ₹{total}.00 • Visa / Mastercard / RuPay
+                      Charge: ₹{breakdown.grandTotal}.00 • Visa / Mastercard / RuPay
                     </span>
                   </div>
                 </div>
@@ -360,7 +439,7 @@ export const ScreenW7Payment: React.FC = () => {
               <div className="space-y-2.5 py-1">
                 <div className="border border-slate-200 bg-stone-50 rounded-xl p-2.5 flex items-center justify-between font-mono text-[10px]">
                   <span className="font-bold text-slate-600">CASH TENDER PAYABLE:</span>
-                  <span className="font-black text-slate-900 text-xs">₹ {total}</span>
+                  <span className="font-black text-slate-900 text-xs">₹ {breakdown.grandTotal}</span>
                 </div>
 
                 {/* Quick Tender Currency Presets */}
@@ -370,8 +449,11 @@ export const ScreenW7Payment: React.FC = () => {
                   </span>
                   <div className="grid grid-cols-4 gap-1.5">
                     {[
-                      { label: `Exact (₹${total})`, val: total },
-                      { label: '₹500', val: 500 },
+                      { label: `Exact (₹${breakdown.grandTotal})`, val: breakdown.grandTotal },
+                      {
+                        label: `₹${Math.ceil(breakdown.grandTotal / 100) * 100}`,
+                        val: Math.ceil(breakdown.grandTotal / 100) * 100,
+                      },
                       { label: '₹1000', val: 1000 },
                       { label: '₹2000', val: 2000 },
                     ].map((btn, idx) => (
@@ -410,14 +492,18 @@ export const ScreenW7Payment: React.FC = () => {
                 {/* Change Due Return Box */}
                 <div
                   className={`p-2.5 rounded-xl border font-mono text-xs font-bold flex justify-between items-center ${
-                    cashReceived >= total
+                    cashReceived >= breakdown.grandTotal
                       ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
                       : 'bg-amber-50 border-amber-300 text-amber-900'
                   }`}
                 >
-                  <span>{cashReceived >= total ? 'Change to Return to Guest:' : 'Balance Due / Shortage:'}</span>
+                  <span>
+                    {cashReceived >= breakdown.grandTotal
+                      ? 'Change to Return to Guest:'
+                      : 'Balance Due / Shortage:'}
+                  </span>
                   <span className="font-black text-sm">
-                    ₹ {Math.abs(cashReceived - total)}
+                    ₹ {Math.abs(cashReceived - breakdown.grandTotal)}
                   </span>
                 </div>
               </div>
@@ -426,17 +512,20 @@ export const ScreenW7Payment: React.FC = () => {
 
           {/* Staff Tip Selection */}
           <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-2xs">
-            <div className="font-mono text-[9.5px] font-bold uppercase text-slate-400 mb-1.5">
-              Staff Tip Preset
+            <div className="flex items-center justify-between font-mono text-[9.5px] font-bold uppercase text-slate-400 mb-1.5">
+              <span>Staff Tip Preset</span>
+              <span className="text-orange-600 font-bold">
+                {settlementTip > 0 ? `+ ₹${settlementTip}` : 'No tip added'}
+              </span>
             </div>
             <div className="flex gap-1.5">
               {[0, 30, 50, 100].map((t) => (
                 <button
                   key={t}
                   type="button"
-                  onClick={() => setTip(t)}
+                  onClick={() => setSettlementTip(t)}
                   className={`flex-1 py-1 rounded-lg font-mono text-xs font-bold transition cursor-pointer ${
-                    tip === t
+                    settlementTip === t
                       ? 'bg-slate-900 text-white shadow-2xs'
                       : 'bg-stone-100 text-slate-700 hover:bg-stone-200'
                   }`}
@@ -458,11 +547,11 @@ export const ScreenW7Payment: React.FC = () => {
             {success ? (
               <span>✓ Payment Recorded!</span>
             ) : method === 'UPI' ? (
-              <span>Confirm &amp; Record ₹{total} via UPI ➔</span>
+              <span>Confirm &amp; Record ₹{breakdown.grandTotal} via UPI ➔</span>
             ) : method === 'CARD' ? (
-              <span>Confirm &amp; Record ₹{total} via Card POS ➔</span>
+              <span>Confirm &amp; Record ₹{breakdown.grandTotal} via Card POS ➔</span>
             ) : (
-              <span>Confirm &amp; Record ₹{total} Cash ➔</span>
+              <span>Confirm &amp; Record ₹{breakdown.grandTotal} Cash ➔</span>
             )}
           </motion.button>
         </div>

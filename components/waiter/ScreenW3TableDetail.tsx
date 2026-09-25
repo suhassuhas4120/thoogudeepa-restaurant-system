@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useWaiterStore } from '../../store/useWaiterStore';
-import { useSharedBridge } from '../../store/useSharedBridge';
+import { useSharedBridge, getTableBillBreakdown } from '../../store/useSharedBridge';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
 import {
   ArrowLeft,
@@ -29,6 +29,7 @@ export const ScreenW3TableDetail: React.FC = () => {
 
   const table =
     tables.find((t) => t.number === selectedTableNumber) || tables[3]; // Table A-04 default
+  const breakdown = getTableBillBreakdown(table);
 
   return (
     <WaiterTabletHousing screenNumber={3} screenTitle="TABLE OPERATIONS & ORDER SUMMARY">
@@ -60,7 +61,7 @@ export const ScreenW3TableDetail: React.FC = () => {
             </div>
             <div className="text-right">
               <div className="font-mono text-sm font-black text-orange-600">
-                Bill: ₹ {table.currentBill}
+                Bill: ₹ {breakdown.grandTotal > 0 ? breakdown.grandTotal : table.currentBill}
               </div>
               <div className="text-[10px] font-mono text-slate-400 mt-0.5">
                 Seated: {table.seatedTime}
@@ -80,13 +81,13 @@ export const ScreenW3TableDetail: React.FC = () => {
             </div>
 
             <div className="space-y-1.5 text-xs font-semibold">
-              {table.activeItems && table.activeItems.length > 0 ? (
-                table.activeItems.map((item, idx) => (
+              {breakdown.items.length > 0 ? (
+                breakdown.items.map((item, idx) => (
                   <div key={idx} className="flex justify-between items-center text-slate-800 py-0.5">
                     <div>
                       <span>{item.name} × {item.quantity}</span>
                       <span className="font-mono text-[10.5px] font-bold text-slate-500 ml-2">
-                        ₹{item.price * item.quantity}
+                        ₹{item.lineTotal}
                       </span>
                     </div>
                     <span className={`font-mono text-[10.5px] font-bold px-2 py-0.5 rounded ${
@@ -111,6 +112,13 @@ export const ScreenW3TableDetail: React.FC = () => {
               ) : (
                 <div className="py-2 text-center text-slate-400 font-mono text-[11px] italic">
                   No active orders placed yet. Tap Punch New Order below.
+                </div>
+              )}
+
+              {breakdown.foodSubtotal > 0 && (
+                <div className="pt-2 border-t border-dashed border-slate-200 flex justify-between items-center font-mono text-[10.5px] text-slate-500">
+                  <span>Food: ₹{breakdown.foodSubtotal} • GST (5%): ₹{breakdown.totalTax}</span>
+                  <span className="font-black text-slate-900 text-xs">Total: ₹{breakdown.grandTotal}</span>
                 </div>
               )}
             </div>

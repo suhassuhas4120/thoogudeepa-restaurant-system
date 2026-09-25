@@ -82,6 +82,80 @@ export const calculateTableBill = (items?: SharedActiveItem[]): number => {
   );
 };
 
+export interface BillLineItem {
+  id?: string;
+  name: string;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+  status?: string;
+}
+
+export interface TableBillBreakdown {
+  items: BillLineItem[];
+  itemCount: number;
+  foodSubtotal: number;
+  cgst: number;
+  sgst: number;
+  totalTax: number;
+  tip: number;
+  grandTotal: number;
+}
+
+export const getTableBillBreakdown = (
+  table?: SharedTable | null,
+  tip: number = 0
+): TableBillBreakdown => {
+  if (!table) {
+    return {
+      items: [],
+      itemCount: 0,
+      foodSubtotal: 0,
+      cgst: 0,
+      sgst: 0,
+      totalTax: 0,
+      tip: 0,
+      grandTotal: 0,
+    };
+  }
+
+  const rawItems = table.activeItems && table.activeItems.length > 0 ? table.activeItems : [];
+  const items: BillLineItem[] = rawItems.map((item) => {
+    const unitPrice = item.price || getItemPriceByName(item.name);
+    return {
+      id: item.id,
+      name: item.name,
+      quantity: item.quantity,
+      unitPrice,
+      lineTotal: item.quantity * unitPrice,
+      status: item.status,
+    };
+  });
+
+  const foodSubtotal =
+    items.length > 0
+      ? items.reduce((sum, it) => sum + it.lineTotal, 0)
+      : (table.currentBill || 0);
+
+  const cgst = Math.round(foodSubtotal * 0.025);
+  const sgst = Math.round(foodSubtotal * 0.025);
+  const totalTax = cgst + sgst;
+  const appliedTip = foodSubtotal > 0 ? Math.max(0, tip) : 0;
+  const grandTotal = foodSubtotal + totalTax + appliedTip;
+  const itemCount = items.reduce((sum, it) => sum + it.quantity, 0);
+
+  return {
+    items,
+    itemCount,
+    foodSubtotal,
+    cgst,
+    sgst,
+    totalTax,
+    tip: appliedTip,
+    grandTotal,
+  };
+};
+
 export interface SharedPing {
   id: string;
   tableNumber: string;

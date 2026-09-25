@@ -17,6 +17,7 @@ interface WaiterStoreState {
   selectedTableNumber: string;
   orderCart: CartItem[];
   kitchenCallNotice: string | null;
+  settlementTip: number;
 
   // Actions
   setCurrentScreen: (screen: WaiterScreenId) => void;
@@ -25,6 +26,7 @@ interface WaiterStoreState {
   setActiveCaptain: (name: string) => void;
   setActiveSection: (section: string) => void;
   selectTable: (tableNumber: string) => void;
+  setSettlementTip: (tip: number) => void;
   addToOrderCart: (item: MenuItem, selectedOption?: string, quantity?: number) => void;
   updateOrderCartQty: (cartItemId: string, delta: number) => void;
   clearOrderCart: () => void;
@@ -42,6 +44,7 @@ export const useWaiterStore = create<WaiterStoreState>((set, get) => ({
   selectedTableNumber: 'A-04',
   orderCart: [],
   kitchenCallNotice: null,
+  settlementTip: 0,
 
   setCurrentScreen: (screen) =>
     set((state) => ({ previousScreen: state.currentScreen, currentScreen: screen })),
@@ -53,6 +56,7 @@ export const useWaiterStore = create<WaiterStoreState>((set, get) => ({
   setActiveCaptain: (name) => set({ activeCaptain: name }),
   setActiveSection: (section) => set({ activeSection: section }),
   selectTable: (tableNumber) => set({ selectedTableNumber: tableNumber }),
+  setSettlementTip: (tip) => set({ settlementTip: tip }),
 
   addToOrderCart: (item, selectedOption = 'Standard', quantity = 1) => {
     set((state) => {

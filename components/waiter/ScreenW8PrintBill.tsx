@@ -2,24 +2,20 @@
 
 import React, { useState } from 'react';
 import { useWaiterStore } from '../../store/useWaiterStore';
-import { useSharedBridge } from '../../store/useSharedBridge';
+import { useSharedBridge, getTableBillBreakdown } from '../../store/useSharedBridge';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
 import { ArrowLeft, Printer, Share2, CheckCircle2, RotateCcw } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const ScreenW8PrintBill: React.FC = () => {
-  const { setCurrentScreen, selectedTableNumber, activeCaptain } = useWaiterStore();
+  const { setCurrentScreen, selectedTableNumber, activeCaptain, settlementTip } = useWaiterStore();
   const { tables } = useSharedBridge();
   const [printed, setPrinted] = useState(false);
   const [shared, setShared] = useState(false);
   const [phone, setPhone] = useState('+91 98450 12345');
 
   const activeTable = tables.find((t) => t.number === selectedTableNumber) || tables[0];
-  const runningTotal = activeTable?.currentBill || 0;
-  const subtotal = Math.round(runningTotal / 1.05);
-  const gst = runningTotal - subtotal;
-  const tip = 50;
-  const totalPaid = runningTotal + (runningTotal > 0 ? tip : 0);
+  const breakdown = getTableBillBreakdown(activeTable, settlementTip);
   const captainName = activeTable.serverName || activeCaptain || 'Floor Captain';
   const invoiceNum = `INV-2026-${activeTable.number}`;
 
@@ -63,39 +59,43 @@ export const ScreenW8PrintBill: React.FC = () => {
             </div>
 
             <div className="space-y-1 text-left text-xs font-medium text-slate-800 py-1">
-              {activeTable.activeItems && activeTable.activeItems.length > 0 ? (
-                activeTable.activeItems.map((item, idx) => (
+              {breakdown.items.length > 0 ? (
+                breakdown.items.map((item, idx) => (
                   <div key={idx} className="flex justify-between">
                     <span>{item.name} × {item.quantity}</span>
-                    <span className="font-mono font-bold">₹ {item.quantity * (item.price || 260)}</span>
+                    <span className="font-mono font-bold">₹ {item.lineTotal}.00</span>
                   </div>
                 ))
               ) : (
                 <div className="flex justify-between">
                   <span>Dine-In Food &amp; Beverage Service</span>
-                  <span className="font-mono font-bold">₹ {subtotal}</span>
+                  <span className="font-mono font-bold">₹ {breakdown.foodSubtotal}.00</span>
                 </div>
               )}
             </div>
 
             <div className="pt-2 border-t border-dashed border-slate-200 font-mono text-xs text-left space-y-0.5">
               <div className="flex justify-between text-slate-500">
-                <span>Subtotal:</span>
-                <span>₹ {subtotal}</span>
+                <span>Subtotal (Net):</span>
+                <span>₹ {breakdown.foodSubtotal}.00</span>
               </div>
               <div className="flex justify-between text-slate-500">
-                <span>5% GST:</span>
-                <span>₹ {gst}</span>
+                <span>CGST @ 2.5%:</span>
+                <span>₹ {breakdown.cgst}.00</span>
               </div>
-              {runningTotal > 0 && (
+              <div className="flex justify-between text-slate-500">
+                <span>SGST @ 2.5%:</span>
+                <span>₹ {breakdown.sgst}.00</span>
+              </div>
+              {breakdown.tip > 0 && (
                 <div className="flex justify-between text-orange-600 font-bold">
                   <span>Staff Tip:</span>
-                  <span>₹ {tip}</span>
+                  <span>₹ {breakdown.tip}.00</span>
                 </div>
               )}
               <div className="flex justify-between text-slate-900 font-black pt-1 border-t border-slate-100 text-sm">
                 <span>Total Paid:</span>
-                <span>₹ {totalPaid}</span>
+                <span>₹ {breakdown.grandTotal}.00</span>
               </div>
             </div>
           </div>
@@ -135,10 +135,10 @@ export const ScreenW8PrintBill: React.FC = () => {
           </motion.button>
 
           <button
-            onClick={() => setCurrentScreen(9)}
+            onClick={() => setCurrentScreen(3)}
             className="w-full py-2.5 font-mono text-xs font-bold text-slate-500 hover:text-slate-800 text-center cursor-pointer"
           >
-            Proceed to Vacate Table ➔
+            Return to Table Management ➔
           </button>
         </div>
       </div>
