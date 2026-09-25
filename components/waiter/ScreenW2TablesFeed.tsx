@@ -17,7 +17,7 @@ import {
 import { motion } from 'framer-motion';
 
 export const ScreenW2TablesFeed: React.FC = () => {
-  const { setCurrentScreen, selectTable, activeCaptain } = useWaiterStore();
+  const { setCurrentScreen, selectTable, activeCaptain, activeSection } = useWaiterStore();
 
   const {
     tables,
@@ -26,9 +26,10 @@ export const ScreenW2TablesFeed: React.FC = () => {
     waiterResolvePing,
     waiterMarkKitchenItemServed,
     waiterVacatesTable,
+    waiterSeatsTable,
   } = useSharedBridge();
 
-  const [selectedSection, setSelectedSection] = useState<string>('ALL');
+  const [selectedSection, setSelectedSection] = useState<string>(activeSection || 'ALL');
   const [activeFeedTab, setActiveFeedTab] = useState<'KITCHEN' | 'CUSTOMER'>('KITCHEN');
 
   // Dynamic Floor Metrics
@@ -48,11 +49,36 @@ export const ScreenW2TablesFeed: React.FC = () => {
     0
   );
 
-  const filterSections = ['ALL', 'SECTION A', 'SECTION B', 'SECTION C'];
+  const filterSections = ['ALL', 'SECTION A', 'SECTION B', 'TERRACE', 'FAMILY DINING'];
+
+  const getSectionDisplayName = (sec: string) => {
+    switch (sec) {
+      case 'ALL':
+        return 'All Tables';
+      case 'SECTION A':
+        return 'Section A';
+      case 'SECTION B':
+        return 'Section B';
+      case 'TERRACE':
+        return 'Terrace';
+      case 'FAMILY DINING':
+        return 'Family Dining';
+      default:
+        return sec;
+    }
+  };
 
   const filteredTables = tables.filter((table: SharedTable) => {
     if (selectedSection === 'ALL') return true;
-    return (table.section || '').trim().toUpperCase() === selectedSection.trim().toUpperCase();
+    const tableSec = (table.section || '').trim().toUpperCase();
+    const filterSec = selectedSection.trim().toUpperCase();
+    if (filterSec === 'TERRACE') {
+      return tableSec === 'TERRACE' || tableSec.includes('TERRACE') || tableSec === 'SECTION C';
+    }
+    if (filterSec === 'FAMILY DINING') {
+      return tableSec === 'FAMILY DINING' || tableSec.includes('DINING');
+    }
+    return tableSec === filterSec;
   });
 
   // Prioritize active kitchen tickets: READY first, then PREP (Cooking), then NEW (Queued)
@@ -66,6 +92,13 @@ export const ScreenW2TablesFeed: React.FC = () => {
   const readyPickupCount = kdsTickets.filter((tk) => tk.status === 'READY').length;
 
   const handleTableClick = (tableNumber: string) => {
+    selectTable(tableNumber);
+    setCurrentScreen(3);
+  };
+
+  const handleSeatTable = (e: React.MouseEvent, tableNumber: string) => {
+    e.stopPropagation();
+    waiterSeatsTable(tableNumber);
     selectTable(tableNumber);
     setCurrentScreen(3);
   };
@@ -139,13 +172,13 @@ export const ScreenW2TablesFeed: React.FC = () => {
                   key={sec}
                   type="button"
                   onClick={() => setSelectedSection(sec)}
-                  className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold shrink-0 transition cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold shrink-0 transition duration-150 cursor-pointer ${
                     selectedSection === sec
-                      ? 'bg-slate-900 text-white shadow-xs'
-                      : 'bg-stone-100 border border-slate-200 text-slate-600 hover:bg-stone-200'
+                      ? 'bg-slate-900 text-white border border-slate-900 shadow-xs'
+                      : 'bg-stone-50 border border-slate-300 text-slate-700 hover:bg-stone-200 hover:text-slate-950'
                   }`}
                 >
-                  {sec === 'ALL' ? 'All Tables' : sec}
+                  {getSectionDisplayName(sec)}
                 </button>
               ))}
             </div>
@@ -160,6 +193,7 @@ export const ScreenW2TablesFeed: React.FC = () => {
               const isOccupied = t.status === 'OCCUPIED';
               const isBilling = t.status === 'BILLING';
               const isVacant = t.status === 'VACANT';
+              const isCleaning = t.status === 'CLEANING';
               const hasReadyItem = t.activeItems?.some(
                 (it: { status?: string }) => it.status === 'Ready' || it.status === 'READY'
               );
@@ -217,13 +251,13 @@ export const ScreenW2TablesFeed: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Contextual Action Button */}
+                  {/* Contextual Action Button with light colors & high-contrast hover */}
                   <div className="mt-1.5 pt-1.5 border-t border-slate-100">
                     {isBilling ? (
                       <button
                         type="button"
                         onClick={(e) => handleVacateTable(e, t.number)}
-                        className="w-full py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-mono text-[9px] font-black tracking-wider transition cursor-pointer"
+                        className="w-full py-1.5 rounded-lg bg-purple-50 hover:bg-purple-600 text-purple-900 hover:text-white border border-purple-300 hover:border-purple-600 font-mono text-[9.5px] font-black tracking-wider transition duration-150 cursor-pointer shadow-2xs flex items-center justify-center gap-1"
                       >
                         Vacate Table
                       </button>
@@ -231,22 +265,40 @@ export const ScreenW2TablesFeed: React.FC = () => {
                       <button
                         type="button"
                         onClick={(e) => handleServeReadyTable(e, t.number)}
-                        className="w-full py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-mono text-[9px] font-black tracking-wider transition cursor-pointer animate-pulse"
+                        className="w-full py-1.5 rounded-lg bg-emerald-100 hover:bg-emerald-600 text-emerald-900 hover:text-white border border-emerald-400 hover:border-emerald-600 font-mono text-[9.5px] font-black tracking-wider transition duration-150 cursor-pointer shadow-2xs flex items-center justify-center gap-1 animate-pulse"
                       >
                         Serve Food 🍽️
                       </button>
                     ) : isOccupied ? (
-                      <div className="text-[8.5px] font-mono text-slate-500 font-bold py-0.5">
-                        Dining in Service
-                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTableClick(t.number);
+                        }}
+                        className="w-full py-1.5 rounded-lg bg-amber-50 hover:bg-amber-600 text-amber-900 hover:text-white border border-amber-300 hover:border-amber-600 font-mono text-[9.5px] font-black tracking-wider transition duration-150 cursor-pointer shadow-2xs flex items-center justify-center gap-1"
+                      >
+                        Manage Table
+                      </button>
                     ) : isVacant ? (
-                      <div className="text-[8.5px] font-mono text-emerald-700 font-bold py-0.5">
-                        Ready to Seat
-                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => handleSeatTable(e, t.number)}
+                        className="w-full py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-600 text-emerald-800 hover:text-white border border-emerald-300 hover:border-emerald-600 font-mono text-[9.5px] font-black tracking-wider transition duration-150 cursor-pointer shadow-2xs flex items-center justify-center gap-1"
+                      >
+                        + Seat
+                      </button>
                     ) : (
-                      <div className="text-[8.5px] font-mono text-slate-400 font-bold py-0.5">
-                        Cleaning
-                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          waiterVacatesTable(t.number);
+                        }}
+                        className="w-full py-1.5 rounded-lg bg-blue-50 hover:bg-blue-600 text-blue-900 hover:text-white border border-blue-300 hover:border-blue-600 font-mono text-[9.5px] font-black tracking-wider transition duration-150 cursor-pointer shadow-2xs flex items-center justify-center gap-1"
+                      >
+                        Ready Table
+                      </button>
                     )}
                   </div>
                 </motion.div>
@@ -314,7 +366,7 @@ export const ScreenW2TablesFeed: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => waiterResolvePing(p.id)}
-                      className="rounded-lg bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 text-[10px] font-mono font-bold transition cursor-pointer shadow-2xs"
+                      className="rounded-lg bg-orange-50 hover:bg-orange-600 text-orange-900 hover:text-white border border-orange-300 hover:border-orange-600 px-3 py-1.5 text-[10px] font-mono font-bold transition duration-150 cursor-pointer shadow-2xs"
                     >
                       Resolve
                     </button>
@@ -382,7 +434,7 @@ export const ScreenW2TablesFeed: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => waiterMarkKitchenItemServed(kr.id)}
-                          className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 text-[10px] font-mono font-black transition cursor-pointer shadow-2xs whitespace-nowrap"
+                          className="rounded-lg bg-emerald-100 hover:bg-emerald-600 text-emerald-900 hover:text-white border border-emerald-400 hover:border-emerald-600 px-3 py-1.5 text-[10px] font-mono font-black transition duration-150 cursor-pointer shadow-2xs whitespace-nowrap"
                         >
                           Serve Food
                         </button>

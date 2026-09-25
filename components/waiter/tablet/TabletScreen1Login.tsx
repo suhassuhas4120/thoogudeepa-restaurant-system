@@ -11,13 +11,13 @@ export const TabletScreen1Login: React.FC = () => {
   const [pin, setPin] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  const sections = ['SECTION A & B', 'TERRACE ROOFTOP', 'FAMILY AC DINING', 'ALL SECTIONS'];
+  const sections = ['ALL', 'SECTION A', 'SECTION B', 'TERRACE', 'FAMILY DINING'];
 
   const presetWaiters = [
-    { name: 'Captain Ramesh', section: 'SECTION A & B' },
-    { name: 'Captain Suresh', section: 'SECTION A & B' },
-    { name: 'Captain Vijay', section: 'TERRACE ROOFTOP' },
-    { name: 'Captain Kiran', section: 'FAMILY AC DINING' },
+    { name: 'Captain Ramesh', section: 'SECTION A' },
+    { name: 'Captain Suresh', section: 'SECTION B' },
+    { name: 'Captain Vijay', section: 'TERRACE' },
+    { name: 'Captain Kiran', section: 'FAMILY DINING' },
   ];
 
   const handleNum = (num: string) => {

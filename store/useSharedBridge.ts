@@ -449,7 +449,7 @@ const freshTables: SharedTable[] = [
   {
     id: 't-8',
     number: 'C-01',
-    section: 'SECTION C',
+    section: 'TERRACE',
     capacity: 8,
     status: 'OCCUPIED',
     guestCount: 6,
@@ -462,8 +462,8 @@ const freshTables: SharedTable[] = [
       { name: 'Kshatriya Chicken Kebab (Crispy)', quantity: 2, status: 'Served' },
     ],
   },
-  { id: 't-9', number: 'C-02', section: 'SECTION C', capacity: 6, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Vijay', kotCount: 0 },
-  { id: 't-10', number: 'C-03', section: 'SECTION C', capacity: 10, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Vijay', kotCount: 0 },
+  { id: 't-9', number: 'C-02', section: 'FAMILY DINING', capacity: 6, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Kiran', kotCount: 0 },
+  { id: 't-10', number: 'C-03', section: 'FAMILY DINING', capacity: 10, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Kiran', kotCount: 0 },
 ];
 
 const freshKdsTickets: SharedKDSTicket[] = [
@@ -603,6 +603,9 @@ interface SharedBridgeState {
     tip?: number,
     serverName?: string
   ) => void;
+
+  /** Waiter seats a vacant table */
+  waiterSeatsTable: (tableNumber: string, guests?: number) => void;
 
   /** Waiter vacates table → sets to CLEANING then VACANT */
   waiterVacatesTable: (tableNumber: string) => void;
@@ -1073,6 +1076,26 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
           tablesServed: state.shiftStats.tablesServed + 1,
           tipsEarned: (state.shiftStats.tipsEarned || 0) + tip,
         },
+      };
+    });
+  },
+
+  /* ─── Waiter Seats Table ─────────────────────────────────────── */
+  waiterSeatsTable: (tableNumber, guests) => {
+    set((state) => {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return {
+        tables: state.tables.map((t) =>
+          t.number === tableNumber
+            ? {
+                ...t,
+                status: 'OCCUPIED' as const,
+                guestCount: guests || t.capacity || 2,
+                seatedTime: timeStr,
+              }
+            : t
+        ),
       };
     });
   },

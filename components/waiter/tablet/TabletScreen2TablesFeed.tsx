@@ -15,9 +15,10 @@ export const TabletScreen2TablesFeed: React.FC = () => {
     waiterResolvePing,
     waiterMarkKitchenItemServed,
     waiterVacatesTable,
+    waiterSeatsTable,
   } = useSharedBridge();
 
-  const [selectedSection, setSelectedSection] = useState<string>('ALL');
+  const [selectedSection, setSelectedSection] = useState<string>(activeSection || 'ALL');
 
   // Dynamic Floor Metrics
   const activeOrdersCount = kdsTickets.filter(
@@ -37,11 +38,36 @@ export const TabletScreen2TablesFeed: React.FC = () => {
   );
 
   // Section Filter options
-  const filterSections = ['ALL', 'SECTION A', 'SECTION B', 'SECTION C'];
+  const filterSections = ['ALL', 'SECTION A', 'SECTION B', 'TERRACE', 'FAMILY DINING'];
+
+  const getSectionDisplayName = (sec: string) => {
+    switch (sec) {
+      case 'ALL':
+        return 'All Tables';
+      case 'SECTION A':
+        return 'Section A';
+      case 'SECTION B':
+        return 'Section B';
+      case 'TERRACE':
+        return 'Terrace';
+      case 'FAMILY DINING':
+        return 'Family Dining';
+      default:
+        return sec;
+    }
+  };
 
   const filteredTables = tables.filter((table: SharedTable) => {
     if (selectedSection === 'ALL') return true;
-    return (table.section || '').trim().toUpperCase() === selectedSection.trim().toUpperCase();
+    const tableSec = (table.section || '').trim().toUpperCase();
+    const filterSec = selectedSection.trim().toUpperCase();
+    if (filterSec === 'TERRACE') {
+      return tableSec === 'TERRACE' || tableSec.includes('TERRACE') || tableSec === 'SECTION C';
+    }
+    if (filterSec === 'FAMILY DINING') {
+      return tableSec === 'FAMILY DINING' || tableSec.includes('DINING');
+    }
+    return tableSec === filterSec;
   });
 
   // Prioritize Kitchen Tickets: READY first, then PREP, then NEW
@@ -53,6 +79,13 @@ export const TabletScreen2TablesFeed: React.FC = () => {
     });
 
   const handleTableCardClick = (tableNumber: string) => {
+    selectTable(tableNumber);
+    setCurrentScreen(3);
+  };
+
+  const handleSeatTable = (e: React.MouseEvent, tableNumber: string) => {
+    e.stopPropagation();
+    waiterSeatsTable(tableNumber);
     selectTable(tableNumber);
     setCurrentScreen(3);
   };
@@ -131,13 +164,13 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                     key={sec}
                     type="button"
                     onClick={() => setSelectedSection(sec)}
-                    className={`px-2.5 py-1 rounded-md text-[10.5px] font-bold transition cursor-pointer ${
+                    className={`px-3 py-1 rounded-md text-[10.5px] font-bold transition duration-150 cursor-pointer ${
                       selectedSection === sec
-                        ? 'bg-slate-900 text-white'
-                        : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
+                        ? 'bg-slate-900 text-white border border-slate-900 shadow-xs'
+                        : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 hover:text-slate-950'
                     }`}
                   >
-                    {sec}
+                    {getSectionDisplayName(sec)}
                   </button>
                 ))}
               </div>
@@ -262,50 +295,52 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                         <button
                           type="button"
                           onClick={(e) => handleServeReadyTable(e, table.number)}
-                          className="flex-1 py-1.5 px-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[10px] font-bold transition flex items-center justify-center gap-1 shadow-2xs cursor-pointer"
+                          className="flex-1 py-1.5 px-1 bg-emerald-100 hover:bg-emerald-600 text-emerald-900 hover:text-white border border-emerald-400 hover:border-emerald-600 rounded text-[10px] font-bold transition duration-150 flex items-center justify-center gap-1 shadow-2xs cursor-pointer animate-pulse"
                         >
                           <CheckCircle2 className="h-3 w-3" />
                           <span>Serve Food</span>
+                        </button>
+                      ) : isVacant ? (
+                        <button
+                          type="button"
+                          onClick={(e) => handleSeatTable(e, table.number)}
+                          className="flex-1 py-1.5 px-1 bg-emerald-50 hover:bg-emerald-600 text-emerald-800 hover:text-white border border-emerald-300 hover:border-emerald-600 rounded text-[10px] font-bold transition duration-150 flex items-center justify-center gap-1 shadow-2xs cursor-pointer"
+                        >
+                          <Users className="h-3 w-3" />
+                          <span>+ Seat</span>
                         </button>
                       ) : (
                         <button
                           type="button"
                           onClick={() => handleTableCardClick(table.number)}
-                          className="flex-1 py-1.5 px-1 bg-slate-900 hover:bg-black text-white rounded text-[10px] font-bold transition flex items-center justify-center gap-1 shadow-2xs cursor-pointer"
+                          className="flex-1 py-1.5 px-1 bg-amber-50 hover:bg-amber-600 text-amber-900 hover:text-white border border-amber-300 hover:border-amber-600 rounded text-[10px] font-bold transition duration-150 flex items-center justify-center gap-1 shadow-2xs cursor-pointer"
                         >
                           <Utensils className="h-3 w-3" />
-                          <span>Open Table</span>
+                          <span>Manage Table</span>
                         </button>
                       )}
 
-                      {/* Payment Gated Vacate Button */}
+                      {/* Payment Gated Vacate / Status Button */}
                       {(() => {
                         const canVacate = table.status === 'BILLING';
-                        return (
+                        return canVacate ? (
                           <button
                             type="button"
-                            disabled={!canVacate}
                             onClick={(e) => handleVacateTable(e, table.number)}
-                            title={
-                              canVacate
-                                ? 'Vacate and reset table (Payment confirmed)'
-                                : 'Disabled: Payment must be recorded before vacating table'
-                            }
-                            className={`py-1.5 px-2 rounded text-[10px] font-bold transition flex items-center justify-center gap-1 ${
-                              canVacate
-                                ? 'border border-cyan-600 bg-cyan-50 hover:bg-cyan-100 text-cyan-900 cursor-pointer shadow-2xs'
-                                : 'border border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed opacity-60'
-                            }`}
+                            title="Vacate and reset table (Payment confirmed)"
+                            className="py-1.5 px-2 rounded text-[10px] font-bold transition duration-150 flex items-center justify-center gap-1 border border-purple-300 bg-purple-50 hover:bg-purple-600 text-purple-900 hover:text-white hover:border-purple-600 cursor-pointer shadow-2xs"
                           >
-                            {canVacate ? (
-                              <span>Vacate</span>
-                            ) : (
-                              <>
-                                <Lock className="h-2.5 w-2.5" />
-                                <span>In Dining</span>
-                              </>
-                            )}
+                            <span>Vacate</span>
                           </button>
+                        ) : isVacant ? (
+                          <div className="py-1.5 px-2 rounded text-[9.5px] font-bold flex items-center justify-center border border-emerald-200 bg-emerald-50 text-emerald-700">
+                            Available
+                          </div>
+                        ) : (
+                          <div className="py-1.5 px-2 rounded text-[10px] font-bold flex items-center justify-center gap-1 border border-slate-200 bg-slate-100 text-slate-400 opacity-60">
+                            <Lock className="h-2.5 w-2.5" />
+                            <span>In Dining</span>
+                          </div>
                         );
                       })()}
                     </div>
@@ -357,7 +392,7 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => waiterResolvePing(ping.id)}
-                        className="w-full h-8 bg-orange-600 hover:bg-orange-700 text-white text-[10.5px] font-bold rounded transition shadow-2xs flex items-center justify-center cursor-pointer"
+                        className="w-full h-8 bg-orange-50 hover:bg-orange-600 text-orange-900 hover:text-white border border-orange-300 hover:border-orange-600 text-[10.5px] font-bold rounded transition duration-150 shadow-2xs flex items-center justify-center cursor-pointer"
                       >
                         Resolve
                       </button>
@@ -435,7 +470,7 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => waiterMarkKitchenItemServed(item.id)}
-                            className="w-full h-8 bg-emerald-600 hover:bg-emerald-700 text-white text-[10.5px] font-bold rounded transition shadow-2xs flex items-center justify-center gap-1 cursor-pointer"
+                            className="w-full h-8 bg-emerald-100 hover:bg-emerald-600 text-emerald-900 hover:text-white border border-emerald-400 hover:border-emerald-600 text-[10.5px] font-bold rounded transition duration-150 shadow-2xs flex items-center justify-center gap-1 cursor-pointer"
                           >
                             <CheckCircle2 className="h-3.5 w-3.5" />
                             <span>Serve Food</span>
