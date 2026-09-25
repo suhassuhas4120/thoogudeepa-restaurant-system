@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 export const TabletScreen4TakeOrder: React.FC = () => {
   const {
     selectedTableNumber,
+    selectTable,
     setCurrentScreen,
     orderCart,
     addToOrderCart,
@@ -18,12 +19,13 @@ export const TabletScreen4TakeOrder: React.FC = () => {
   } = useWaiterStore();
 
   const { inventory86, tables } = useSharedBridge();
+  const currentTable = selectedTableNumber || 'A-04';
 
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState('ALL');
   const [addedItemNotice, setAddedItemNotice] = useState<string | null>(null);
 
-  const activeTable = tables.find((t) => t.number === selectedTableNumber) || tables[0];
+  const activeTable = tables.find((t) => t.number === currentTable) || tables[0];
   const categories = ['ALL', 'BIRYANI', 'STARTERS', 'GRAVY & SIDES', 'BEVERAGES'];
 
   const filteredItems = INITIAL_MENU_ITEMS.filter((item) => {
@@ -61,11 +63,22 @@ export const TabletScreen4TakeOrder: React.FC = () => {
               className="bg-slate-900 hover:bg-black text-white px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 text-xs shadow-2xs cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span>Back to Table {selectedTableNumber || 'Overview'}</span>
+              <span>Back to Table {currentTable}</span>
             </button>
-            <h3 className="font-black text-slate-950 text-sm">
-              Table {selectedTableNumber || 'A-04'}: Menu Order Entry
-            </h3>
+            <div className="flex items-center gap-2">
+              <span className="font-black text-slate-950 text-sm">Order Entry for:</span>
+              <select
+                value={currentTable}
+                onChange={(e) => selectTable(e.target.value)}
+                className="bg-white border-2 border-slate-900 rounded-lg px-2.5 py-1 font-mono text-xs font-black text-orange-600 focus:outline-none shadow-2xs cursor-pointer"
+              >
+                {tables.map((t) => (
+                  <option key={t.id} value={t.number}>
+                    Table {t.number} ({t.status} • ₹{t.currentBill})
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <span className="font-mono text-xs text-slate-500 font-bold">
             Captain Order Pass

@@ -53,7 +53,7 @@ export const ScreenW5ItemCustom: React.FC = () => {
               <span>Back to Menu</span>
             </button>
             <span className="font-mono text-xs font-black text-slate-900">
-              Table: {selectedTableNumber}
+              Table: {selectedTableNumber || 'A-04'}
             </span>
           </div>
 

@@ -121,6 +121,36 @@ export const TabletScreen5ItemCustom: React.FC = () => {
               <span className="font-bold text-slate-600">Prep: ⏱ {selectedItem.prepMode || '15-20 mins'}</span>
               <span className="font-bold text-slate-600">Diet: {isVeg ? 'Pure Veg' : 'Non-Veg'} • Fresh Prep</span>
             </div>
+
+            {/* Cart Items Summary */}
+            <div className="border border-slate-300 bg-white rounded-xl p-3.5 flex flex-col gap-2 text-xs shadow-2xs">
+              <div className="flex justify-between items-center font-mono">
+                <span className="font-black text-slate-900 uppercase text-[10.5px]">
+                  Order Cart ({orderCart.length} item{orderCart.length === 1 ? '' : 's'})
+                </span>
+                <span className="font-bold text-orange-600 text-[11px]">
+                  Table: {selectedTableNumber || 'A-04'}
+                </span>
+              </div>
+              <div className="space-y-1 max-h-32 overflow-y-auto">
+                {orderCart.length > 0 ? (
+                  orderCart.map((ci, idx) => (
+                    <div key={idx} className="flex justify-between items-center text-[11px] text-slate-700 py-0.5 border-b border-dashed border-slate-100 last:border-0">
+                      <span className="truncate flex-1 pr-2">
+                        • {ci.quantity}x {ci.menuItem.name}
+                      </span>
+                      <span className="font-mono font-bold text-slate-900 shrink-0">
+                        ₹{ci.totalPrice}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-[10.5px] text-slate-400 italic">
+                    1x {selectedItem.name} (Direct Single Item Customization)
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* RIGHT: CUSTOMIZATIONS & NOTES */}

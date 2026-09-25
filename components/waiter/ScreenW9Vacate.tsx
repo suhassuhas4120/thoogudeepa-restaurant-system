@@ -10,10 +10,11 @@ import { motion } from 'framer-motion';
 export const ScreenW9Vacate: React.FC = () => {
   const { setCurrentScreen, selectedTableNumber } = useWaiterStore();
   const { waiterVacatesTable } = useSharedBridge();
+  const currentTable = selectedTableNumber || 'A-04';
   const [cleared, setCleared] = useState(false);
 
   const handleVacate = () => {
-    waiterVacatesTable(selectedTableNumber);
+    waiterVacatesTable(currentTable);
     setCleared(true);
     setTimeout(() => {
       setCurrentScreen(2);
@@ -33,7 +34,7 @@ export const ScreenW9Vacate: React.FC = () => {
               <span>Back to Table</span>
             </button>
             <span className="font-mono text-xs font-black text-slate-900">
-              Table: {selectedTableNumber}
+              Table: {currentTable}
             </span>
           </div>
 
@@ -45,7 +46,7 @@ export const ScreenW9Vacate: React.FC = () => {
               Checkout Verification &amp; Station Reset
             </h3>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Verify guests have departed Table {selectedTableNumber}. Clicking below alerts floor
+              Verify guests have departed Table {currentTable}. Clicking below alerts floor
               busboys for sanitization and resets table status to Vacant.
             </p>
           </div>

@@ -46,6 +46,7 @@ export interface SharedActiveItem {
   quantity: number;
   price: number;
   status: string;
+  originalTable?: string;
 }
 
 export interface SharedTable {
@@ -724,7 +725,17 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
       const target = state.tables.find((t) => t.number === targetTable);
       const source = state.tables.find((t) => t.number === sourceTable);
       if (!target || !source) return state;
-      const combinedActiveItems = [...(target.activeItems || []), ...(source.activeItems || [])];
+
+      const targetItems = (target.activeItems || []).map((i) => ({
+        ...i,
+        originalTable: i.originalTable || targetTable,
+      }));
+      const sourceItems = (source.activeItems || []).map((i) => ({
+        ...i,
+        originalTable: i.originalTable || sourceTable,
+      }));
+
+      const combinedActiveItems = [...targetItems, ...sourceItems];
       const mergedBill = calculateTableBill(combinedActiveItems);
       const mergedGuests = Math.max(2, (target.guestCount || 2) + (source.guestCount || 2));
       return {
@@ -761,12 +772,35 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
       const target = state.tables.find((t) => t.number === tableNumber);
       if (!target || !target.mergedWith) return state;
       const partner = target.mergedWith;
+      const partnerTable = state.tables.find((t) => t.number === partner);
+
+      const allItems = [
+        ...(target.activeItems || []),
+        ...(partnerTable?.activeItems || []),
+      ];
+
+      const targetItems = allItems.filter((i) => i.originalTable !== partner);
+      const partnerItems = allItems.filter((i) => i.originalTable === partner);
+
       return {
         tables: state.tables.map((t) => {
-          if (t.number === tableNumber || t.number === partner) {
+          if (t.number === tableNumber) {
+            const items = targetItems.length > 0 ? targetItems : (target.activeItems || []);
             return {
               ...t,
               mergedWith: undefined,
+              activeItems: items,
+              currentBill: calculateTableBill(items),
+              guestCount: Math.max(1, Math.round((t.guestCount || 4) / 2)),
+            };
+          }
+          if (t.number === partner) {
+            return {
+              ...t,
+              mergedWith: undefined,
+              activeItems: partnerItems,
+              currentBill: calculateTableBill(partnerItems),
+              guestCount: Math.max(1, Math.round((target.guestCount || 4) / 2)),
             };
           }
           return t;
@@ -820,13 +854,10 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
               }
             : t
         ),
-        // Remove completed KDS tickets for this table
+        // Clean up KDS tickets associated with the vacated table session
         kdsTickets: state.kdsTickets.filter(
           (tk) =>
-            !(
-              (tk.tableNumber === tableNumber || (partner && tk.tableNumber === partner)) &&
-              tk.status === 'COMPLETED'
-            )
+            !(tk.tableNumber === tableNumber || (partner && tk.tableNumber === partner))
         ),
       };
     });

@@ -21,14 +21,15 @@ export const ScreenW7Payment: React.FC = () => {
   const [tip, setTip] = useState(50);
   const [success, setSuccess] = useState(false);
 
-  const activeTable = tables.find((t) => t.number === selectedTableNumber) || tables[0];
+  const currentTableNum = selectedTableNumber || 'A-04';
+  const activeTable = tables.find((t) => t.number === currentTableNum) || tables[0];
   const billAmount = activeTable?.currentBill || 0;
   const subtotal = Math.round(billAmount / 1.05);
   const tax = billAmount - subtotal;
   const total = billAmount + (billAmount > 0 ? tip : 0);
 
   const handlePay = () => {
-    waiterRecordsPayment(activeTable?.number || selectedTableNumber, method, total);
+    waiterRecordsPayment(activeTable?.number || currentTableNum, method, total);
     setSuccess(true);
     setTimeout(() => {
       setCurrentScreen(8);
@@ -48,7 +49,7 @@ export const ScreenW7Payment: React.FC = () => {
               <span>Back to Table</span>
             </button>
             <span className="font-mono text-xs font-black text-slate-900">
-              Table: {selectedTableNumber}
+              Table: {currentTableNum}
             </span>
           </div>
 

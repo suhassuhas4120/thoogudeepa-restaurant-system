@@ -11,7 +11,8 @@ export const ScreenW6MergeSplit: React.FC = () => {
   const { setCurrentScreen, selectedTableNumber } = useWaiterStore();
   const { tables, waiterMergeTables, waiterUnmergeTable } = useSharedBridge();
 
-  const activeTable = tables.find((t) => t.number === selectedTableNumber) || tables[0];
+  const currentTableNum = selectedTableNumber || 'A-04';
+  const activeTable = tables.find((t) => t.number === currentTableNum) || tables[0];
   const isAlreadyMerged = Boolean(activeTable?.mergedWith);
 
   const availableMergeCandidates = tables.filter((t) => t.number !== activeTable?.number);
@@ -144,12 +145,20 @@ export const ScreenW6MergeSplit: React.FC = () => {
           </div>
         </div>
 
-        <button
-          onClick={() => setCurrentScreen(7)}
-          className="w-full py-3 rounded-xl bg-slate-900 hover:bg-black text-white font-mono text-xs font-black transition cursor-pointer"
-        >
-          Proceed to Payment ➔
-        </button>
+        <div className="space-y-2 pt-2">
+          <button
+            onClick={() => setCurrentScreen(4)}
+            className="w-full py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-stone-50 text-slate-800 font-mono text-xs font-black transition cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
+          >
+            <span>Punch Order for Table {activeTable?.number} ➔</span>
+          </button>
+          <button
+            onClick={() => setCurrentScreen(7)}
+            className="w-full py-3 rounded-xl bg-slate-900 hover:bg-black text-white font-mono text-xs font-black transition cursor-pointer shadow-md flex items-center justify-center gap-1.5"
+          >
+            <span>Proceed to Payment ➔</span>
+          </button>
+        </div>
       </div>
     </WaiterTabletHousing>
   );

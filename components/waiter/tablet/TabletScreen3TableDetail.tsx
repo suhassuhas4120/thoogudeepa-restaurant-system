@@ -77,7 +77,8 @@ export const TabletScreen3TableDetail: React.FC = () => {
   // Payment State (Screen 7 within Right Pane)
   const [payMode, setPayMode] = useState<'CASH' | 'UPI' | 'POS'>('CASH');
 
-  const activeTable = tables.find((t) => t.number === selectedTableNumber) || tables[0];
+  const currentTable = selectedTableNumber || 'A-04';
+  const activeTable = tables.find((t) => t.number === currentTable) || tables[0];
   const isAlreadyMerged = Boolean(activeTable?.mergedWith);
   const runningTotal = activeTable?.currentBill || 0;
   const subtotal = Math.round(runningTotal / 1.05);

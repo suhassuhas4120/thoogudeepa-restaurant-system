@@ -13,12 +13,15 @@ export const ScreenW4TakeOrder: React.FC = () => {
   const {
     setCurrentScreen,
     selectedTableNumber,
+    selectTable,
+    activeCaptain,
     orderCart,
     addToOrderCart,
     updateOrderCartQty,
   } = useWaiterStore();
 
-  const { inventory86 } = useSharedBridge();
+  const { inventory86, tables } = useSharedBridge();
+  const currentTable = selectedTableNumber || 'A-04';
 
   const [selectedCat, setSelectedCat] = useState('ALL');
   const [query, setQuery] = useState('');
@@ -37,6 +40,27 @@ export const ScreenW4TakeOrder: React.FC = () => {
   return (
     <WaiterTabletHousing screenNumber={4} screenTitle="MENU ORDER ENTRY & KOT PUNCH">
       <div className="flex-1 flex flex-col p-3 space-y-2 overflow-hidden">
+        {/* Active Table Selector & Captain Bar */}
+        <div className="flex items-center justify-between px-1 shrink-0">
+          <div className="flex items-center gap-1.5 font-mono text-[10.5px]">
+            <span className="font-bold text-slate-500 uppercase tracking-wider">TABLE:</span>
+            <select
+              value={currentTable}
+              onChange={(e) => selectTable(e.target.value)}
+              className="bg-white border border-slate-300 rounded-lg px-2 py-0.5 font-black text-orange-600 focus:outline-none shadow-2xs cursor-pointer"
+            >
+              {tables.map((t) => (
+                <option key={t.id} value={t.number}>
+                  Table {t.number} ({t.status})
+                </option>
+              ))}
+            </select>
+          </div>
+          <span className="font-mono text-[10px] font-bold text-slate-500">
+            Captain: {activeCaptain || 'Staff'}
+          </span>
+        </div>
+
         {/* Top Search, Back & Cart */}
         <div className="flex items-center gap-2 shrink-0">
           <button
