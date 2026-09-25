@@ -18,7 +18,6 @@ import {
   Bell,
   RefreshCw,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export default function KitchenKDSPage() {
   const {
@@ -40,19 +39,16 @@ export default function KitchenKDSPage() {
       id: 1 as KitchenScreenId,
       name: 'SCREEN 1: LOGIN',
       desc: 'Cook Authentication & Station Selection',
-      comp: <ScreenK1Login />,
     },
     {
       id: 2 as KitchenScreenId,
       name: 'SCREEN 2: KDS OVERVIEW',
       desc: 'Bulk Orders Aggregator & Live KOT Grid',
-      comp: <ScreenK2Overview />,
     },
     {
       id: 3 as KitchenScreenId,
       name: 'SCREEN 3: TICKET DETAIL & 86',
       desc: 'Custom Prep Instructions & 86 Inventory',
-      comp: <ScreenK3Detail />,
     },
   ];
 
@@ -176,34 +172,44 @@ export default function KitchenKDSPage() {
             </div>
 
             {/* Active Screen Render */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentScreen}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2 }}
-                className="w-full flex justify-center"
-              >
-                {screens.find((s) => s.id === currentScreen)?.comp}
-              </motion.div>
-            </AnimatePresence>
+            <div className="w-full flex justify-center">
+              {currentScreen === 1 && <ScreenK1Login />}
+              {currentScreen === 2 && <ScreenK2Overview />}
+              {currentScreen === 3 && <ScreenK3Detail />}
+            </div>
           </div>
         ) : (
           /* All 3 Screens Grid Mode */
           <div className="w-full max-w-[1500px] flex flex-col lg:flex-row items-center justify-center gap-8 py-4">
-            {screens.map((screen) => (
-              <div
-                key={screen.id}
-                className="flex flex-col items-center w-full max-w-[480px]"
-              >
-                <div className="mb-2 flex items-center gap-2 font-mono text-xs font-extrabold text-slate-700">
-                  <span className="h-2 w-2 rounded-full bg-orange-500" />
-                  <span>{screen.name}</span>
-                </div>
-                <div className="w-full scale-90 origin-top">{screen.comp}</div>
+            <div className="flex flex-col items-center w-full max-w-[480px]">
+              <div className="mb-2 flex items-center gap-2 font-mono text-xs font-extrabold text-slate-700">
+                <span className="h-2 w-2 rounded-full bg-orange-500" />
+                <span>SCREEN 1: LOGIN</span>
               </div>
-            ))}
+              <div className="w-full scale-90 origin-top">
+                <ScreenK1Login />
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center w-full max-w-[480px]">
+              <div className="mb-2 flex items-center gap-2 font-mono text-xs font-extrabold text-slate-700">
+                <span className="h-2 w-2 rounded-full bg-orange-500" />
+                <span>SCREEN 2: KDS OVERVIEW</span>
+              </div>
+              <div className="w-full scale-90 origin-top">
+                <ScreenK2Overview />
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center w-full max-w-[480px]">
+              <div className="mb-2 flex items-center gap-2 font-mono text-xs font-extrabold text-slate-700">
+                <span className="h-2 w-2 rounded-full bg-orange-500" />
+                <span>SCREEN 3: TICKET DETAIL & 86</span>
+              </div>
+              <div className="w-full scale-90 origin-top">
+                <ScreenK3Detail />
+              </div>
+            </div>
           </div>
         )}
       </div>
