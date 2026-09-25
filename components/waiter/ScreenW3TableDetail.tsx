@@ -174,7 +174,8 @@ export const ScreenW3TableDetail: React.FC = () => {
                 disabled={!isPaymentDone}
                 onClick={() => {
                   if (isPaymentDone) {
-                    setCurrentScreen(9);
+                    waiterVacatesTable(table.number);
+                    setCurrentScreen(2);
                   }
                 }}
                 className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-mono text-xs font-black transition shadow-xs ${

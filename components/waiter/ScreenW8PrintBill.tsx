@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
 
 export const ScreenW8PrintBill: React.FC = () => {
   const { setCurrentScreen, selectedTableNumber, activeCaptain, settlementTip } = useWaiterStore();
-  const { tables } = useSharedBridge();
+  const { tables, waiterVacatesTable } = useSharedBridge();
   const [printed, setPrinted] = useState(false);
   const [shared, setShared] = useState(false);
   const [phone, setPhone] = useState('+91 98450 12345');
@@ -135,11 +135,16 @@ export const ScreenW8PrintBill: React.FC = () => {
           </motion.button>
 
           <button
-            onClick={() => setCurrentScreen(9)}
+            onClick={() => {
+              if (activeTable?.number) {
+                waiterVacatesTable(activeTable.number);
+              }
+              setCurrentScreen(2);
+            }}
             className="w-full py-2.5 rounded-xl border border-dashed border-rose-300 bg-rose-50/60 hover:bg-rose-100 font-mono text-xs font-black text-rose-700 text-center cursor-pointer flex items-center justify-center gap-1.5 transition"
           >
             <Trash2 className="h-3.5 w-3.5" />
-            <span>Proceed to Table Vacate (Screen 9) ➔</span>
+            <span>Vacate &amp; Return to Tables (Screen 2) ➔</span>
           </button>
 
           <button

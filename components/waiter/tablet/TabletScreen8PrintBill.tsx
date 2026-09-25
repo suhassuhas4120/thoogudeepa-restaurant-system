@@ -259,13 +259,6 @@ export const TabletScreen8PrintBill: React.FC = () => {
               );
             })()}
 
-            {/* Link to Screen 9 Turnaround Checklist */}
-            <button
-              onClick={() => setCurrentScreen(9)}
-              className="w-full py-2.5 font-mono text-xs font-bold text-slate-600 hover:text-slate-900 border border-dashed border-slate-400 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer bg-white hover:bg-stone-50"
-            >
-              <span>Go to Turnaround Sanitization Checklist (Screen 9) ➔</span>
-            </button>
           </div>
         </div>
       </div>
