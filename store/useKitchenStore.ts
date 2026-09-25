@@ -1,11 +1,6 @@
 import { create } from 'zustand';
-import {
-  KitchenScreenId,
-  KitchenStation,
-  KDSTicket,
-} from '../types/kitchen';
+import { KitchenScreenId, KitchenStation, KDSTicket } from '../types/kitchen';
 import { OrderStage } from '../types/customer';
-import { INITIAL_MENU_ITEMS } from '../data/menuItems';
 import { useSharedBridge } from './useSharedBridge';
 
 interface KitchenStoreState {
@@ -16,39 +11,121 @@ interface KitchenStoreState {
   chefName: string;
   selectedTableNumber: string;
   soundAlertsEnabled: boolean;
-
-  // Local-only tickets (seed for screen until bridge has real orders)
   tickets: KDSTicket[];
+  waiterAlertNotice: string | null;
 
-  // Actions
+  // ✅ NEW: shift + profile
+  shiftStartTime: string;
+
   setCurrentScreen: (screen: KitchenScreenId) => void;
   setViewMode: (mode: 'single' | 'all') => void;
   setActiveStation: (station: KitchenStation) => void;
   setChefName: (name: string) => void;
   setSelectedTableNumber: (table: string) => void;
   toggleSoundAlerts: () => void;
-  // These also write to shared bridge for cross-section sync:
   bumpItemStage: (ticketId: string, itemId: string) => void;
   bumpTable: (ticketId: string) => void;
   callFloorWaiter: (tableNumber: string, reason?: string) => void;
-  waiterAlertNotice: string | null;
   dismissWaiterAlert: () => void;
+  resetKitchenDemo: () => void;
+
+  // ✅ NEW actions
+  setShiftStartTime: (time: string) => void;
+  resetForSignOut: () => void;
 }
 
-// No pre-seeded tickets — they come from customer orders / waiter KOTs via bridge
-// Keep a few demo tickets only for the standalone kitchen demo mode
-const demoTickets: KDSTicket[] = [];
+const demoTickets: KDSTicket[] = [
+  {
+    id: 'KDS-101',
+    tableNumber: 'A-01',
+    serverName: 'Captain Ramesh',
+    timestamp: '12:40 PM',
+    elapsedMinutes: 14,
+    status: 'PREP',
+    source: 'WAITER',
+    items: [
+      {
+        id: 'd-101-1',
+        name: 'Special Chicken Donne Biryani',
+        quantity: 2,
+        prepMode: 'Standard',
+        stage: 'PREP',
+        notes: 'Less spicy',
+      },
+      {
+        id: 'd-101-2',
+        name: 'Mutton Chops Fry (Dry)',
+        quantity: 1,
+        prepMode: 'Standard',
+        stage: 'PLACED',
+        notes: 'Extra crispy',
+      },
+    ],
+  },
+  {
+    id: 'KDS-102',
+    tableNumber: 'A-02',
+    serverName: 'Captain Suresh',
+    timestamp: '12:44 PM',
+    elapsedMinutes: 10,
+    status: 'NEW',
+    source: 'CUSTOMER',
+    items: [
+      {
+        id: 'd-102-1',
+        name: 'Donne Mutton Biryani (Regular)',
+        quantity: 2,
+        prepMode: 'Standard',
+        stage: 'PLACED',
+        notes: 'Extra salna',
+      },
+      {
+        id: 'd-102-2',
+        name: 'Guntur Chicken Wings',
+        quantity: 1,
+        prepMode: 'Standard',
+        stage: 'PLACED',
+      },
+    ],
+  },
+  {
+    id: 'KDS-103',
+    tableNumber: 'A-03',
+    serverName: 'Captain Naveen',
+    timestamp: '12:48 PM',
+    elapsedMinutes: 6,
+    status: 'PREP',
+    source: 'WAITER',
+    items: [
+      {
+        id: 'd-103-1',
+        name: 'Special Chicken Donne Biryani',
+        quantity: 1,
+        prepMode: 'Standard',
+        stage: 'PLATED',
+      },
+      {
+        id: 'd-103-2',
+        name: 'Chicken Kshatriya Kebab',
+        quantity: 1,
+        prepMode: 'Standard',
+        stage: 'PLATED',
+      },
+    ],
+  },
+];
 
 export const useKitchenStore = create<KitchenStoreState>((set) => ({
   currentScreen: 1,
   previousScreen: 1,
   viewMode: 'single',
-  activeStation: 'MAIN',
+  activeStation: 'MASTER_DISPATCH',
   chefName: 'Master Chef Manjunath',
   selectedTableNumber: 'A-04',
   soundAlertsEnabled: true,
   tickets: demoTickets,
   waiterAlertNotice: null,
+  shiftStartTime: '', // ✅ NEW
 
   setCurrentScreen: (screen) =>
     set((state) => ({
@@ -64,10 +141,7 @@ export const useKitchenStore = create<KitchenStoreState>((set) => ({
     set((state) => ({ soundAlertsEnabled: !state.soundAlertsEnabled })),
 
   bumpItemStage: (ticketId, itemId) => {
-    // Also bump in shared bridge
     useSharedBridge.getState().kitchenBumpItemStage(ticketId, itemId);
-
-    // Local tickets (demo mode)
     set((state) => {
       const stageOrder: OrderStage[] = ['PLACED', 'PREP', 'PLATED', 'SERVED'];
       const newTickets = state.tickets.map((t) => {
@@ -76,7 +150,9 @@ export const useKitchenStore = create<KitchenStoreState>((set) => ({
           if (it.id !== itemId) return it;
           const curIdx = stageOrder.indexOf(it.stage);
           const nextStage =
-            curIdx < stageOrder.length - 1 ? stageOrder[curIdx + 1] : stageOrder[curIdx];
+            curIdx < stageOrder.length - 1
+              ? stageOrder[curIdx + 1]
+              : stageOrder[curIdx];
           return { ...it, stage: nextStage };
         });
         const allPlated = newItems.every(
@@ -86,7 +162,11 @@ export const useKitchenStore = create<KitchenStoreState>((set) => ({
         return {
           ...t,
           items: newItems,
-          status: (allServed ? 'COMPLETED' : allPlated ? 'READY' : 'PREP') as KDSTicket['status'],
+          status: (allServed
+            ? 'COMPLETED'
+            : allPlated
+            ? 'READY'
+            : 'PREP') as KDSTicket['status'],
         };
       });
       return { tickets: newTickets };
@@ -101,25 +181,42 @@ export const useKitchenStore = create<KitchenStoreState>((set) => ({
         return {
           ...t,
           status: 'READY',
-          items: t.items.map((i) => ({ ...i, stage: 'PLATED' })),
+          items: t.items.map((i) => ({ ...i, stage: 'PLATED' as OrderStage })),
         };
       }),
     }));
   },
 
   callFloorWaiter: (tableNumber, reason = 'Dishes Ready for Pickup') => {
+    useSharedBridge.getState().callFloorWaiter(tableNumber, reason);
     set({
       waiterAlertNotice: `[NOTIFICATION TRANSMITTED] Floor Captain alerted for Table ${tableNumber}: ${reason}`,
     });
+    setTimeout(() => {
+      set((state) =>
+        state.waiterAlertNotice ? { waiterAlertNotice: null } : state
+      );
+    }, 4000);
   },
 
   dismissWaiterAlert: () => set({ waiterAlertNotice: null }),
+
+  resetKitchenDemo: () => set({ tickets: demoTickets }),
+
+  // ✅ NEW
+  setShiftStartTime: (time) => set({ shiftStartTime: time }),
+
+  // ✅ NEW: clears session and returns to login
+  resetForSignOut: () =>
+    set({
+      currentScreen: 1,
+      previousScreen: 1,
+      activeStation: 'MASTER_DISPATCH',
+      chefName: '',
+      shiftStartTime: '',
+      waiterAlertNotice: null,
+    }),
 }));
 
-/* ── Selectors that read from the shared bridge ──────────────────── */
-
-/** All KDS tickets from bridge (real orders) */
 export const useBridgeKDSTickets = () => useSharedBridge((s) => s.kdsTickets);
-
-/** Menu 86 inventory from bridge */
 export const useBridgeInventory86 = () => useSharedBridge((s) => s.inventory86);

@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * useSharedBridge.ts
  * ──────────────────────────────────────────────────────────────────────
@@ -15,10 +17,10 @@
 
 import { create } from 'zustand';
 import { INITIAL_MENU_ITEMS } from '../data/menuItems';
-import { MenuItem } from '../types/customer';
-import { OrderStage } from '../types/customer';
+import { MenuItem, OrderStage } from '../types/customer';
 
 /* ── Shared Types ──────────────────────────────────────────────── */
+
 export interface SharedKDSItem {
   id: string;
   name: string;
@@ -27,6 +29,7 @@ export interface SharedKDSItem {
   prepMode: string;
   options?: string;
   addOns?: string[];
+  notes?: string; // ✅ Vennela's fix — kitchen notes field
 }
 
 export interface SharedKDSTicket {
@@ -37,7 +40,7 @@ export interface SharedKDSTicket {
   elapsedMinutes: number;
   status: 'NEW' | 'PREP' | 'READY' | 'COMPLETED';
   items: SharedKDSItem[];
-  source: 'CUSTOMER' | 'WAITER'; // who originated the order
+  source?: 'CUSTOMER' | 'WAITER'; // ✅ Vennela's fix — optional for local demo tickets
 }
 
 export interface SharedTable {
@@ -80,7 +83,16 @@ export interface SharedShiftStats {
   avgTurnaroundMinutes: number;
 }
 
+// ✅ Vennela's fix — waiter alert queue type
+export interface WaiterAlert {
+  id: string;
+  tableNumber: string;
+  reason: string;
+  timestamp: number;
+}
+
 /* ── Initial Data ───────────────────────────────────────────────── */
+
 const freshTables: SharedTable[] = [
   { id: 't-1', number: 'A-01', section: 'SECTION A', capacity: 4, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Ramesh', kotCount: 0 },
   { id: 't-2', number: 'A-02', section: 'SECTION A', capacity: 2, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Ramesh', kotCount: 0 },
@@ -101,10 +113,16 @@ const freshInventory86: SharedMenuItem86[] = INITIAL_MENU_ITEMS.map((item) => ({
 }));
 
 let ticketCounter = 1;
-const makeTicketId = () => `KDS-${String(100 + ticketCounter++).padStart(3, '0')}`;
-const nowTime = () => new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+const makeTicketId = () =>
+  `KDS-${String(100 + ticketCounter++).padStart(3, '0')}`;
+const nowTime = () =>
+  new Date().toLocaleTimeString('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
 /* ── Store Interface ────────────────────────────────────────────── */
+
 interface SharedBridgeState {
   // Shared cross-section state
   tables: SharedTable[];
@@ -112,62 +130,82 @@ interface SharedBridgeState {
   pings: SharedPing[];
   inventory86: SharedMenuItem86[];
   shiftStats: SharedShiftStats;
+  waiterAlerts: WaiterAlert[]; // ✅ Vennela's fix — kitchen → waiter alerts
 
   // ── Customer actions ────────────────────────────────────────────
-  /** Customer places order → adds KDS ticket + sets table as OCCUPIED */
   customerPlacesOrder: (
     tableNumber: string,
     guestName: string,
     guestCount: number,
-    items: Array<{ item: MenuItem; selectedOption: string; addOns: string[]; quantity: number }>
+    items: Array<{
+      item: MenuItem;
+      selectedOption: string;
+      addOns: string[];
+      quantity: number;
+    }>
   ) => void;
 
-  /** Customer pings waiter */
-  customerPingsWaiter: (tableNumber: string, type: string, guestName: string, msg?: string) => void;
+  customerPingsWaiter: (
+    tableNumber: string,
+    type: string,
+    guestName: string,
+    msg?: string
+  ) => void;
 
   // ── Kitchen actions ─────────────────────────────────────────────
-  /** Kitchen bumps an item stage — when ALL items of a ticket are PLATED, 
-   *  creates a kitchenReadyItem visible in waiter feed */
   kitchenBumpItemStage: (ticketId: string, itemId: string) => void;
-  kitchenSetItemStage: (ticketId: string, itemId: string, stage: OrderStage) => void;
+  kitchenSetItemStage: (
+    ticketId: string,
+    itemId: string,
+    stage: OrderStage
+  ) => void;
   kitchenSetBulkItemStage: (itemName: string, stage: OrderStage) => void;
   kitchenBumpTable: (ticketId: string) => void;
-
-  /** Kitchen toggles 86 (out of stock) — affects customer menu immediately */
   kitchenToggle86: (itemId: string) => void;
   kitchenUpdatePrepDelay: (itemId: string, deltaMinutes: number) => void;
+  kitchenAddTicket: (ticket: SharedKDSTicket) => void;
+  kitchenClearCompleted: () => void;
+
+  // ✅ Vennela's fix — kitchen can call waiter to pass
+  callFloorWaiter: (tableNumber: string, reason?: string) => void;
 
   // ── Waiter actions ──────────────────────────────────────────────
-  /** Waiter fires KOT → adds KDS ticket to kitchen */
   waiterFiresKOT: (
     tableNumber: string,
     captainName: string,
-    items: Array<{ item: MenuItem; selectedOption: string; quantity: number }>
+    items: Array<{
+      item: MenuItem;
+      selectedOption: string;
+      quantity: number;
+    }>
   ) => void;
 
-  /** Waiter seats guests at a table */
-  waiterSeatsGuests: (tableNumber: string, guestCount: number, captainName: string) => void;
+  waiterSeatsGuests: (
+    tableNumber: string,
+    guestCount: number,
+    captainName: string
+  ) => void;
 
-  /** Waiter merges two tables — combines bills */
   waiterMergeTables: (targetTable: string, sourceTable: string) => void;
-
-  /** Waiter resolves ping */
   waiterResolvePing: (pingId: string) => void;
-
-  /** Waiter records payment */
-  waiterRecordsPayment: (tableNumber: string, method: string, amount: number) => void;
-
-  /** Waiter vacates table → sets to CLEANING then VACANT */
+  waiterRecordsPayment: (
+    tableNumber: string,
+    method: string,
+    amount: number
+  ) => void;
   waiterVacatesTable: (tableNumber: string) => void;
-
-  /** Waiter marks a kitchen-ready item as served → removes from waiter feed + updates table item status */
   waiterMarkKitchenItemServed: (ticketId: string, itemId: string) => void;
 
-  /** Reset all portals and tables back to clean initial state */
+  // ✅ Vennela's fix — acknowledge / clear waiter alerts
+  acknowledgeWaiterAlert: (alertId: string) => void;
+  clearWaiterAlerts: () => void;
+
+  // ── Reset ───────────────────────────────────────────────────────
   resetToFreshDemoState: () => void;
 }
 
 /* ── Store Implementation ───────────────────────────────────────── */
+
 export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
   tables: freshTables,
   kdsTickets: [],
@@ -179,6 +217,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
     tipsEarned: 0,
     avgTurnaroundMinutes: 38,
   },
+  waiterAlerts: [],
 
   /* ─── Customer Places Order ──────────────────────────────────── */
   customerPlacesOrder: (tableNumber, guestName, guestCount, items) => {
@@ -200,7 +239,10 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
         addOns: i.addOns,
       })),
     };
-    const orderTotal = items.reduce((s, i) => s + i.item.price * i.quantity, 0);
+    const orderTotal = items.reduce(
+      (s, i) => s + i.item.price * i.quantity,
+      0
+    );
     set((state) => ({
       kdsTickets: [...state.kdsTickets, ticket],
       tables: state.tables.map((t) =>
@@ -225,10 +267,12 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
 
   /* ─── Customer Pings Waiter ──────────────────────────────────── */
   customerPingsWaiter: (tableNumber, type, guestName, msg) => {
-    // Deduplication: prevent duplicate pending pings from same table for same reason
     const currentPings = get().pings;
     const hasDuplicate = currentPings.some(
-      (p) => p.tableNumber === tableNumber && p.type === type && p.status === 'PENDING'
+      (p) =>
+        p.tableNumber === tableNumber &&
+        p.type === type &&
+        p.status === 'PENDING'
     );
     if (hasDuplicate) return;
 
@@ -253,28 +297,43 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
         const newItems = t.items.map((it) => {
           if (it.id !== itemId) return it;
           const curIdx = stageOrder.indexOf(it.stage);
-          const nextStage = curIdx < stageOrder.length - 1 ? stageOrder[curIdx + 1] : stageOrder[curIdx];
+          const nextStage =
+            curIdx < stageOrder.length - 1
+              ? stageOrder[curIdx + 1]
+              : stageOrder[curIdx];
           return { ...it, stage: nextStage };
         });
-        const allPlated = newItems.every((i) => i.stage === 'PLATED' || i.stage === 'SERVED');
+        const allPlated = newItems.every(
+          (i) => i.stage === 'PLATED' || i.stage === 'SERVED'
+        );
         const allServed = newItems.every((i) => i.stage === 'SERVED');
         return {
           ...t,
           items: newItems,
-          status: (allServed ? 'COMPLETED' : allPlated ? 'READY' : 'PREP') as SharedKDSTicket['status'],
+          status: (allServed
+            ? 'COMPLETED'
+            : allPlated
+            ? 'READY'
+            : 'PREP') as SharedKDSTicket['status'],
         };
       });
 
-      // Update waiter table's activeItems stages
       const updatedTables = state.tables.map((tbl) => {
-        const ticket = newTickets.find((tk) => tk.tableNumber === tbl.number && tk.id === ticketId);
+        const ticket = newTickets.find(
+          (tk) => tk.tableNumber === tbl.number && tk.id === ticketId
+        );
         if (!ticket) return tbl;
         return {
           ...tbl,
           activeItems: ticket.items.map((it) => ({
             name: it.name,
             quantity: it.quantity,
-            status: it.stage === 'PLATED' ? 'Ready' : it.stage === 'PREP' ? 'Cooking' : it.stage,
+            status:
+              it.stage === 'PLATED'
+                ? 'Ready'
+                : it.stage === 'PREP'
+                ? 'Cooking'
+                : it.stage,
           })),
         };
       });
@@ -288,29 +347,44 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
     set((state) => {
       const newTickets = state.kdsTickets.map((t) => {
         if (t.id !== ticketId) return t;
-        const newItems = t.items.map((it) => {
-          if (it.id !== itemId) return it;
-          return { ...it, stage };
-        });
-        const allPlated = newItems.every((i) => i.stage === 'PLATED' || i.stage === 'SERVED');
+        const newItems = t.items.map((it) =>
+          it.id === itemId ? { ...it, stage } : it
+        );
+        const allPlated = newItems.every(
+          (i) => i.stage === 'PLATED' || i.stage === 'SERVED'
+        );
         const allServed = newItems.every((i) => i.stage === 'SERVED');
         return {
           ...t,
           items: newItems,
-          status: (allServed ? 'COMPLETED' : allPlated ? 'READY' : stage === 'PREP' ? 'PREP' : 'NEW') as SharedKDSTicket['status'],
+          status: (allServed
+            ? 'COMPLETED'
+            : allPlated
+            ? 'READY'
+            : stage === 'PREP'
+            ? 'PREP'
+            : 'NEW') as SharedKDSTicket['status'],
         };
       });
 
-      // Update waiter table's activeItems stages
       const updatedTables = state.tables.map((tbl) => {
-        const ticket = newTickets.find((tk) => tk.tableNumber === tbl.number && tk.id === ticketId);
+        const ticket = newTickets.find(
+          (tk) => tk.tableNumber === tbl.number && tk.id === ticketId
+        );
         if (!ticket) return tbl;
         return {
           ...tbl,
           activeItems: ticket.items.map((it) => ({
             name: it.name,
             quantity: it.quantity,
-            status: it.stage === 'PLATED' ? 'Ready' : it.stage === 'PREP' ? 'Cooking' : it.stage === 'SERVED' ? 'Served' : 'Placed',
+            status:
+              it.stage === 'PLATED'
+                ? 'Ready'
+                : it.stage === 'PREP'
+                ? 'Cooking'
+                : it.stage === 'SERVED'
+                ? 'Served'
+                : 'Placed',
           })),
         };
       });
@@ -319,7 +393,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
     });
   },
 
-  /* ─── Kitchen Sets Bulk Item Stage (Cross-Table & Cross-Portal) ─── */
+  /* ─── Kitchen Sets Bulk Item Stage ───────────────────────────── */
   kitchenSetBulkItemStage: (itemName, stage) => {
     set((state) => {
       const targetNameLower = itemName.toLowerCase();
@@ -327,7 +401,10 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
         let ticketHasItem = false;
         const newItems = t.items.map((it) => {
           const itemLower = it.name.toLowerCase();
-          if (itemLower.includes(targetNameLower) || targetNameLower.includes(itemLower)) {
+          if (
+            itemLower.includes(targetNameLower) ||
+            targetNameLower.includes(itemLower)
+          ) {
             ticketHasItem = true;
             return { ...it, stage };
           }
@@ -336,25 +413,41 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
 
         if (!ticketHasItem) return t;
 
-        const allPlated = newItems.every((i) => i.stage === 'PLATED' || i.stage === 'SERVED');
+        const allPlated = newItems.every(
+          (i) => i.stage === 'PLATED' || i.stage === 'SERVED'
+        );
         const allServed = newItems.every((i) => i.stage === 'SERVED');
         return {
           ...t,
           items: newItems,
-          status: (allServed ? 'COMPLETED' : allPlated ? 'READY' : stage === 'PREP' ? 'PREP' : 'NEW') as SharedKDSTicket['status'],
+          status: (allServed
+            ? 'COMPLETED'
+            : allPlated
+            ? 'READY'
+            : stage === 'PREP'
+            ? 'PREP'
+            : 'NEW') as SharedKDSTicket['status'],
         };
       });
 
-      // Update activeItems on all matching tables
       const updatedTables = state.tables.map((tbl) => {
-        const ticket = newTickets.find((tk) => tk.tableNumber === tbl.number);
+        const ticket = newTickets.find(
+          (tk) => tk.tableNumber === tbl.number
+        );
         if (!ticket) return tbl;
         return {
           ...tbl,
           activeItems: ticket.items.map((it) => ({
             name: it.name,
             quantity: it.quantity,
-            status: it.stage === 'PLATED' ? 'Ready' : it.stage === 'PREP' ? 'Cooking' : it.stage === 'SERVED' ? 'Served' : 'Placed',
+            status:
+              it.stage === 'PLATED'
+                ? 'Ready'
+                : it.stage === 'PREP'
+                ? 'Cooking'
+                : it.stage === 'SERVED'
+                ? 'Served'
+                : 'Placed',
           })),
         };
       });
@@ -371,7 +464,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
         return {
           ...t,
           status: 'READY',
-          items: t.items.map((i) => ({ ...i, stage: 'PLATED' })),
+          items: t.items.map((i) => ({ ...i, stage: 'PLATED' as OrderStage })),
         };
       }),
     }));
@@ -391,10 +484,41 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
     set((state) => ({
       inventory86: state.inventory86.map((item) =>
         item.id === itemId
-          ? { ...item, prepDelayMinutes: Math.max(0, item.prepDelayMinutes + deltaMinutes) }
+          ? {
+              ...item,
+              prepDelayMinutes: Math.max(
+                0,
+                item.prepDelayMinutes + deltaMinutes
+              ),
+            }
           : item
       ),
     }));
+  },
+
+  /* ─── Kitchen Add Ticket ─────────────────────────────────────── */
+  kitchenAddTicket: (ticket) => {
+    set((state) => ({ kdsTickets: [...state.kdsTickets, ticket] }));
+  },
+
+  /* ─── Kitchen Clear Completed ────────────────────────────────── */
+  kitchenClearCompleted: () => {
+    set((state) => ({
+      kdsTickets: state.kdsTickets.filter(
+        (tk) => tk.status !== 'COMPLETED'
+      ),
+    }));
+  },
+
+  /* ✅ Kitchen Calls Floor Waiter (Vennela's fix) ─────────────── */
+  callFloorWaiter: (tableNumber, reason = 'Dishes Ready for Pickup') => {
+    const alert: WaiterAlert = {
+      id: `ALERT-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      tableNumber,
+      reason,
+      timestamp: Date.now(),
+    };
+    set((state) => ({ waiterAlerts: [...state.waiterAlerts, alert] }));
   },
 
   /* ─── Waiter Fires KOT ───────────────────────────────────────── */
@@ -416,7 +540,10 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
         options: i.selectedOption,
       })),
     };
-    const kotTotal = items.reduce((s, i) => s + i.item.price * i.quantity, 0);
+    const kotTotal = items.reduce(
+      (s, i) => s + i.item.price * i.quantity,
+      0
+    );
     set((state) => ({
       kdsTickets: [...state.kdsTickets, ticket],
       tables: state.tables.map((t) =>
@@ -428,7 +555,11 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
               kotCount: t.kotCount + 1,
               activeItems: [
                 ...(t.activeItems || []),
-                ...items.map((i) => ({ name: i.item.name, quantity: i.quantity, status: 'Cooking' })),
+                ...items.map((i) => ({
+                  name: i.item.name,
+                  quantity: i.quantity,
+                  status: 'Cooking',
+                })),
               ],
             }
           : t
@@ -441,7 +572,13 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
     set((state) => ({
       tables: state.tables.map((t) =>
         t.number === tableNumber
-          ? { ...t, status: 'OCCUPIED', guestCount, seatedTime: nowTime(), serverName: captainName }
+          ? {
+              ...t,
+              status: 'OCCUPIED',
+              guestCount,
+              seatedTime: nowTime(),
+              serverName: captainName,
+            }
           : t
       ),
     }));
@@ -454,7 +591,10 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
       const source = state.tables.find((t) => t.number === sourceTable);
       if (!target || !source) return state;
       const mergedBill = target.currentBill + source.currentBill;
-      const mergedGuests = Math.max(2, (target.guestCount || 2) + (source.guestCount || 2));
+      const mergedGuests = Math.max(
+        2,
+        (target.guestCount || 2) + (source.guestCount || 2)
+      );
       return {
         tables: state.tables.map((t) => {
           if (t.number === targetTable) {
@@ -464,7 +604,10 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
               currentBill: mergedBill,
               guestCount: mergedGuests,
               mergedWith: sourceTable,
-              activeItems: [...(t.activeItems || []), ...(source.activeItems || [])],
+              activeItems: [
+                ...(t.activeItems || []),
+                ...(source.activeItems || []),
+              ],
             };
           }
           if (t.number === sourceTable) {
@@ -484,7 +627,9 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
 
   /* ─── Waiter Resolves Ping ───────────────────────────────────── */
   waiterResolvePing: (pingId) => {
-    set((state) => ({ pings: state.pings.filter((p) => p.id !== pingId) }));
+    set((state) => ({
+      pings: state.pings.filter((p) => p.id !== pingId),
+    }));
   },
 
   /* ─── Waiter Records Payment ─────────────────────────────────── */
@@ -527,11 +672,11 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
               }
             : t
         ),
-        // Remove completed KDS tickets for this table
         kdsTickets: state.kdsTickets.filter(
           (tk) =>
             !(
-              (tk.tableNumber === tableNumber || (partner && tk.tableNumber === partner)) &&
+              (tk.tableNumber === tableNumber ||
+                (partner && tk.tableNumber === partner)) &&
               tk.status === 'COMPLETED'
             )
         ),
@@ -548,10 +693,24 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
           it.id === itemId ? { ...it, stage: 'SERVED' as OrderStage } : it
         );
         const allServed = newItems.every((i) => i.stage === 'SERVED');
-        return { ...t, items: newItems, status: allServed ? 'COMPLETED' : t.status };
+        return {
+          ...t,
+          items: newItems,
+          status: allServed ? 'COMPLETED' : t.status,
+        };
       }),
     }));
   },
+
+  /* ✅ Waiter Acknowledges Alert (Vennela's fix) ──────────────── */
+  acknowledgeWaiterAlert: (alertId) => {
+    set((state) => ({
+      waiterAlerts: state.waiterAlerts.filter((a) => a.id !== alertId),
+    }));
+  },
+
+  /* ✅ Waiter Clears All Alerts (Vennela's fix) ───────────────── */
+  clearWaiterAlerts: () => set({ waiterAlerts: [] }),
 
   /* ─── Reset to Fresh Demo State ──────────────────────────────── */
   resetToFreshDemoState: () => {
@@ -571,11 +730,13 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
         tipsEarned: 0,
         avgTurnaroundMinutes: 38,
       },
+      waiterAlerts: [],
     });
   },
 }));
 
-/* ── Real-Time Cross-Tab & Multi-Device Synchronization ───────────── */
+/* ── Real-Time Cross-Tab & Multi-Device Synchronization ─────────── */
+
 if (typeof window !== 'undefined') {
   // 0. Rehydrate from localStorage if available
   try {
@@ -588,7 +749,7 @@ if (typeof window !== 'undefined') {
     }
   } catch {}
 
-  // 1. Native Cross-Tab Sync via BroadcastChannel (0ms latency, zero dependencies)
+  // 1. Native Cross-Tab Sync via BroadcastChannel
   if ('BroadcastChannel' in window) {
     const syncChannel = new BroadcastChannel('thoogudeepa_bridge_sync');
     let isBroadcasting = false;
@@ -602,7 +763,6 @@ if (typeof window !== 'undefined') {
     };
 
     useSharedBridge.subscribe((state) => {
-      // Save state to localStorage for refresh persistence
       try {
         localStorage.setItem(
           'thoogudeepa_bridge_v1',
@@ -612,6 +772,7 @@ if (typeof window !== 'undefined') {
             pings: state.pings,
             inventory86: state.inventory86,
             shiftStats: state.shiftStats,
+            waiterAlerts: state.waiterAlerts,
           })
         );
       } catch {}
@@ -626,6 +787,7 @@ if (typeof window !== 'undefined') {
             pings: state.pings,
             inventory86: state.inventory86,
             shiftStats: state.shiftStats,
+            waiterAlerts: state.waiterAlerts,
           },
         });
       } catch {
@@ -634,7 +796,7 @@ if (typeof window !== 'undefined') {
     });
   }
 
-  // 2. Optional WebSocket client for multi-device sync (when server.js is running)
+  // 2. Optional WebSocket client for multi-device sync
   try {
     const wsHost = window.location.hostname || 'localhost';
     const wsUrl = `ws://${wsHost}:3000`;
@@ -665,4 +827,3 @@ if (typeof window !== 'undefined') {
     // Fallback cleanly to BroadcastChannel
   }
 }
-

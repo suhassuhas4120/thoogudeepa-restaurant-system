@@ -1,9 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useKitchenStore } from '../../store/useKitchenStore';
-import { KitchenScreenId } from '../../types/kitchen';
+import { KitchenScreenId, STATION_LABELS } from '../../types/kitchen';
 import { ScreenK1Login } from '../../components/kitchen/ScreenK1Login';
 import { ScreenK2Overview } from '../../components/kitchen/ScreenK2Overview';
 import { ScreenK3Detail } from '../../components/kitchen/ScreenK3Detail';
@@ -21,7 +21,19 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function KitchenKDSPage() {
-  const { currentScreen, setCurrentScreen, viewMode, setViewMode } = useKitchenStore();
+  const {
+    currentScreen,
+    setCurrentScreen,
+    viewMode,
+    setViewMode,
+    activeStation,
+  } = useKitchenStore();
+
+  // ✅ FIXED: Route guard — always start at login on hard refresh
+  useEffect(() => {
+    setCurrentScreen(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const screens = [
     {
@@ -75,7 +87,10 @@ export default function KitchenKDSPage() {
               </span>
             </div>
             <h1 className="text-sm font-black tracking-tight text-slate-900 mt-0.5">
-              KITCHEN DISPLAY SYSTEM (3 TABLET SCREENS)
+              KITCHEN DISPLAY SYSTEM (3 TABLET SCREENS) •{' '}
+              <span className="text-orange-600">
+                {STATION_LABELS[activeStation]}
+              </span>
             </h1>
           </div>
         </div>
@@ -179,17 +194,17 @@ export default function KitchenKDSPage() {
             </AnimatePresence>
           </div>
         ) : (
-          /* All 3 Screens Grid Mode */
           <div className="w-full max-w-[1500px] flex flex-col lg:flex-row items-center justify-center gap-8 py-4">
             {screens.map((screen) => (
-              <div key={screen.id} className="flex flex-col items-center w-full max-w-[480px]">
+              <div
+                key={screen.id}
+                className="flex flex-col items-center w-full max-w-[480px]"
+              >
                 <div className="mb-2 flex items-center gap-2 font-mono text-xs font-extrabold text-slate-700">
                   <span className="h-2 w-2 rounded-full bg-orange-500" />
                   <span>{screen.name}</span>
                 </div>
-                <div className="w-full scale-90 origin-top">
-                  {screen.comp}
-                </div>
+                <div className="w-full scale-90 origin-top">{screen.comp}</div>
               </div>
             ))}
           </div>
