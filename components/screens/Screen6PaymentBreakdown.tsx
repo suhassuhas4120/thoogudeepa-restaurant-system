@@ -30,8 +30,9 @@ export const Screen6PaymentBreakdown: React.FC = () => {
   };
 
   const handleCustomTipChange = (val: string) => {
-    setCustomTip(val);
-    const num = parseInt(val, 10);
+    const sanitized = val.replace(/[^\d]/g, '');
+    setCustomTip(sanitized);
+    const num = parseInt(sanitized, 10);
     updateTip(isNaN(num) || num < 0 ? 0 : num);
   };
 
@@ -136,7 +137,9 @@ export const Screen6PaymentBreakdown: React.FC = () => {
 
           <div className="mt-2.5">
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={customTip}
               onChange={(e) => handleCustomTipChange(e.target.value)}
               placeholder="[ENTER CUSTOM TIP AMOUNT]"

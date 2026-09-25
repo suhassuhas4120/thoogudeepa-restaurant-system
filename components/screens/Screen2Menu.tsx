@@ -34,8 +34,8 @@ export const Screen2Menu: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerItem, setDrawerItem] = useState<MenuItem | null>(null);
 
-  const categories = ['All', 'Starters', 'Mains', 'Breads', 'Rice & Bowls', 'Desserts'];
-  const filters = ['All', 'Pure Veg', 'Chef Special', 'Quick Serve'];
+  const categories = ['All', 'Starters', 'Rice & Bowls', 'Beverages'];
+  const filters = ['All', 'Chef Special', 'Quick Serve'];
 
   const filteredItems = menuItems.filter((item) => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -101,7 +101,7 @@ export const Screen2Menu: React.FC = () => {
         leftSubtitle={`[VENUE: ${venueName} | TABLE ${tableNumber}]`}
         showBack={false}
         showCallWaiter={true}
-        showCart={true}
+        showCart={false}
       />
 
       {/* Search Bar */}

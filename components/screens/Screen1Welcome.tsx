@@ -102,21 +102,6 @@ export const Screen1Welcome: React.FC = () => {
             </motion.button>
           </div>
 
-          {/* Customer Name Input */}
-          <div>
-            <div className="mb-1 text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-              [CUSTOMER NAME INPUT]
-            </div>
-            <div className="relative">
-              <input
-                type="text"
-                value={guestName}
-                onChange={(e) => setGuestName(e.target.value)}
-                placeholder="[ENTER YOUR NAME]"
-                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 shadow-sm"
-              />
-            </div>
-          </div>
         </motion.div>
 
         {/* Bottom: Go To Menu Button & Small Company Logo */}
