@@ -5,7 +5,7 @@ import { useWaiterStore } from '../../../store/useWaiterStore';
 import { useSharedBridge } from '../../../store/useSharedBridge';
 import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
 import { INITIAL_MENU_ITEMS } from '../../../data/menuItems';
-import { ArrowLeft, ShoppingCart, ArrowRight, Search, Plus, Minus, Check, Ban, Lock, Clock, UtensilsCrossed } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, ArrowRight, Search, Plus, Minus, Check, Ban, Lock, Clock, UtensilsCrossed, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const TabletScreen4TakeOrder: React.FC = () => {
@@ -26,11 +26,16 @@ export const TabletScreen4TakeOrder: React.FC = () => {
   const [addedItemNotice, setAddedItemNotice] = useState<string | null>(null);
 
   const activeTable = tables.find((t) => t.number === currentTable) || tables[0];
-  const categories = ['ALL', 'BIRYANI', 'STARTERS', 'GRAVY & SIDES', 'BEVERAGES'];
+  const categories = ['ALL', 'CHEF SPECIAL', 'BIRYANI', 'STARTERS', 'GRAVY & SIDES', 'BEVERAGES'];
 
   const filteredItems = INITIAL_MENU_ITEMS.filter((item) => {
     const matchCat =
       selectedCat === 'ALL' ||
+      (selectedCat === 'CHEF SPECIAL' &&
+        (item.badge === 'Chef Special' ||
+          item.badge?.toLowerCase().includes('special') ||
+          item.name.toLowerCase().includes('special') ||
+          item.name.toLowerCase().includes('thoogudeepa'))) ||
       item.category.toUpperCase().includes(selectedCat) ||
       (selectedCat === 'BIRYANI' && item.name.toLowerCase().includes('biryani'));
     const matchSearch =
@@ -104,19 +109,28 @@ export const TabletScreen4TakeOrder: React.FC = () => {
 
         {/* CATEGORIES & SEARCH & CART ICON (AFTER SEARCH TAB ONLY) */}
         <div className="flex gap-2 flex-wrap items-center mb-3 shrink-0">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCat(cat)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition border cursor-pointer ${
-                selectedCat === cat
-                  ? 'bg-slate-900 text-white border-slate-900 shadow-2xs'
-                  : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
-              }`}
-            >
-              {cat === 'ALL' ? 'All Categories' : cat}
-            </button>
-          ))}
+          {categories.map((cat) => {
+            const isChef = cat === 'CHEF SPECIAL';
+            const isSelected = selectedCat === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCat(cat)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition border cursor-pointer flex items-center gap-1.5 ${
+                  isSelected
+                    ? isChef
+                      ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white border-orange-600 shadow-2xs'
+                      : 'bg-slate-900 text-white border-slate-900 shadow-2xs'
+                    : isChef
+                    ? 'bg-orange-50 text-orange-800 border-orange-300 hover:bg-orange-100'
+                    : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
+                }`}
+              >
+                {isChef && <Sparkles className={`h-3 w-3 ${isSelected ? 'text-amber-200' : 'text-orange-500'}`} />}
+                <span>{cat === 'ALL' ? 'All Categories' : cat === 'CHEF SPECIAL' ? 'Chef Special' : cat}</span>
+              </button>
+            );
+          })}
 
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
@@ -199,6 +213,20 @@ export const TabletScreen4TakeOrder: React.FC = () => {
                   <div className="relative w-full h-24 border-2 border-dashed border-slate-300 bg-slate-50 rounded-lg flex items-center justify-center gap-2 text-slate-600">
                     <span className="text-2xl">{isSoldOut ? '🚫' : '🍛'}</span>
                     <span className="font-mono text-xs font-bold">{item.category}</span>
+                    {item.badge && !isSoldOut && (
+                      <span
+                        className={`absolute top-2 left-2 text-[9px] font-black px-2 py-0.5 rounded shadow-xs flex items-center gap-1 uppercase tracking-wider ${
+                          item.badge === 'Chef Special'
+                            ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white ring-1 ring-orange-300'
+                            : item.badge === 'Bestseller'
+                            ? 'bg-amber-500 text-slate-950 font-black'
+                            : 'bg-slate-900 text-amber-300'
+                        }`}
+                      >
+                        <Sparkles className="h-2.5 w-2.5" />
+                        <span>{item.badge}</span>
+                      </span>
+                    )}
                     {isSoldOut ? (
                       <span className="absolute top-2 right-2 bg-rose-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded flex items-center gap-1">
                         <Ban className="h-2.5 w-2.5" />
@@ -213,9 +241,23 @@ export const TabletScreen4TakeOrder: React.FC = () => {
                   </div>
 
                   <div>
-                    <strong className="text-sm font-black text-slate-950 block">
-                      {item.name}
-                    </strong>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <strong className="text-sm font-black text-slate-950">
+                        {item.name}
+                      </strong>
+                      {item.badge && !isSoldOut && (
+                        <span
+                          className={`text-[8.5px] font-black px-1.5 py-0.5 rounded uppercase flex items-center gap-0.5 shrink-0 ${
+                            item.badge === 'Chef Special'
+                              ? 'bg-orange-100 text-orange-800 border border-orange-300'
+                              : 'bg-amber-100 text-amber-800 border border-amber-300'
+                          }`}
+                        >
+                          <Sparkles className="h-2 w-2 text-orange-600" />
+                          <span>{item.badge}</span>
+                        </span>
+                      )}
+                    </div>
                     <span className="text-[11px] font-bold text-slate-500">
                       {item.category} • ₹{item.price.toFixed(2)}
                     </span>

@@ -6,7 +6,7 @@ import { useSharedBridge } from '../../store/useSharedBridge';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
 import { INITIAL_MENU_ITEMS } from '../../data/menuItems';
 import { MenuItem } from '../../types/customer';
-import { ArrowLeft, Search, Plus, Minus, ShoppingCart, ShoppingBag, ArrowRight, Ban, Clock, UtensilsCrossed } from 'lucide-react';
+import { ArrowLeft, Search, Plus, Minus, ShoppingCart, ShoppingBag, ArrowRight, Ban, Clock, UtensilsCrossed, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const ScreenW4TakeOrder: React.FC = () => {
@@ -26,11 +26,21 @@ export const ScreenW4TakeOrder: React.FC = () => {
   const [selectedCat, setSelectedCat] = useState('ALL');
   const [query, setQuery] = useState('');
 
-  const categories = ['ALL', 'Rice & Bowls', 'Starters', 'Desserts'];
+  const categories = ['ALL', 'Chef Special', 'Rice & Bowls', 'Starters', 'Desserts'];
 
   const filtered = INITIAL_MENU_ITEMS.filter((i) => {
-    const matchCat = selectedCat === 'ALL' || i.category === selectedCat;
-    const matchQ = i.name.toLowerCase().includes(query.toLowerCase());
+    const matchCat =
+      selectedCat === 'ALL' ||
+      (selectedCat === 'Chef Special' &&
+        (i.badge === 'Chef Special' ||
+          i.badge?.toLowerCase().includes('special') ||
+          i.name.toLowerCase().includes('special') ||
+          i.name.toLowerCase().includes('thoogudeepa'))) ||
+      i.category === selectedCat;
+    const matchQ =
+      query === '' ||
+      i.name.toLowerCase().includes(query.toLowerCase()) ||
+      i.description.toLowerCase().includes(query.toLowerCase());
     return matchCat && matchQ;
   });
 
@@ -98,19 +108,28 @@ export const ScreenW4TakeOrder: React.FC = () => {
 
         {/* Category Pills */}
         <div className="flex gap-1.5 overflow-x-auto pb-1 shrink-0 scrollbar-none">
-          {categories.map((c) => (
-            <button
-              key={c}
-              onClick={() => setSelectedCat(c)}
-              className={`px-3 py-1 rounded-lg font-mono text-[10.5px] font-black whitespace-nowrap transition ${
-                selectedCat === c
-                  ? 'bg-slate-900 text-white'
-                  : 'bg-white border border-slate-200 text-slate-600'
-              }`}
-            >
-              {c}
-            </button>
-          ))}
+          {categories.map((c) => {
+            const isChef = c === 'Chef Special';
+            const isSelected = selectedCat === c;
+            return (
+              <button
+                key={c}
+                onClick={() => setSelectedCat(c)}
+                className={`px-3 py-1 rounded-lg font-mono text-[10.5px] font-black whitespace-nowrap transition flex items-center gap-1 ${
+                  isSelected
+                    ? isChef
+                      ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white'
+                      : 'bg-slate-900 text-white'
+                    : isChef
+                    ? 'bg-orange-50 text-orange-800 border border-orange-300'
+                    : 'bg-white border border-slate-200 text-slate-600'
+                }`}
+              >
+                {isChef && <Sparkles className={`h-2.5 w-2.5 ${isSelected ? 'text-amber-200' : 'text-orange-500'}`} />}
+                <span>{c}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Food Items 2-Col Grid or Clean Empty State */}
@@ -158,7 +177,21 @@ export const ScreenW4TakeOrder: React.FC = () => {
                 >
                   <div>
                     <div className="flex items-center justify-between gap-1">
-                      <span className="text-xs font-black text-slate-900 line-clamp-1">{item.name}</span>
+                      <div className="flex items-center gap-1 min-w-0 flex-wrap">
+                        <span className="text-xs font-black text-slate-900 truncate">{item.name}</span>
+                        {item.badge && !isSoldOut && (
+                          <span
+                            className={`text-[7.5px] font-black px-1.5 py-0.2 rounded uppercase flex items-center gap-0.5 shrink-0 ${
+                              item.badge === 'Chef Special'
+                                ? 'bg-orange-100 text-orange-800 border border-orange-300'
+                                : 'bg-amber-100 text-amber-800 border border-amber-300'
+                            }`}
+                          >
+                            <Sparkles className="h-2 w-2 text-orange-600" />
+                            <span>{item.badge}</span>
+                          </span>
+                        )}
+                      </div>
                       {isSoldOut ? (
                         <span className="text-[8px] font-black bg-rose-600 text-white px-1.5 py-0.5 rounded flex items-center gap-0.5 shrink-0">
                           <Ban className="h-2 w-2" />
