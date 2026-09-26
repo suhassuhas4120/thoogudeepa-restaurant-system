@@ -43,8 +43,8 @@ export const Screen2Menu: React.FC = () => {
     const matchesFilter =
       selectedFilter === 'All' ||
       (selectedFilter === 'Chef Special' && item.badge === 'Chef Special') ||
-      (selectedFilter === 'Pure Veg' && !!item.isVeg) ||
-      (selectedFilter === 'Quick Serve' && (item.category === 'Starters' || item.category === 'Breads' || item.category === 'Desserts'));
+      // (selectedFilter === 'Pure Veg' && !!item.isVeg) ||
+      (selectedFilter === 'Quick Serve' && (item.category === 'Starters' || item.category === 'Desserts'));
     return matchesSearch && matchesCategory && matchesFilter;
   });
 
@@ -95,223 +95,205 @@ export const Screen2Menu: React.FC = () => {
 
   return (
     <ScreenHousing screenNumber={2} screenTitle="MENU PAGE (DOUBLE COLUMN GRID)">
-      {/* Top Header */}
       <WireHeader
-        title="[MENU PAGE]"
-        leftSubtitle={`[VENUE: ${venueName} | TABLE ${tableNumber}]`}
+        title="Menu"
+        leftSubtitle={`${venueName} | TABLE ${tableNumber}`}
         showBack={false}
         showCallWaiter={true}
         showCart={false}
       />
 
-      {/* Search Bar */}
-      <div className="px-4 pt-3 pb-2 bg-white">
-        <div className="mb-1 text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-          [SEARCH TAB]
+      <div className="bg-gradient-to-b from-[#fffaf1] to-[#fff] pb-2">
+        <div className="px-4 pt-3 pb-2">
+          <div className="relative flex items-center">
+            <Search className="absolute left-3 h-4 w-4 text-orange-400" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search Items"
+              className="w-full rounded-2xl border border-orange-100 bg-white/90 pl-9 pr-3 py-2.5 text-xs font-semibold text-slate-900 placeholder:text-slate-400 shadow-[0_10px_20px_rgba(15,23,42,0.04)] focus:border-orange-400 focus:bg-white focus:outline-none"
+            />
+          </div>
         </div>
-        <div className="relative flex items-center">
-          <Search className="absolute left-3 h-4 w-4 text-slate-400" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="🔍 [SEARCH TAB / SEARCH ITEMS]"
-            className="w-full rounded-xl border border-slate-200 bg-stone-50/70 pl-9 pr-3 py-2 text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:bg-white focus:outline-none"
-          />
-        </div>
-      </div>
 
-      {/* Food Categories Horizontal Bar */}
-      <div className="px-4 py-1.5 bg-white border-b border-slate-100">
-        <div className="mb-1 text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-          [FOOD CATEGORIES]
+        <div className="border-b border-orange-100 bg-white/70 px-4 py-2 backdrop-blur-sm">
+          <div className="mb-1 text-[9.5px] font-black tracking-[0.24em] text-slate-400">
+            Food Categories
+          </div>
+          <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-none">
+            {categories.map((cat) => {
+              const isActive = selectedCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] font-black tracking-[0.08em] transition ${
+                    isActive
+                      ? 'bg-gradient-to-r from-[#f97316] to-[#ea580c] text-white shadow-[0_10px_18px_rgba(234,88,12,0.24)]'
+                      : 'bg-[#fff3e6] text-slate-700 hover:bg-[#ffe7cf]'
+                  }`}
+                >
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
         </div>
-        <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-none">
-          {categories.map((cat) => {
-            const isActive = selectedCategory === cat;
+
+        <div className="border-b border-orange-100 bg-[#fff8f3] px-4 py-2">
+          <div className="mb-1 text-[9.5px] font-black tracking-[0.24em] text-slate-400">
+            Food Filters
+          </div>
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
+            {filters.map((fil) => {
+              const isActive = selectedFilter === fil;
+              return (
+                <button
+                  key={fil}
+                  onClick={() => setSelectedFilter(fil)}
+                  className={`whitespace-nowrap rounded-xl border px-2.5 py-1.5 text-[10px] font-black tracking-[0.08em] transition ${
+                    isActive
+                      ? 'border-orange-500 bg-orange-50 text-orange-700'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-orange-200 hover:bg-orange-50'
+                  }`}
+                >
+                  {fil}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {addedNotice && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mx-4 mt-2 rounded-2xl bg-slate-900 px-3 py-2 text-center text-xs font-black text-white shadow-[0_10px_24px_rgba(15,23,42,0.2)]"
+          >
+            ✓ {addedNotice}
+          </motion.div>
+        )}
+
+        <div className="grid grid-cols-2 gap-2.5 p-3">
+          {filteredItems.map((item) => {
+            const item86 = inventory86.find((i) => i.id === item.id);
+            const isSoldOut = !!item86?.is86;
+            const prepDelay = item86?.prepDelayMinutes || 0;
+            const itemCartQty = cart
+              .filter((ci) => ci.menuItem.id === item.id)
+              .reduce((sum, ci) => sum + ci.quantity, 0);
+
             return (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`whitespace-nowrap rounded-full px-3 py-1 text-[11px] font-bold transition ${
-                  isActive
-                    ? 'bg-slate-900 text-white shadow-sm'
-                    : 'bg-stone-100 text-slate-600 hover:bg-stone-200'
+              <motion.div
+                key={item.id}
+                whileHover={{ y: isSoldOut ? 0 : -2 }}
+                onClick={() => {
+                  if (isSoldOut) {
+                    setAddedNotice(`${item.name} is currently SOLD OUT (86) in Kitchen!`);
+                    setTimeout(() => setAddedNotice(null), 2500);
+                    return;
+                  }
+                  handleOpenDetail(item);
+                }}
+                className={`flex cursor-pointer flex-col justify-between rounded-[24px] border p-2.5 shadow-[0_12px_24px_rgba(15,23,42,0.04)] transition ${
+                  isSoldOut
+                    ? 'border-rose-200 bg-stone-50 opacity-60'
+                    : 'border-orange-100 bg-white hover:border-orange-200 hover:shadow-[0_14px_28px_rgba(249,115,22,0.10)]'
                 }`}
               >
-                [{cat.toUpperCase()}]
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Food Dietary Filters */}
-      <div className="px-4 py-2 bg-stone-50 border-b border-slate-200/60">
-        <div className="mb-1 text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-          [FOOD FILTERS]
-        </div>
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
-          {filters.map((fil) => {
-            const isActive = selectedFilter === fil;
-            return (
-              <button
-                key={fil}
-                onClick={() => setSelectedFilter(fil)}
-                className={`whitespace-nowrap rounded-md border px-2.5 py-1 font-mono text-[10px] font-bold tracking-tight transition ${
-                  isActive
-                    ? 'border-orange-500 bg-orange-50 text-orange-700'
-                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
-                }`}
-              >
-                [{fil.toUpperCase()}]
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Toast Notice */}
-      {addedNotice && (
-        <motion.div
-          initial={{ opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mx-4 mt-2 rounded-xl bg-slate-900 p-2 text-center text-xs font-bold text-white shadow-md"
-        >
-          ✓ {addedNotice}
-        </motion.div>
-      )}
-
-      {/* Label for Double Column Grid */}
-      <div className="px-4 pt-3">
-        <div className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-          [MENU ITEMS: DOUBLE COLUMN GRID WITH SMALL ADD BUTTON BELOW]
-        </div>
-      </div>
-
-      {/* Double Column Grid */}
-      <div className="grid grid-cols-2 gap-2.5 p-3 flex-1 overflow-y-auto">
-        {filteredItems.map((item) => {
-          const item86 = inventory86.find((i) => i.id === item.id);
-          const isSoldOut = !!item86?.is86;
-          const prepDelay = item86?.prepDelayMinutes || 0;
-          const itemCartQty = cart
-            .filter((ci) => ci.menuItem.id === item.id)
-            .reduce((sum, ci) => sum + ci.quantity, 0);
-
-          return (
-            <motion.div
-              key={item.id}
-              whileHover={{ y: isSoldOut ? 0 : -2 }}
-              onClick={() => {
-                if (isSoldOut) {
-                  setAddedNotice(`[${item.name}] is currently SOLD OUT (86) in Kitchen!`);
-                  setTimeout(() => setAddedNotice(null), 2500);
-                  return;
-                }
-                handleOpenDetail(item);
-              }}
-              className={`flex flex-col justify-between rounded-2xl border p-2.5 shadow-xs transition cursor-pointer ${
-                isSoldOut
-                  ? 'border-rose-200 bg-stone-50 opacity-60'
-                  : 'border-slate-200/90 bg-white hover:border-orange-300 hover:shadow-md'
-              }`}
-            >
-              {/* Visual Container */}
-              <div className="relative flex h-24 w-full flex-col items-center justify-center rounded-xl border border-dashed border-orange-200 bg-gradient-to-br from-amber-50 to-orange-50/50 p-2 text-center">
-                <span className="text-2xl">{isSoldOut ? '🚫' : '🍲'}</span>
-                <span className="font-mono text-[9.5px] font-black text-orange-950 mt-1 line-clamp-1">
-                  [{item.imagePlaceholder}]
-                </span>
-                {isSoldOut ? (
-                  <span className="absolute top-1.5 right-1.5 rounded-md bg-rose-600 px-1.5 py-0.5 text-[8.5px] font-black uppercase text-white shadow-xs">
-                    86 SOLD OUT
+                <div className="relative flex h-24 w-full flex-col items-center justify-center rounded-[20px] border border-dashed border-orange-200 bg-gradient-to-br from-[#fff7ed] via-[#fff8eb] to-[#ffe7cf] p-2 text-center">
+                  <span className="text-2xl">{isSoldOut ? '🚫' : '🍲'}</span>
+                  <span className="mt-1 font-mono text-[9.5px] font-black text-orange-950 line-clamp-1">
+                    {item.imagePlaceholder}
                   </span>
-                ) : (
-                  item.badge && (
-                    <span className="absolute top-1.5 right-1.5 rounded-md bg-orange-600 px-1.5 py-0.5 text-[8.5px] font-black uppercase text-white shadow-xs">
-                      {item.badge}
+                  {isSoldOut ? (
+                    <span className="absolute right-1.5 top-1.5 rounded-md bg-rose-600 px-1.5 py-0.5 text-[8.5px] font-black text-white shadow-sm">
+                      86 Sold Out
                     </span>
-                  )
-                )}
-                {prepDelay > 0 && !isSoldOut && (
-                  <span className="absolute bottom-1 right-1 rounded-md bg-amber-500 px-1.5 py-0.2 text-[8px] font-black uppercase text-white shadow-xs flex items-center gap-0.5">
-                    <Clock className="h-2 w-2" />
-                    <span>+{prepDelay}m delay</span>
-                  </span>
-                )}
-              </div>
+                  ) : (
+                    item.badge && (
+                      <span className="absolute right-1.5 top-1.5 rounded-md bg-orange-600 px-1.5 py-0.5 text-[8.5px] font-black uppercase text-white shadow-sm">
+                        {item.badge}
+                      </span>
+                    )
+                  )}
+                  {prepDelay > 0 && !isSoldOut && (
+                    <span className="absolute bottom-1 right-1 flex items-center gap-0.5 rounded-md bg-amber-500 px-1.5 py-0.2 text-[8px] font-black text-white shadow-sm">
+                      <Clock className="h-2 w-2" />
+                      <span>+{prepDelay}m Delay</span>
+                    </span>
+                  )}
+                </div>
 
-              {/* Name & Price */}
-              <div className="mt-2 space-y-0.5">
-                <div className="font-extrabold text-xs text-slate-900 line-clamp-1">
-                  [{item.name}]
+                <div className="mt-2 space-y-0.5">
+                  <div className="line-clamp-1 text-xs font-extrabold text-slate-900">
+                    {item.name}
+                  </div>
+                  <div className="font-mono text-xs font-extrabold text-slate-800">
+                    Price: ₹ {item.price}
+                  </div>
                 </div>
-                <div className="font-mono text-xs font-extrabold text-slate-800">
-                  [PRICE: ₹ {item.price}]
-                </div>
-              </div>
 
-              {/* Add Button or Quantity Stepper */}
-              {isSoldOut ? (
-                <div className="mt-2 flex w-full items-center justify-center rounded-xl bg-stone-200 py-1.5 text-[11px] font-extrabold uppercase text-slate-400 border border-slate-300 cursor-not-allowed">
-                  <span>[SOLD OUT]</span>
-                </div>
-              ) : itemCartQty > 0 ? (
-                <div
-                  onClick={(e) => e.stopPropagation()}
-                  className="mt-2 flex w-full items-center justify-between rounded-xl border border-orange-500 bg-orange-50 px-1.5 py-1 text-xs font-black text-orange-950 shadow-xs"
-                >
-                  <motion.button
-                    type="button"
-                    whileTap={{ scale: 0.85 }}
-                    onClick={(e) => handleDecrementItem(e, item.id)}
-                    className="flex h-6 w-6 items-center justify-center rounded-lg bg-white border border-orange-200 text-orange-700 hover:bg-orange-600 hover:text-white transition shadow-2xs"
-                    title="Remove 1 item"
+                {isSoldOut ? (
+                  <div className="mt-2 flex w-full items-center justify-center rounded-xl border border-slate-300 bg-stone-200 py-1.5 text-[11px] font-extrabold text-slate-400">
+                    <span>Sold Out</span>
+                  </div>
+                ) : itemCartQty > 0 ? (
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="mt-2 flex w-full items-center justify-between rounded-xl border border-orange-200 bg-orange-50 px-1.5 py-1 text-xs font-black text-orange-950 shadow-sm"
                   >
-                    <Minus className="h-3.5 w-3.5 stroke-[3]" />
-                  </motion.button>
-                  <span className="font-mono text-xs font-black text-slate-900 tracking-tight">
-                    [{itemCartQty}]
-                  </span>
+                    <motion.button
+                      type="button"
+                      whileTap={{ scale: 0.85 }}
+                      onClick={(e) => handleDecrementItem(e, item.id)}
+                      className="flex h-6 w-6 items-center justify-center rounded-lg border border-orange-200 bg-white text-orange-700 transition hover:bg-orange-600 hover:text-white"
+                      title="Remove 1 item"
+                    >
+                      <Minus className="h-3.5 w-3.5 stroke-[3]" />
+                    </motion.button>
+                    <span className="font-mono text-xs font-black tracking-tight text-slate-900">
+                      {itemCartQty}
+                    </span>
+                    <motion.button
+                      type="button"
+                      whileTap={{ scale: 0.85 }}
+                      onClick={(e) => handleIncrementItem(e, item)}
+                      className="flex h-6 w-6 items-center justify-center rounded-lg bg-orange-600 text-white transition hover:bg-orange-700"
+                      title="Add 1 more item"
+                    >
+                      <Plus className="h-3.5 w-3.5 stroke-[3]" />
+                    </motion.button>
+                  </div>
+                ) : (
                   <motion.button
-                    type="button"
-                    whileTap={{ scale: 0.85 }}
-                    onClick={(e) => handleIncrementItem(e, item)}
-                    className="flex h-6 w-6 items-center justify-center rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition shadow-2xs"
-                    title="Add 1 more item"
+                    whileTap={{ scale: 0.95 }}
+                    onClick={(e) => handleOpenDrawer(e, item)}
+                    className="mt-2 flex w-full items-center justify-center gap-1 rounded-xl border border-orange-200 bg-gradient-to-r from-orange-50 to-[#fff7ed] py-1.5 text-[11px] font-extrabold tracking-[0.12em] text-orange-700 transition hover:bg-orange-600 hover:text-white"
                   >
-                    <Plus className="h-3.5 w-3.5 stroke-[3]" />
+                    <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+                    <span>Add</span>
                   </motion.button>
-                </div>
-              ) : (
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={(e) => handleOpenDrawer(e, item)}
-                  className="mt-2 flex w-full items-center justify-center gap-1 rounded-xl border border-orange-300 bg-orange-50/80 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-orange-700 hover:bg-orange-600 hover:text-white transition"
-                >
-                  <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
-                  <span>[ADD]</span>
-                </motion.button>
-              )}
-            </motion.div>
-          );
-        })}
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Sticky Bottom: Go To Cart Button */}
-      <StickyBottomBar label="[GO TO CART BUTTON]">
+      <StickyBottomBar >
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={() => setCurrentScreen(4)}
-          className="flex w-full items-center justify-between rounded-2xl bg-slate-900 px-4 py-3.5 text-xs font-extrabold uppercase tracking-wider text-white shadow-lg transition hover:bg-slate-800"
+          className="flex w-full items-center justify-between rounded-[20px] bg-gradient-to-r from-[#1f2937] to-[#111827] px-4 py-3.5 text-xs font-black uppercase tracking-[0.14em] text-white shadow-[0_16px_32px_rgba(31,41,55,0.25)] transition hover:brightness-110"
         >
           <div className="flex items-center gap-2">
             <ShoppingCart className="h-4 w-4 stroke-[2.2]" />
-            <span>🛒 [GO TO CART]</span>
+            <span>Go To Cart</span>
             {totalCartCount > 0 && (
-              <span className="rounded-full bg-orange-600 px-2 py-0.5 text-[10px] font-bold">
-                {totalCartCount} items
+              <span className="rounded-full bg-orange-500 px-2 py-0.5 text-[9px] font-black">
+                {totalCartCount} Items
               </span>
             )}
           </div>

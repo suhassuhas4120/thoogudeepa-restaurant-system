@@ -51,10 +51,10 @@ export const Screen7PaymentGateway: React.FC = () => {
   ];
 
   return (
-    <ScreenHousing screenNumber={7} screenTitle="PAYMENT PAGE 2 (GATEWAY & QR)">
+    <ScreenHousing screenNumber={7} screenTitle="Payment Options">
       {/* Header */}
       <WireHeader
-        title="[PAYMENT PAGE 2: GATEWAY]"
+        title="Payment Options"
         showBack={true}
         onBack={() => setCurrentScreen(6)}
         showCallWaiter={true}
@@ -65,13 +65,13 @@ export const Screen7PaymentGateway: React.FC = () => {
         {/* QR Scanner Box Placeholder */}
         <div className="flex flex-col items-center rounded-3xl border border-slate-200 bg-white p-5 text-center shadow-sm">
           <div className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-            [SCANNER / SCAN &amp; PAY QR SPACE]
+            Scanner / Scan &amp; Pay Qr Space
           </div>
 
           <div className="relative my-3 flex h-36 w-36 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-orange-300 bg-orange-50/50 p-2 shadow-inner">
             <QrCode className="h-16 w-16 text-slate-900" />
             <span className="mt-1 font-mono text-[9px] font-black text-slate-800">
-              [DYNAMIC QR CODE]
+              Dynamic Qr Code
             </span>
             <span className="font-mono text-xs font-black text-orange-600">
               ₹ {grandTotal}
@@ -79,7 +79,7 @@ export const Screen7PaymentGateway: React.FC = () => {
           </div>
 
           <div className="text-[11px] font-bold text-slate-600">
-            [SCAN WITH ANY UPI APP TO PAY]
+            Scan With Any Upi App To Pay
           </div>
         </div>
 
@@ -88,7 +88,7 @@ export const Screen7PaymentGateway: React.FC = () => {
         {/* Different Payment Options */}
         <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm space-y-2">
           <div className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono mb-1">
-            [DIFFERENT PAYMENT OPTIONS]
+            DIFFERENT PAYMENT OPTIONS
           </div>
 
           <div className="space-y-2">
@@ -109,7 +109,7 @@ export const Screen7PaymentGateway: React.FC = () => {
                     </div>
                     <div className="min-w-0">
                       <div className="truncate text-xs font-black text-slate-900">
-                        [{pm.label}]
+                        {pm.label}
                       </div>
                       <div className="text-[10px] text-slate-500">{pm.sub}</div>
                     </div>
@@ -129,14 +129,14 @@ export const Screen7PaymentGateway: React.FC = () => {
       </div>
 
       {/* Bottom Sticky */}
-      <StickyBottomBar label="[PAY BUTTON]">
+      <StickyBottomBar>
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={confirmAndPay}
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3.5 text-xs font-extrabold uppercase tracking-wider text-white shadow-lg shadow-emerald-600/30 hover:bg-emerald-700 transition"
         >
           <Lock className="h-4 w-4 stroke-[2.5]" />
-          <span>🔒 [CONFIRM &amp; PAY ₹ {grandTotal}]</span>
+          <span>🔒 Confirm &amp; Pay ₹ {grandTotal}</span>
         </motion.button>
       </StickyBottomBar>
     </ScreenHousing>

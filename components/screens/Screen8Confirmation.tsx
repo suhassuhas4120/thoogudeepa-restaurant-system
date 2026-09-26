@@ -29,10 +29,10 @@ export const Screen8Confirmation: React.FC = () => {
   };
 
   return (
-    <ScreenHousing screenNumber={8} screenTitle="CONFIRMATION & REVIEW">
+    <ScreenHousing screenNumber={8} screenTitle="Confirmation & Feedback">
       {/* Header */}
       <WireHeader
-        title="[CONFIRMATION & REVIEW]"
+        title="Confirmation & Feedback"
         showBack={false}
         showCallWaiter={true}
         showCart={false}
@@ -46,29 +46,29 @@ export const Screen8Confirmation: React.FC = () => {
           className="flex flex-col items-center rounded-3xl border border-emerald-200 bg-gradient-to-b from-emerald-50/70 via-white to-stone-50 p-5 text-center shadow-sm"
         >
           <div className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-            [SUCCESSFUL CONFIRMATION OF PAYMENT]
+            Successful Confirmation Of Payment
           </div>
 
           <div className="my-2.5 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-md shadow-emerald-500/30">
             <CheckCircle2 className="h-8 w-8 stroke-[2.5]" />
           </div>
 
-          <h3 className="text-base font-black text-slate-900">[PAYMENT SUCCESSFUL]</h3>
+          <h3 className="text-base font-black text-slate-900">Payment Successful</h3>
           <div className="font-mono text-sm font-black text-emerald-600 mt-1">
-            [AMOUNT PAID: ₹ {payment.totalAmount}]
+            Amount Paid: ₹ {payment.totalAmount}
           </div>
           <div className="font-mono text-[11px] font-bold text-slate-500 mt-0.5">
-            [TRANSACTION ID: {payment.transactionId || '#TXN-CONFIRMED'}]
+            Transaction Id: {payment.transactionId || '#TXN-CONFIRMED'}
           </div>
           <div className="text-[10px] font-semibold text-slate-400 font-mono mt-1">
-            [GUEST: {guestName || 'Valued Guest'} | TABLE: {tableNumber}]
+            Guest: {guestName || 'Valued Guest'} | Table: {tableNumber}
           </div>
         </motion.div>
 
         {/* Direct Google Review Button */}
         <div>
           <div className="mb-1 text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-            [DIRECT GOOGLE REVIEW BUTTON]
+            Direct Google Review Button
           </div>
           <motion.button
             whileTap={{ scale: 0.98 }}
@@ -76,7 +76,7 @@ export const Screen8Confirmation: React.FC = () => {
             className="flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-300 bg-amber-50/80 py-3 text-xs font-extrabold text-amber-900 shadow-xs hover:bg-amber-100 transition"
           >
             <Star className="h-4 w-4 text-amber-500 fill-amber-400" />
-            <span>⭐ [LEAVE A GOOGLE REVIEW]</span>
+            <span>⭐ Leave A Google Review</span>
           </motion.button>
         </div>
 
@@ -84,7 +84,7 @@ export const Screen8Confirmation: React.FC = () => {
         <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm space-y-3">
           <div>
             <div className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono mb-2">
-              [READY FEEDBACK OPTIONS (CHIPS)]
+              Ready Feedback Options
             </div>
             <div className="flex flex-wrap gap-1.5">
               {chips.map((chip) => {
@@ -99,7 +99,7 @@ export const Screen8Confirmation: React.FC = () => {
                         : 'border-slate-200 bg-stone-50/80 text-slate-700 hover:bg-stone-100'
                     }`}
                   >
-                    [{chip.toUpperCase()}]
+                    {chip.toUpperCase()}
                   </button>
                 );
               })}
@@ -108,13 +108,13 @@ export const Screen8Confirmation: React.FC = () => {
 
           <div>
             <div className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono mb-1">
-              [CUSTOM FEEDBACK OPTION]
+              Custom Feedback Option
             </div>
             <input
               type="text"
               value={customFeedback}
               onChange={(e) => setCustomFeedback(e.target.value)}
-              placeholder="[TYPE YOUR PERSONAL FEEDBACK HERE...]"
+              placeholder="Type Your Personal Feedback Here..."
               className="w-full rounded-xl border border-slate-200 bg-stone-50/60 px-3.5 py-2 text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:bg-white focus:outline-none"
             />
             <motion.button
@@ -126,45 +126,35 @@ export const Screen8Confirmation: React.FC = () => {
               className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-stone-50 py-2 text-[11px] font-extrabold text-slate-800 hover:bg-stone-100 transition"
             >
               <MessageSquare className="h-3.5 w-3.5 text-orange-600" />
-              <span>{feedbackSubmitted ? '✓ [FEEDBACK RECORDED]' : '[SUBMIT FEEDBACK]'}</span>
+              <span>{feedbackSubmitted ? '✓ Feedback Recorded' : 'Submit Feedback'}</span>
             </motion.button>
           </div>
         </div>
 
         {/* Social & Direct Web Buttons */}
         <div className="grid grid-cols-2 gap-2.5">
-          <div>
-            <div className="mb-1 text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-              [DIRECT INSTAGRAM]
-            </div>
-            <motion.button
-              whileTap={{ scale: 0.96 }}
-              onClick={() => alert('Opening Restaurant Instagram Profile')}
-              className="flex w-full items-center justify-center gap-1.5 rounded-2xl border border-slate-200 bg-white py-3 text-xs font-extrabold text-slate-800 shadow-xs hover:bg-slate-50 transition"
-            >
-              <Camera className="h-4 w-4 text-pink-600" />
-              <span>📷 [INSTAGRAM]</span>
-            </motion.button>
-          </div>
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            onClick={() => alert('Opening Restaurant Instagram Profile')}
+            className="flex w-full items-center justify-center gap-1.5 rounded-2xl border border-slate-200 bg-white py-3 text-xs font-extrabold text-slate-800 shadow-xs hover:bg-slate-50 transition"
+          >
+            <Camera className="h-4 w-4 text-pink-600" />
+            <span>Instagram</span>
+          </motion.button>
 
-          <div>
-            <div className="mb-1 text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-              [DIRECT WEBSITE]
-            </div>
-            <motion.button
-              whileTap={{ scale: 0.96 }}
-              onClick={() => alert('Opening Official Website')}
-              className="flex w-full items-center justify-center gap-1.5 rounded-2xl border border-slate-200 bg-white py-3 text-xs font-extrabold text-slate-800 shadow-xs hover:bg-slate-50 transition"
-            >
-              <Globe className="h-4 w-4 text-blue-600" />
-              <span>🌐 [WEBSITE]</span>
-            </motion.button>
-          </div>
+          <motion.button
+            whileTap={{ scale: 0.96 }}
+            onClick={() => alert('Opening Official Website')}
+            className="flex w-full items-center justify-center gap-1.5 rounded-2xl border border-slate-200 bg-white py-3 text-xs font-extrabold text-slate-800 shadow-xs hover:bg-slate-50 transition"
+          >
+            <Globe className="h-4 w-4 text-blue-600" />
+            <span>Website</span>
+          </motion.button>
         </div>
       </div>
 
       {/* Bottom Sticky */}
-      <StickyBottomBar label="[GO TO BILL PAGE BUTTON]">
+      <StickyBottomBar>
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={() => setCurrentScreen(9)}
@@ -172,7 +162,7 @@ export const Screen8Confirmation: React.FC = () => {
         >
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            <span>📄 [VIEW OFFICIAL BILL &amp; INVOICE]</span>
+            <span>View Official Bill &amp; Invoice</span>
           </div>
           <ArrowRight className="h-4 w-4 stroke-[2.5]" />
         </motion.button>

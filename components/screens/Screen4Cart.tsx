@@ -28,10 +28,10 @@ export const Screen4Cart: React.FC = () => {
   const totalCartAmount = cart.reduce((sum, item) => sum + item.totalPrice, 0);
 
   return (
-    <ScreenHousing screenNumber={4} screenTitle="CART PAGE">
+    <ScreenHousing screenNumber={4} screenTitle="CART">
       {/* Header */}
       <WireHeader
-        title="[CART PAGE]"
+        title="Cart"
         showBack={true}
         onBack={() => setCurrentScreen(2)}
         showCallWaiter={true}
@@ -40,9 +40,6 @@ export const Screen4Cart: React.FC = () => {
 
       {/* Cart Items List */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        <div className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-          [SELECTED ITEMS LIST WITH IMAGE, PRICE &amp; CUSTOMISED DETAILS]
-        </div>
 
         {separateNotice && (
           <motion.div
@@ -58,14 +55,14 @@ export const Screen4Cart: React.FC = () => {
         {cart.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xs">
             <ShoppingBag className="h-12 w-12 text-slate-300 stroke-[1.5]" />
-            <div className="mt-3 text-sm font-extrabold text-slate-900">[CART IS EMPTY]</div>
-            <p className="mt-1 text-xs text-slate-500">Explore the delicious menu and add dishes</p>
+            <div className="mt-3 text-sm font-extrabold text-slate-900">Cart Is Empty</div>
+            <p className="mt-1 text-xs text-slate-500">Explore the Delicious Menu</p>
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => setCurrentScreen(2)}
               className="mt-4 rounded-xl bg-orange-600 px-4 py-2 text-xs font-extrabold text-white shadow-sm"
             >
-              [BROWSE MENU]
+              Browse Menu
             </motion.button>
           </div>
         ) : (
@@ -90,27 +87,27 @@ export const Screen4Cart: React.FC = () => {
                     {/* Thumbnail */}
                     <div className="flex h-14 w-14 flex-shrink-0 flex-col items-center justify-center rounded-xl border border-dashed border-orange-200 bg-gradient-to-br from-amber-50 to-orange-50 text-[10px] font-black text-orange-900 font-mono">
                       <span className="text-base">{isLocked ? '🔒' : '🥘'}</span>
-                      <span>[IMG]</span>
+                      <span>IMG</span>
                     </div>
 
                     {/* Details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="truncate text-xs font-extrabold text-slate-900">
-                          [{ci.menuItem.name}]
+                          {ci.menuItem.name}
                         </span>
                         {isLocked && (
                           <span className="rounded bg-slate-200 text-slate-700 text-[9px] font-mono font-bold px-1.5 py-0.2">
-                            [ALREADY SENT TO KITCHEN]
+                            Already Sent To Kitchen
                           </span>
                         )}
                       </div>
                       <div className="text-[10.5px] text-slate-500 line-clamp-1 mt-0.5">
-                        [CUSTOM: {ci.selectedOption}
-                        {ci.selectedAddOns.length > 0 ? ` + ${ci.selectedAddOns.join(', ')}` : ''}]
+                        Custom: {ci.selectedOption}
+                        {ci.selectedAddOns.length > 0 ? ` + ${ci.selectedAddOns.join(', ')}` : ''}
                       </div>
                       <div className="font-mono text-xs font-black text-slate-900 mt-1">
-                        [PRICE: ₹ {ci.totalPrice}]
+                        Price: ₹ {ci.totalPrice}
                       </div>
                     </div>
 
@@ -147,15 +144,15 @@ export const Screen4Cart: React.FC = () => {
                   {/* Separate Ordering Button or Locked Status */}
                   {isLocked ? (
                     <div className="rounded-xl border border-dashed border-slate-200 bg-white/60 py-1 text-center text-[10px] font-mono font-bold text-slate-500">
-                      ✓ [ACTIVE DISH IN KITCHEN • ORDER PROTECTED AGAINST DUPLICATION]
+                      ✓ Order has been successfully sent to the kitchen
                     </div>
                   ) : (
                     <motion.button
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handleSeparateOrder(ci.cartItemId, ci.menuItem.name)}
-                      className="rounded-xl border border-slate-200 bg-stone-50/70 py-1.5 text-[10.5px] font-extrabold uppercase tracking-wide text-slate-700 hover:bg-stone-100 transition"
+                      className="rounded-xl border border-slate-200 bg-stone-50/70 py-1.5 text-[10.5px] font-extrabold tracking-wide text-slate-700 hover:bg-stone-100 transition"
                     >
-                      [ORDER THIS ITEM SEPARATELY]
+                      Order This Item Separately
                     </motion.button>
                   )}
                 </motion.div>
@@ -172,7 +169,7 @@ export const Screen4Cart: React.FC = () => {
         const hasNewItems = newItems.length > 0;
 
         return (
-          <StickyBottomBar label="[PLACE ALL ORDERS BUTTON]">
+          <StickyBottomBar >
             <motion.button
               whileTap={{ scale: 0.98 }}
               disabled={cart.length === 0}
@@ -187,8 +184,8 @@ export const Screen4Cart: React.FC = () => {
                 <Flame className="h-4 w-4 stroke-[2.2]" />
                 <span>
                   {hasNewItems
-                    ? `🔥 [PLACE ORDER (${newItems.length} NEW ITEM${newItems.length > 1 ? 'S' : ''})]`
-                    : '✓ [ALL ITEMS SENT TO KITCHEN ➔ TRACK LIVE]'}
+                    ? `Place Order (${newItems.length} New Item${newItems.length > 1 ? 's' : ''})`
+                    : 'Live Order Status'}
                 </span>
               </div>
               <div className="flex items-center gap-1.5">

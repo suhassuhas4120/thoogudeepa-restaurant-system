@@ -45,8 +45,11 @@ export const WireHeader: React.FC<WireHeaderProps> = ({
               {leftSubtitle}
             </div>
           )}
-          <div className="truncate text-sm font-extrabold tracking-tight text-slate-900">
-            {title}
+          <div className="flex items-center gap-1.5 truncate text-sm font-extrabold tracking-tight text-slate-900">
+            <span>{title}</span>
+            {title.toLowerCase() === 'cart' && (
+              <ShoppingCart className="h-3.5 w-3.5 stroke-[2.3] text-slate-700" />
+            )}
           </div>
         </div>
       </div>
