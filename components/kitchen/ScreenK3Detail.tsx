@@ -34,7 +34,6 @@ export const ScreenK3Detail: React.FC = () => {
     callFloorWaiter,
   } = useSharedBridge();
 
-  // ✅ Inventory defaults UNLOCKED for easier UX
   const [inventoryLocked, setInventoryLocked] = useState(false);
   const [pendingChanges, setPendingChanges] = useState<Record<string, boolean>>({});
   const [pendingDelays, setPendingDelays] = useState<Record<string, number>>({});
@@ -96,13 +95,12 @@ export const ScreenK3Detail: React.FC = () => {
     Object.keys(pendingChanges).length > 0 ||
     Object.keys(pendingDelays).length > 0;
 
-  // ✅ 4-stage stepper for individual items
-  const stageOrder: OrderStage[] = ['PLACED', 'PREP', 'PLATED', 'SERVED'];
-  const stageLabels: Record<OrderStage, string> = {
+  // ✅ Only 3 stages — SERVED removed
+  const stageOrder: OrderStage[] = ['PLACED', 'PREP', 'PLATED'];
+  const stageLabels: Record<string, string> = {
     PLACED: '1.REC',
     PREP: '2.PREP',
     PLATED: '3.READY',
-    SERVED: '4.SERVED',
   };
 
   const handleItemStageSet = (
@@ -110,7 +108,6 @@ export const ScreenK3Detail: React.FC = () => {
     itemId: string,
     newStage: OrderStage
   ) => {
-    // ✅ Only call the bridge — bridge is source of truth
     kitchenSetItemStage(ticketId, itemId, newStage);
   };
 
@@ -120,52 +117,31 @@ export const ScreenK3Detail: React.FC = () => {
       screenTitle="TABLE DETAIL (55%) + MENU 86 INVENTORY (45%)"
     >
       <div className="flex-1 flex flex-col h-full overflow-hidden">
-        {/* Top Control Bar */}
-        <div className="bg-white border-b border-slate-200 px-5 py-2.5 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setCurrentScreen(2)}
-              className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-stone-50 px-3 py-1.5 text-xs font-black text-slate-700 hover:bg-stone-100 transition shadow-2xs"
-            >
-              <ArrowLeft className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span>[BACK TO ALL TABLES]</span>
-            </button>
-            <span className="font-mono text-sm font-black text-slate-900">
-              ACTIVE TABLE: [{currentTicket?.tableNumber ?? 'NONE'}]
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-mono font-bold text-slate-500">
-              SERVER: {currentTicket?.serverName ?? '—'}
-            </span>
-           <button
-  onClick={() => {
-    const tbl = currentTicket?.tableNumber || selectedTableNumber;
-    // ✅ FIXED: callFloorWaiter from bridge + local store notice
-    callFloorWaiter(tbl, 'Urgent Pickup Required for Table');
-    useKitchenStore.getState().callFloorWaiter(tbl, 'Urgent Pickup Required');
-  }}
-  className="flex items-center gap-1 rounded-xl border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-black text-orange-800 hover:bg-orange-100 transition shadow-2xs"
->
-  <Bell className="h-3.5 w-3.5 text-orange-600" />
-  <span>
-    [FIRE RUNNER TO TABLE{' '}
-    {currentTicket?.tableNumber ?? selectedTableNumber}]
-  </span>
-</button>
-          </div>
-        </div>
-
         <div className="flex-1 flex overflow-hidden">
           {/* LEFT 55% */}
           <div className="w-[55%] border-r border-slate-200 p-5 overflow-y-auto bg-stone-50/50 flex flex-col justify-between">
             <div className="space-y-4">
+              {/* ✅ Back arrow + table info header — replaces old top bar */}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setCurrentScreen(2)}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border-2 border-slate-900 bg-white hover:bg-orange-50 transition shadow-[2px_2px_0px_#0f172a] shrink-0"
+                  title="Back to All Tables"
+                >
+                  <ArrowLeft className="h-4 w-4 stroke-[2.5] text-slate-900" />
+                </button>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[13px] font-black text-slate-900">
+                    TABLE DETAILS
+                  </span>
+                </div>
+              </div>
+
               {!currentTicket && (
                 <div className="flex flex-col items-center justify-center h-48 text-slate-400 gap-3">
                   <CheckCircle2 className="h-12 w-12 text-slate-300" />
                   <div className="font-mono text-xs font-bold text-center">
-                    [NO ACTIVE KDS TICKETS]
+                    NO ACTIVE KDS TICKETS
                     <br />
                     <span className="text-[10px] font-normal">
                       Orders appear here when customers or waiters place them
@@ -178,9 +154,6 @@ export const ScreenK3Detail: React.FC = () => {
                 <>
                   <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs flex items-center justify-between">
                     <div>
-                      <div className="font-mono text-[10px] font-bold text-slate-400 uppercase">
-                        [TICKET #{currentTicket?.id}]
-                      </div>
                       <div className="text-base font-black text-slate-900 mt-0.5">
                         Table [{currentTicket?.tableNumber}] •{' '}
                         {currentTicket?.items.length} Dishes
@@ -197,18 +170,11 @@ export const ScreenK3Detail: React.FC = () => {
                         <Clock className="h-3.5 w-3.5" />
                         <span>ELAPSED: {currentTicket?.elapsedMinutes} MIN</span>
                       </div>
-                      <div className="text-[10px] font-mono text-slate-500 mt-0.5">
-                        Fired at {currentTicket?.timestamp}
-                      </div>
                     </div>
                   </div>
 
-                  {/* Items List with 4-stage stepper */}
+                  {/* Items List */}
                   <div className="space-y-3">
-                    <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      [ORDERED ITEMS &amp; PREPARATION STAGES]
-                    </div>
-
                     {currentTicket?.items.map((it) => (
                       <div
                         key={it.id}
@@ -240,17 +206,15 @@ export const ScreenK3Detail: React.FC = () => {
                                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                 : it.stage === 'PREP'
                                 ? 'bg-amber-50 text-amber-700 border-amber-200'
-                                : it.stage === 'SERVED'
-                                ? 'bg-slate-100 text-slate-500 border-slate-200'
                                 : 'bg-stone-50 text-slate-600 border-slate-200'
                             }`}
                           >
-                            [{it.stage}]
+                            {it.stage}
                           </span>
                         </div>
 
-                        {/* ✅ 4-stage stepper for each individual item */}
-                        <div className="grid grid-cols-4 gap-1.5 font-mono text-[9.5px] font-black">
+                        {/* ✅ Only 3-stage stepper (grid-cols-3) */}
+                        <div className="grid grid-cols-3 gap-1.5 font-mono text-[10px] font-black">
                           {stageOrder.map((stg) => {
                             const isActive = it.stage === stg;
                             const idx = stageOrder.indexOf(stg);
@@ -292,7 +256,7 @@ export const ScreenK3Detail: React.FC = () => {
                   onClick={() => kitchenBumpTable(currentTicket?.id || '')}
                   className="flex-1 rounded-xl bg-emerald-600 py-3 text-xs font-black uppercase tracking-wider text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700 transition"
                 >
-                  [MARK ALL DISHES PLATED &amp; READY ✓]
+                  MARK ALL DISHES PLATED &amp; READY ✓
                 </button>
               </div>
             )}
@@ -303,14 +267,10 @@ export const ScreenK3Detail: React.FC = () => {
             <div className="flex items-center justify-between pb-2 border-b border-slate-200">
               <div className="flex items-center gap-1.5 font-mono text-[10.5px] font-black uppercase text-slate-700">
                 <Sliders className="h-4 w-4 text-orange-600" />
-                <span>[MENU 86 / OUT-OF-STOCK &amp; PREP DELAY]</span>
+                <span>IN-STOCK / OUT-OF-STOCK &amp; PREP DELAY</span>
               </div>
-              <span className="text-[10px] font-mono font-bold text-slate-400">
-                REAL-TIME SYNC
-              </span>
             </div>
 
-            {/* Lock / Unlock control */}
             <div
               className={`flex items-center justify-between rounded-xl border p-3 transition ${
                 inventoryLocked
@@ -327,8 +287,8 @@ export const ScreenK3Detail: React.FC = () => {
                 <div>
                   <div className="font-mono text-[10.5px] font-black text-slate-800">
                     {inventoryLocked
-                      ? '[INVENTORY LOCKED — CLICK TO EDIT]'
-                      : '[EDITING UNLOCKED — MAKE CHANGES THEN UPDATE]'}
+                      ? 'INVENTORY LOCKED — CLICK TO EDIT'
+                      : 'EDITING UNLOCKED — MAKE CHANGES THEN UPDATE'}
                   </div>
                   <div className="font-mono text-[10px] text-slate-500">
                     {inventoryLocked
@@ -365,12 +325,6 @@ export const ScreenK3Detail: React.FC = () => {
               </button>
             </div>
 
-            <p className="text-xs text-slate-500 leading-relaxed -mt-2">
-              Toggling a dish to <strong>86 SOLD OUT</strong> immediately grays it
-              out on all Customer QR menus and Waiter tablets. Adding prep delays
-              updates live customer ETA.
-            </p>
-
             <AnimatePresence>
               {updateSuccess && (
                 <motion.div
@@ -389,10 +343,7 @@ export const ScreenK3Detail: React.FC = () => {
               {inventory86.map((item) => {
                 const effectiveIs86 =
                   item.id in pendingChanges ? pendingChanges[item.id] : item.is86;
-                const effectiveDelay =
-                  item.prepDelayMinutes + (pendingDelays[item.id] ?? 0);
-                const hasPending =
-                  item.id in pendingChanges || item.id in pendingDelays;
+                const hasPending = item.id in pendingChanges;
 
                 return (
                   <div
@@ -410,44 +361,16 @@ export const ScreenK3Detail: React.FC = () => {
                         {item.name}
                         {hasPending && !inventoryLocked && (
                           <span className="ml-1.5 text-orange-600 text-[10px] font-black">
-                            [PENDING]
+                            PENDING
                           </span>
                         )}
                       </div>
                       <div className="text-[10px] font-mono text-slate-400 mt-0.5">
                         Category: {item.category}
-                        {effectiveDelay > 0 && (
-                          <span className="text-orange-600 font-bold ml-1.5">
-                            (+{effectiveDelay}m delay)
-                          </span>
-                        )}
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                      <div
-                        className={`flex items-center gap-1 bg-white p-0.5 rounded-lg border text-xs font-mono transition ${
-                          inventoryLocked
-                            ? 'border-slate-100 opacity-40 pointer-events-none'
-                            : 'border-slate-200'
-                        }`}
-                      >
-                        <button
-                          onClick={() => handlePendingDelay(item.id, -5)}
-                          disabled={inventoryLocked}
-                          className="px-1.5 py-0.5 hover:bg-stone-100 rounded text-slate-600 font-bold disabled:cursor-not-allowed"
-                        >
-                          -5m
-                        </button>
-                        <button
-                          onClick={() => handlePendingDelay(item.id, 5)}
-                          disabled={inventoryLocked}
-                          className="px-1.5 py-0.5 hover:bg-stone-100 rounded text-slate-900 font-black disabled:cursor-not-allowed"
-                        >
-                          +5m
-                        </button>
-                      </div>
-
                       <button
                         onClick={() => handlePendingToggle(item.id, item.is86)}
                         disabled={inventoryLocked}
@@ -459,7 +382,7 @@ export const ScreenK3Detail: React.FC = () => {
                             : 'border border-slate-300 bg-white text-emerald-700 hover:bg-emerald-50'
                         }`}
                       >
-                        {effectiveIs86 ? '[86 SOLD OUT]' : '[IN STOCK]'}
+                        {effectiveIs86 ? '86 SOLD OUT' : 'IN STOCK'}
                       </button>
                     </div>
                   </div>
@@ -494,14 +417,9 @@ export const ScreenK3Detail: React.FC = () => {
                       UPDATE &amp; SYNC MENU
                       {hasPendingChanges
                         ? ` (${
-                            Object.keys(pendingChanges).length +
-                            Object.keys(pendingDelays).length
+                            Object.keys(pendingChanges).length
                           } change${
-                            Object.keys(pendingChanges).length +
-                              Object.keys(pendingDelays).length >
-                            1
-                              ? 's'
-                              : ''
+                            Object.keys(pendingChanges).length > 1 ? 's' : ''
                           })`
                         : ''}
                     </span>

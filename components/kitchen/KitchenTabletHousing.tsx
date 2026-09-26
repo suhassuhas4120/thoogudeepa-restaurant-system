@@ -4,7 +4,6 @@ import React from 'react';
 import { Wifi, Flame } from 'lucide-react';
 import { useKitchenStore } from '../../store/useKitchenStore';
 import { STATION_LABELS } from '../../types/kitchen';
-import { KitchenProfileDropdown } from './KitchenProfileDropdown';
 
 interface KitchenTabletHousingProps {
   children: React.ReactNode;
@@ -23,7 +22,6 @@ export const KitchenTabletHousing: React.FC<KitchenTabletHousingProps> = ({
     activeStation,
     waiterAlertNotice,
     dismissWaiterAlert,
-    currentScreen,
   } = useKitchenStore();
 
   return (
@@ -48,28 +46,20 @@ export const KitchenTabletHousing: React.FC<KitchenTabletHousingProps> = ({
           <div className="h-1 w-4 rounded-full bg-slate-700" />
         </div>
 
-        {/* KDS Tablet Status Header */}
+        {/* KDS Tablet Status Header — no profile, no chef name */}
         <header className="h-12 bg-white border-b border-slate-200 px-5 flex items-center justify-between text-xs font-bold select-none shrink-0 z-30">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 text-orange-700 font-black font-mono">
               <Flame className="h-4 w-4 text-orange-600 fill-orange-500" />
               <span>THOOGUDEEPA KDS</span>
             </div>
-            <span className="text-slate-300">|</span>
-            <span className="rounded-md border border-slate-200 bg-stone-50 px-2 py-0.5 text-[10.5px] font-mono text-slate-700">
-              STATION: {STATION_LABELS[activeStation]}
-            </span>
           </div>
 
           <div className="flex items-center gap-3">
-            {/* ✅ ONLINE badge */}
             <div className="flex items-center gap-1 text-emerald-600 font-mono text-[10px] font-bold">
               <Wifi className="h-3.5 w-3.5" />
               <span>ONLINE</span>
             </div>
-
-            {/* ✅ Profile dropdown (only on Screen 2 & 3) */}
-            {currentScreen !== 1 && <KitchenProfileDropdown />}
           </div>
         </header>
 

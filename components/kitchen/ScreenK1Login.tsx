@@ -8,8 +8,7 @@ import { ChefHat, ShieldCheck, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const ScreenK1Login: React.FC = () => {
-  const { setCurrentScreen, chefName, setChefName, setActiveStation,setShiftStartTime, } =
-    useKitchenStore();
+  const { setCurrentScreen, setActiveStation } = useKitchenStore();
   const [enteredPin, setEnteredPin] = useState<string>('');
   const [error, setError] = useState<string>('');
 
@@ -27,24 +26,16 @@ export const ScreenK1Login: React.FC = () => {
   const handleBackspace = () => setEnteredPin((prev) => prev.slice(0, -1));
 
   const handleLogin = () => {
-  if (enteredPin === KITCHEN_MASTER_PIN) {
-    setActiveStation('MASTER_DISPATCH');
-    // ✅ NEW: record shift start time
-    setShiftStartTime(
-      new Date().toLocaleTimeString('en-IN', {
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    );
-    setError('');
-    setCurrentScreen(2);
-  } else {
-    setError('❌ WRONG PIN — Please enter the correct kitchen PIN');
-    setEnteredPin('');
-  }
-};
+    if (enteredPin === KITCHEN_MASTER_PIN) {
+      setActiveStation('MASTER_DISPATCH');
+      setError('');
+      setCurrentScreen(2);
+    } else {
+      setError('❌ WRONG PIN — Please enter the correct kitchen PIN');
+      setEnteredPin('');
+    }
+  };
 
-  // Auto-submit when 4 digits entered
   React.useEffect(() => {
     if (enteredPin.length === 4) {
       const t = setTimeout(() => handleLogin(), 150);
@@ -56,7 +47,7 @@ export const ScreenK1Login: React.FC = () => {
   return (
     <KitchenTabletHousing screenNumber={1} screenTitle="KDS KITCHEN LOGIN">
       <div className="flex-1 flex flex-col md:flex-row items-center justify-center p-8 gap-8 overflow-y-auto bg-stone-100/50">
-        {/* Left Card: Hotel Logo & Hotel Name */}
+        {/* Left Card: Logo + Venue name */}
         <div className="w-full md:w-[440px] bg-white rounded-3xl border-2 border-slate-900 p-8 shadow-[4px_4px_0px_#0f172a] flex flex-col items-center justify-between text-center min-h-[440px]">
           <div className="flex flex-col items-center my-auto">
             <div className="relative flex h-28 w-28 items-center justify-center rounded-3xl border-2 border-slate-900 bg-gradient-to-br from-amber-50 to-orange-100 shadow-[3px_3px_0px_#0f172a] mb-5">
@@ -66,58 +57,32 @@ export const ScreenK1Login: React.FC = () => {
               </div>
             </div>
 
-            <span className="font-mono text-[10px] font-black uppercase tracking-widest text-orange-600">
-              [AUTHENTIC KARNATAKA CUISINE]
-            </span>
             <h1 className="mt-1.5 text-xl font-black text-slate-900 uppercase tracking-tight">
               Thoogudeepa Donne Biryani Mane
             </h1>
-            <p className="mt-1 text-xs font-mono font-bold text-slate-600">
-              [KITCHEN DISPLAY SYSTEM • KDS PASS TERMINAL]
+            <p className="mt-1 text-md font-mono font-bold text-slate-600">
+              KITCHEN LOGIN
             </p>
-
-            <div className="mt-6 flex flex-wrap justify-center gap-2">
-              <span className="rounded-lg border border-slate-300 bg-stone-50 px-3 py-1 font-mono text-[10.5px] font-bold text-slate-700">
-                [MAIN PASS DISPATCH]
-              </span>
-              <span className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1 font-mono text-[10.5px] font-bold text-emerald-800 flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>LIVE TABLE SYNC ACTIVE</span>
-              </span>
-            </div>
-
             <div className="mt-4 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-[10.5px] font-mono font-bold text-orange-800">
               🔑 DEMO PIN: <strong>1234</strong>
             </div>
           </div>
 
           <div className="w-full mt-6 pt-4 border-t border-slate-200 flex items-center justify-between font-mono text-[10px] text-slate-500">
-            <span>[VENUE: THOOGUDEEPA DONNE BIRYANI MANE]</span>
-            <span className="text-emerald-600 font-bold">KDS v2.7 ONLINE</span>
+            <span>VENUE: THOOGUDEEPA DONNE BIRYANI MANE</span>
+            <span className="text-emerald-600 font-bold">KDS v3.0 ONLINE</span>
           </div>
         </div>
 
-        {/* Right Card: PIN Pad only */}
+        {/* Right Card: PIN pad only */}
         <div className="w-full md:w-80 bg-white rounded-3xl border-2 border-slate-900 p-6 shadow-[4px_4px_0px_#0f172a] flex flex-col justify-between min-h-[440px]">
           <div>
-            <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 mb-1">
-              [STAFF AUTHENTICATION PIN]
-            </div>
-
-            <div className="mb-3">
-              <label className="text-[10.5px] font-bold text-slate-600 font-mono">
-                CHEF DE CUISINE
-              </label>
-              <input
-                type="text"
-                value={chefName}
-                onChange={(e) => setChefName(e.target.value)}
-                className="w-full mt-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-stone-50 text-xs font-bold text-slate-900 focus:outline-none focus:border-orange-500 font-mono"
-              />
+            <div className="text-md font-bold font-mono uppercase tracking-wider pl-[45px] pb-[20px] text-slate-600 ">
+              ENTER PIN TO LOGIN
             </div>
 
             {/* PIN Dots */}
-            <div className="h-11 rounded-xl bg-stone-100 border border-slate-200 flex items-center justify-center gap-3 mb-2">
+            <div className="h-11 rounded-xl bg-stone-100 border border-slate-200 flex items-center justify-center gap-3 mb-7">
               {[0, 1, 2, 3].map((idx) => (
                 <div
                   key={idx}
@@ -128,7 +93,6 @@ export const ScreenK1Login: React.FC = () => {
               ))}
             </div>
 
-            {/* Error */}
             {error && (
               <div className="mb-2 flex items-start gap-1.5 rounded-lg bg-rose-50 border border-rose-300 p-2 text-[10px] font-bold text-rose-700">
                 <AlertCircle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
@@ -136,8 +100,7 @@ export const ScreenK1Login: React.FC = () => {
               </div>
             )}
 
-            {/* Numeric Keypad */}
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-3">
               {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((num) => (
                 <button
                   key={num}
@@ -179,7 +142,7 @@ export const ScreenK1Login: React.FC = () => {
             }`}
           >
             <ShieldCheck className="h-4 w-4 stroke-[2.5]" />
-            <span>[LOGIN TO KDS]</span>
+            <span>LOGIN</span>
           </motion.button>
         </div>
       </div>
