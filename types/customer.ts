@@ -32,7 +32,7 @@ export interface CartItem {
   isOrdered?: boolean;
 }
 
-export type OrderStage = 'PLACED' | 'PREP' | 'PLATED' | 'SERVED';
+export type OrderStage = 'PLACED' | 'PREP' | 'PLATED' | 'READY' | 'SERVED';
 
 export interface IndividualItemTracking {
   id: string;

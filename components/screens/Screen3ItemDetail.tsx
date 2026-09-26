@@ -45,7 +45,7 @@ export const Screen3ItemDetail: React.FC = () => {
     <ScreenHousing screenNumber={3} screenTitle="DETAILED ITEM PAGE">
       {/* Top Header */}
       <WireHeader
-        title="[ITEM DETAILS PAGE]"
+        title="Item Details"
         showBack={true}
         onBack={() => setCurrentScreen(2)}
         showCallWaiter={true}
@@ -56,13 +56,10 @@ export const Screen3ItemDetail: React.FC = () => {
       <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
         {/* Big Item Image Space */}
         <div>
-          <div className="mb-1 text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-            [BIG ITEM IMAGE SPACE]
-          </div>
           <div className="relative flex h-44 w-full flex-col items-center justify-center rounded-3xl border-2 border-dashed border-orange-200 bg-gradient-to-tr from-amber-100/60 via-orange-50 to-white p-4 shadow-sm text-center">
             <span className="text-4xl">🍛</span>
             <span className="mt-2 font-mono text-xs font-black tracking-wider text-orange-950">
-              [BIG ITEM IMAGE CONTAINER: {item.imagePlaceholder}]
+              Big Item Image Container: {item.imagePlaceholder}
             </span>
             <span className="mt-1 rounded-full bg-white/80 px-2.5 py-0.5 text-[10px] font-bold text-slate-600 border border-slate-200">
               Prep Mode: {item.prepMode}
@@ -72,31 +69,28 @@ export const Screen3ItemDetail: React.FC = () => {
 
         {/* Item Name & Price */}
         <div className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xs">
-          <div className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-            [ITEM NAME]
-          </div>
           <div className="text-base font-black text-slate-900 mt-0.5">
-            [{item.name}]
+            {item.name}
           </div>
           <div className="text-sm font-extrabold text-orange-600 font-mono mt-0.5">
-            [PRICE: ₹ {item.price}]
+            PRICE: ₹ {item.price}
           </div>
         </div>
 
         {/* Item Details */}
         <div className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xs">
-          <div className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-            [ITEM DETAILS / DESCRIPTION]
+          <div className="text-[9.5px] font-bold tracking-wider text-slate-400 font-mono">
+            Food Description
           </div>
           <p className="text-xs leading-relaxed text-slate-600 mt-1">
-            [{item.description}]
+            {item.description}
           </p>
         </div>
 
         {/* Customisable Options Group 1 */}
         <div className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xs">
-          <div className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-            [CUSTOMISABLE OPTIONS: GROUP 1]
+          <div className="text-[9.5px] font-bold tracking-wider text-slate-400 font-mono">
+            Flavours
           </div>
           <div className="mt-2 space-y-1.5">
             {item.optionsGroup1.choices.map((choice) => {
@@ -110,7 +104,7 @@ export const Screen3ItemDetail: React.FC = () => {
                       : 'border-slate-200 bg-stone-50/60 text-slate-700 hover:bg-stone-100'
                   }`}
                 >
-                  <span>[{choice.toUpperCase()}]</span>
+                  <span>{choice}</span>
                   <input
                     type="radio"
                     name="screen3-opt1"
@@ -126,8 +120,8 @@ export const Screen3ItemDetail: React.FC = () => {
 
         {/* Customisable Options Group 2: Add-Ons */}
         <div className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xs">
-          <div className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-            [CUSTOMISABLE OPTIONS: ADD-ONS]
+          <div className="text-[9.5px] font-bold tracking-wider text-slate-400 font-mono">
+            Add-Ons
           </div>
           <div className="mt-2 space-y-1.5">
             {item.optionsGroup2.addOns.map((addon) => {
@@ -142,8 +136,8 @@ export const Screen3ItemDetail: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center gap-1.5">
-                    <span>[{addon.name.toUpperCase()}]</span>
-                    <span className="font-mono text-orange-600 font-bold">(+₹ {addon.extraPrice})</span>
+                    <span>{addon.name}</span>
+                    <span className="font-mono text-orange-600 font-bold">(₹ {addon.extraPrice})</span>
                   </div>
                   <input
                     type="checkbox"
@@ -159,7 +153,7 @@ export const Screen3ItemDetail: React.FC = () => {
       </div>
 
       {/* Bottom Sticky: Go To Cart Button */}
-      <StickyBottomBar label="[GO TO CART BUTTON]">
+      <StickyBottomBar>
         <motion.button
           whileTap={{ scale: isSoldOut ? 1 : 0.98 }}
           disabled={isSoldOut}
@@ -172,7 +166,7 @@ export const Screen3ItemDetail: React.FC = () => {
         >
           <div className="flex items-center gap-2">
             {isSoldOut ? <Ban className="h-4 w-4" /> : <ShoppingCart className="h-4 w-4 stroke-[2.2]" />}
-            <span>{isSoldOut ? '🚫 [ITEM SOLD OUT IN KITCHEN (86)]' : '🛒 [ADD & GO TO CART]'}</span>
+            <span>{isSoldOut ? '🚫 Item Sold Out In Kitchen (86)' : 'Add To Cart'}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="font-mono text-sm font-bold text-amber-200">

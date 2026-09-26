@@ -36,10 +36,10 @@ export const Screen9DigitalBill: React.FC = () => {
   };
 
   return (
-    <ScreenHousing screenNumber={9} screenTitle="BILL PAGE">
+    <ScreenHousing screenNumber={9} screenTitle="Bill Page">
       {/* Header */}
       <WireHeader
-        title="[DETAILED BILL PAGE]"
+        title="Detailed Bill & Invoice"
         showBack={true}
         onBack={() => setCurrentScreen(8)}
         showCallWaiter={true}
@@ -50,23 +50,23 @@ export const Screen9DigitalBill: React.FC = () => {
         {/* Payment Bill with Detailed Breakdown */}
         <div className="relative rounded-3xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
           <div className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono text-center">
-            [PAYMENT BILL WITH DETAILED BREAKDOWN]
+            Payment Bill With Detailed Breakdown
           </div>
 
           <div className="text-center pb-3 border-b border-dashed border-slate-200">
             <h3 className="text-sm font-black text-slate-900 tracking-wide">
-              [TAX INVOICE / RECEIPT]
+              Tax Invoice / Receipt
             </h3>
             <p className="font-mono text-[10px] font-semibold text-slate-500 mt-0.5">
-              [INVOICE: #{payment.transactionId?.replace('#', '') || 'INV-2026-8921'} | SAC 996331]
+              Invoice: #{payment.transactionId?.replace('#', '') || 'INV-2026-8921'} | Sac 996331
             </p>
             <div className="mt-1 flex items-center justify-center gap-2 text-[10px] font-mono font-bold text-slate-600">
-              <span>[{venueName}]</span>
+              <span>{venueName}</span>
               <span>•</span>
-              <span>[TABLE: {tableNumber}]</span>
+              <span>Table: {tableNumber}</span>
             </div>
             <div className="text-[9.5px] font-mono text-slate-500 mt-0.5">
-              [GUEST: {guestName ? guestName.toUpperCase() : 'VALUED GUEST'}]
+              Guest: {guestName ? guestName.toUpperCase() : 'Valued Guest'}
             </div>
           </div>
 
@@ -75,13 +75,13 @@ export const Screen9DigitalBill: React.FC = () => {
             {cart.length > 0 ? (
               cart.map((ci) => (
                 <div key={ci.cartItemId} className="flex justify-between items-center text-slate-800">
-                  <span className="font-semibold">[{ci.menuItem.name} × {ci.quantity}]</span>
-                  <span className="font-mono font-bold">[₹ {ci.totalPrice}]</span>
+                  <span className="font-semibold">{ci.menuItem.name} × {ci.quantity}</span>
+                  <span className="font-mono font-bold">₹ {ci.totalPrice}</span>
                 </div>
               ))
             ) : (
               <div className="text-center py-3 text-slate-400 font-mono text-xs">
-                [NO ITEMS CHARGED - INVOICE EMPTY]
+                No Items Charged - Invoice Empty
               </div>
             )}
           </div>
@@ -89,22 +89,22 @@ export const Screen9DigitalBill: React.FC = () => {
           {/* Breakdown */}
           <div className="space-y-1.5 text-xs text-slate-600">
             <div className="flex justify-between font-medium">
-              <span>[SUBTOTAL]</span>
-              <span className="font-mono text-slate-800">[₹ {subtotal}]</span>
+              <span>Subtotal</span>
+              <span className="font-mono text-slate-800">₹ {subtotal}</span>
             </div>
             <div className="flex justify-between font-medium">
-              <span>[TAX (2.5% CGST + 2.5% SGST)]</span>
-              <span className="font-mono text-slate-800">[₹ {tax}]</span>
+              <span>Tax (2.5% Cgst + 2.5% Sgst)</span>
+              <span className="font-mono text-slate-800">₹ {tax}</span>
             </div>
             {payment.tipAmount > 0 && (
               <div className="flex justify-between font-medium text-orange-600">
-                <span>[WAITER TIP]</span>
-                <span className="font-mono">[₹ {payment.tipAmount}]</span>
+                <span>Waiter Tip</span>
+                <span className="font-mono">₹ {payment.tipAmount}</span>
               </div>
             )}
             <div className="flex justify-between items-center pt-2 font-black text-slate-900 border-t border-slate-100 text-sm">
-              <span>[PAID TOTAL]</span>
-              <span className="font-mono text-base font-black text-slate-900">[₹ {paidTotal}]</span>
+              <span>Paid Total</span>
+              <span className="font-mono text-base font-black text-slate-900">₹ {paidTotal}</span>
             </div>
           </div>
 
@@ -112,19 +112,19 @@ export const Screen9DigitalBill: React.FC = () => {
           <div className="flex justify-between items-center pt-3 border-t border-dashed border-slate-200 text-xs">
             <div>
               <div className="text-[9px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-                [PAID MODE]
+                Paid Mode
               </div>
               <div className="font-black text-slate-800 text-[11px] mt-0.5">
-                [{payment.paymentMethod} / SETTLED]
+                {payment.paymentMethod} / Settled
               </div>
             </div>
             <div className="text-right">
               <div className="text-[9px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-                [PAYMENT STATUS]
+                Payment Status
               </div>
               <div className="font-black text-emerald-700 text-[11px] mt-0.5 flex items-center justify-end gap-1">
                 <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                <span>[PAID & SETTLED]</span>
+                <span>Paid & Settled</span>
               </div>
             </div>
           </div>
@@ -133,7 +133,7 @@ export const Screen9DigitalBill: React.FC = () => {
         {/* Download Bill Option */}
         <div>
           <div className="mb-1 text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-            [DOWNLOAD BILL OPTION]
+            DOWNLOAD BILL OPTION
           </div>
           <motion.button
             whileTap={{ scale: 0.98 }}
@@ -141,14 +141,14 @@ export const Screen9DigitalBill: React.FC = () => {
             className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white py-3 text-xs font-extrabold text-slate-800 shadow-xs hover:bg-slate-50 transition"
           >
             <Download className="h-4 w-4 stroke-[2.2]" />
-            <span>{downloadMsg ? '[GENERATING PDF BILL...]' : '[DOWNLOAD PDF BILL]'}</span>
+            <span>{downloadMsg ? 'Generating PDF Bill...' : 'Download PDF BILL'}</span>
           </motion.button>
         </div>
 
         {/* Share Bill Through WhatsApp Button */}
         <div>
           <div className="mb-1 text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-            [SHARE BILL THROUGH WHATSAPP BUTTON]
+            SHARE BILL THROUGH WHATSAPP BUTTON
           </div>
           <motion.button
             whileTap={{ scale: 0.98 }}
@@ -156,7 +156,7 @@ export const Screen9DigitalBill: React.FC = () => {
             className="flex w-full items-center justify-center gap-2 rounded-2xl border border-emerald-300 bg-emerald-50/80 py-3 text-xs font-extrabold text-emerald-800 shadow-xs hover:bg-emerald-100 transition"
           >
             <Share2 className="h-4 w-4 stroke-[2.2]" />
-            <span>{shareMsg ? '[PREPARING WHATSAPP SHARE...]' : '[SHARE BILL VIA WHATSAPP]'}</span>
+            <span>{shareMsg ? 'Preparing Whatsapp Share...' : 'Share Bill Via Whatsapp'}</span>
           </motion.button>
         </div>
       </div>
@@ -171,7 +171,7 @@ export const Screen9DigitalBill: React.FC = () => {
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3.5 text-xs font-extrabold uppercase tracking-wider text-white shadow-lg hover:bg-slate-800 transition"
         >
           <RotateCcw className="h-4 w-4 stroke-[2.5]" />
-          <span>↺ [RETURN TO HOME / WELCOME]</span>
+          <span>Return To Menu</span>
         </motion.button>
       </StickyBottomBar>
     </ScreenHousing>

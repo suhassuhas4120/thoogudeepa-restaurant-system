@@ -6,7 +6,7 @@ import { useSharedBridge } from '../../store/useSharedBridge';
 import { ScreenHousing } from '../ui/ScreenHousing';
 import { StickyBottomBar } from '../ui/StickyBottomBar';
 import { WaiterPingType } from '../../types/customer';
-import { Droplets, Scroll, Utensils, Sparkles, Bell, Send, CheckCircle2, ArrowRight, ArrowLeft, Radio } from 'lucide-react';
+import { Droplets, Scroll, Salad, Sparkles, Bell, Send, CheckCircle2, ArrowRight, ArrowLeft, Radio } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const Screen10WaiterCall: React.FC = () => {
@@ -28,25 +28,25 @@ export const Screen10WaiterCall: React.FC = () => {
   const pingButtons: { type: WaiterPingType; label: string; icon: React.ReactNode; color: string }[] = [
     {
       type: 'WATER',
-      label: '[WATER]',
+      label: 'Water',
       icon: <Droplets className="h-6 w-6 text-blue-500" />,
       color: 'hover:border-blue-300 hover:bg-blue-50/50',
     },
     {
       type: 'TISSUE',
-      label: '[TISSUE]',
+      label: 'Tissue',
       icon: <Scroll className="h-6 w-6 text-slate-500" />,
       color: 'hover:border-slate-400 hover:bg-slate-50',
     },
     {
       type: 'CUTLERY',
-      label: '[CUTLERY]',
-      icon: <Utensils className="h-6 w-6 text-amber-500" />,
+      label: 'Cucumber & Onion Salad',
+      icon: <Salad className="h-6 w-6 text-amber-500" />,
       color: 'hover:border-amber-300 hover:bg-amber-50/50',
     },
     {
       type: 'TABLE CLEAN',
-      label: '[TABLE CLEAN]',
+      label: 'Table Clean',
       icon: <Sparkles className="h-6 w-6 text-emerald-500" />,
       color: 'hover:border-emerald-300 hover:bg-emerald-50/50',
     },
@@ -55,7 +55,7 @@ export const Screen10WaiterCall: React.FC = () => {
   const returnTarget = previousScreen && previousScreen !== 10 ? previousScreen : 2;
 
   return (
-    <ScreenHousing screenNumber={10} screenTitle="CUSTOMER WAITER CALL PAGE">
+    <ScreenHousing screenNumber={10} screenTitle="Call Waiter">
       {/* Header */}
       <div className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 py-3 backdrop-blur-md">
         <motion.button
@@ -67,21 +67,15 @@ export const Screen10WaiterCall: React.FC = () => {
           <ArrowLeft className="h-4 w-4 stroke-[2.5]" />
         </motion.button>
         <div className="text-sm font-extrabold tracking-tight text-slate-900">
-          [CUSTOMER WAITER CALL PAGE]
+          Call Waiter
         </div>
         <div className="w-8" />
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* Description */}
-        <div>
-          <div className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono mb-0.5">
-            [READY REQUEST BUTTONS (ONE-TAP PINGS)]
-          </div>
-          <p className="text-xs font-medium text-slate-500">
-            Select a request below for immediate server notification:
-          </p>
-        </div>
+        <p className="text-xs font-medium text-slate-500">
+          Select a request below for immediate notification:
+        </p>
 
         {/* Ready Request Grid: Water, Tissue, Cutlery, Table Clean, Call */}
         <div className="grid grid-cols-2 gap-2.5">
@@ -109,20 +103,20 @@ export const Screen10WaiterCall: React.FC = () => {
             className="col-span-2 flex items-center justify-center gap-2.5 rounded-2xl bg-orange-600 py-3.5 px-4 text-xs font-extrabold uppercase tracking-wider text-white shadow-md shadow-orange-600/30 hover:bg-orange-700 transition"
           >
             <Bell className="h-4 w-4 stroke-[2.5]" />
-            <span>[CALL WAITER TO TABLE]</span>
+            <span>Call Waiter To Table</span>
           </motion.button>
         </div>
 
         {/* Custom Text Option to Waiter */}
         <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm space-y-2">
           <div className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-            [CUSTOM TEXT OPTION TO WAITER]
+            Custom Text Option To Waiter
           </div>
           <textarea
             rows={3}
             value={customText}
             onChange={(e) => setCustomText(e.target.value)}
-            placeholder="[TYPE CUSTOM NOTE OR SPECIAL ASSISTANCE REQUEST...]"
+            placeholder="Type custom note or special assistance request..."
             className="w-full rounded-xl border border-slate-200 bg-stone-50/60 p-3 text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:bg-white focus:outline-none resize-none"
           />
           <motion.button
@@ -131,7 +125,7 @@ export const Screen10WaiterCall: React.FC = () => {
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-stone-100 py-2.5 text-xs font-extrabold text-slate-800 hover:bg-stone-200 transition"
           >
             <Send className="h-3.5 w-3.5 text-orange-600" />
-            <span>[SEND CUSTOM MESSAGE TO WAITER]</span>
+            <span>Send Message</span>
           </motion.button>
         </div>
 
@@ -144,11 +138,11 @@ export const Screen10WaiterCall: React.FC = () => {
           >
             <div className="flex items-center gap-1.5 font-mono text-xs font-extrabold text-orange-900">
               <span className="h-2 w-2 rounded-full bg-orange-600 animate-ping" />
-              <span>[TRANSMITTED TO FLOOR SERVERS: {activePing.type}]</span>
+              <span>Notified To Waiter</span>
             </div>
-            <div className="text-[10.5px] font-medium text-orange-700 mt-0.5 font-mono">
-              Table [{tableNumber}] • Server handheld vibrating • Est response: &lt; 2 mins
-            </div>
+            {/* <div className="text-[10.5px] font-medium text-orange-700 mt-0.5 font-mono">
+              Table {tableNumber} • Server Handheld Vibrating • Est Response: &lt; 2 mins
+            </div> */}
           </motion.div>
         ) : waiterNotification?.active ? (
           <motion.div
@@ -158,10 +152,10 @@ export const Screen10WaiterCall: React.FC = () => {
           >
             <div className="flex items-center gap-1.5 font-mono text-xs font-extrabold text-emerald-800">
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-              <span>✓ [REQUEST RESOLVED BY FLOOR CAPTAIN]</span>
+              <span>✓ Request Resolved By Floor Captain</span>
             </div>
             <div className="text-[10.5px] font-medium text-emerald-700 mt-0.5">
-              Request for [{waiterNotification.type}] has been attended to at Table {tableNumber}!
+              Request for {waiterNotification.type} has been attended to at Table {tableNumber}!
             </div>
           </motion.div>
         ) : null}
@@ -176,7 +170,7 @@ export const Screen10WaiterCall: React.FC = () => {
               onClick={() => navigateTo(returnTarget)}
               className="flex-1 flex items-center justify-center gap-1.5 rounded-2xl border border-slate-200 bg-white py-3 text-xs font-extrabold text-slate-800 hover:bg-slate-50 transition shadow-xs"
             >
-              <span>↩ [BACK TO SCREEN {returnTarget}]</span>
+              <span>↩ Back To Screen {returnTarget}</span>
             </motion.button>
           )}
           <motion.button
@@ -184,7 +178,7 @@ export const Screen10WaiterCall: React.FC = () => {
             onClick={() => navigateTo(2)}
             className="flex-1 flex items-center justify-center gap-2 rounded-2xl bg-slate-900 py-3.5 text-xs font-extrabold uppercase tracking-wider text-white shadow-lg hover:bg-slate-800 transition"
           >
-            <span>➔ [RETURN TO DINING MENU]</span>
+            <span>Return To Menu</span>
           </motion.button>
         </div>
       </StickyBottomBar>
