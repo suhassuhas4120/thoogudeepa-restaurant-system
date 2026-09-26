@@ -17,7 +17,9 @@ interface K2TableItem {
   name: string;
   quantity: number;
   stage: 'RECEIVED' | 'PREPARING' | 'READY';
-  notes?: string; 
+  notes?: string;       
+  options?: string;     
+  addOns?: string[];    
 }
 
 interface K2Table {
@@ -103,6 +105,28 @@ const INITIAL_K2_TABLES: K2Table[] = [
 const STAGE_STEPS = ['RECEIVED', 'PREPARING', 'READY'] as const;
 const STAGE_LABELS = ['1.REC', '2.PREP', '3.READY'];
 
+const hasSpecialInstruction = (it: K2TableItem): boolean => {
+  return !!(
+    (it.notes && it.notes.trim()) ||
+    (it.options && it.options.trim()) ||
+    (it.addOns && it.addOns.length > 0)
+  );
+};
+
+const buildInstructionTooltip = (items: K2TableItem[]): string => {
+  return items
+    .filter(hasSpecialInstruction)
+    .map((it) => {
+      const parts: string[] = [];
+      if (it.options) parts.push(`Choice: ${it.options}`);
+      if (it.addOns && it.addOns.length > 0)
+        parts.push(`Add-ons: ${it.addOns.join(', ')}`);
+      if (it.notes) parts.push(`Note: ${it.notes}`);
+      return `${it.quantity}x ${it.name} → ${parts.join(' | ')}`;
+    })
+    .join('  •  ');
+};
+
 export const ScreenK2Overview: React.FC = () => {
   const {
     setCurrentScreen,
@@ -155,7 +179,9 @@ export const ScreenK2Overview: React.FC = () => {
             name: it.name,
             quantity: it.quantity,
             stage: resolvedStage as 'RECEIVED' | 'PREPARING' | 'READY',
-            notes: it.notes, // ✅ NEW — carries notes from bridge
+            notes: it.notes,       
+            options: it.options,   
+            addOns: it.addOns,     
           };
         }),
       }));
@@ -518,15 +544,9 @@ export const ScreenK2Overview: React.FC = () => {
                           <span>
                             {tbl.elapsedMinutes}m (KOT #{tbl.kotNumber})
                           </span>
-                          {tbl.items.some((it) => it.notes) && (
+                          {tbl.items.some(hasSpecialInstruction) && (
                             <span
-                              title={tbl.items
-                                .filter((it) => it.notes)
-                                .map(
-                                  (it) =>
-                                    `${it.quantity}x ${it.name}: ${it.notes}`
-                                )
-                                .join(' • ')}
+                              title={buildInstructionTooltip(tbl.items)}
                               className="h-2 w-2 rounded-full bg-orange-500 animate-pulse inline-block ml-1 shrink-0"
                             />
                           )}
