@@ -518,7 +518,7 @@ export const ScreenW7Payment: React.FC = () => {
           </div>
 
           {/* Staff Tip Selection */}
-          <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-2xs">
+          {/* <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-2xs">
             <div className="flex items-center justify-between font-mono text-[9.5px] font-bold uppercase text-slate-400 mb-1.5">
               <span>Staff Tip Preset</span>
               <span className="text-orange-600 font-bold">
@@ -541,7 +541,7 @@ export const ScreenW7Payment: React.FC = () => {
                 </button>
               ))}
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Bottom CTA Button */}

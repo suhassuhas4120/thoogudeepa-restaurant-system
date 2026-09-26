@@ -74,7 +74,7 @@ export const WaiterTabletHousing: React.FC<WaiterTabletHousingProps> = ({
         </div>
 
         {/* Waiter Sub-Header with Station & Kitchen Hotline */}
-        <div className="h-8 bg-stone-100 border-b border-slate-200 px-4 flex items-center justify-between text-[10px] font-bold font-mono text-slate-600 select-none shrink-0 z-20">
+        {/* <div className="h-8 bg-stone-100 border-b border-slate-200 px-4 flex items-center justify-between text-[10px] font-bold font-mono text-slate-600 select-none shrink-0 z-20">
           <div className="flex items-center gap-1.5 truncate">
             <UserCheck className="h-3 w-3 text-orange-600" />
             <span className="truncate">{activeCaptain || 'Captain'}</span>
@@ -90,7 +90,7 @@ export const WaiterTabletHousing: React.FC<WaiterTabletHousingProps> = ({
               <span>KITCHEN</span>
             </button>
           )}
-        </div>
+        </div> */}
 
         {/* Kitchen Hotline Toast */}
         {showKitchenHotline && kitchenCallNotice && (

@@ -111,7 +111,7 @@ export const ScreenW6MergeSplit: React.FC = () => {
           </div>
 
           {/* Split Bill Card */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs space-y-3">
+          {/* <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs space-y-3">
             <div className="flex items-center gap-2 font-mono text-[10.5px] font-black text-indigo-700">
               <Scissors className="h-4 w-4" />
               <span>Split Bill by Guests / Seats</span>
@@ -142,7 +142,7 @@ export const ScreenW6MergeSplit: React.FC = () => {
             <div className="text-center font-mono text-xs font-black text-slate-800 py-1">
               ₹ {totalBill > 0 ? Math.round(totalBill / splitCount) : 0} per person (Total: ₹{totalBill})
             </div>
-          </div>
+          </div>  */}
         </div>
 
         <div className="space-y-2 pt-2">
