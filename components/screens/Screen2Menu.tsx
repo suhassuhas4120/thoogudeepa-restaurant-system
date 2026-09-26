@@ -8,7 +8,7 @@ import { WireHeader } from '../ui/WireHeader';
 import { StickyBottomBar } from '../ui/StickyBottomBar';
 import { ItemDrawer } from '../ui/ItemDrawer';
 import { MenuItem } from '../../types/customer';
-import { Search, Plus, Minus, Sparkles, ArrowRight, ShoppingCart, Flame, Utensils, Ban, Clock } from 'lucide-react';
+import { Search, Plus, Minus, Sparkles, ArrowRight, ShoppingCart, Flame, Utensils, Ban, Clock, Menu } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const Screen2Menu: React.FC = () => {
@@ -34,17 +34,17 @@ export const Screen2Menu: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerItem, setDrawerItem] = useState<MenuItem | null>(null);
 
-  const categories = ['All', 'Starters', 'Rice & Bowls', 'Beverages'];
-  const filters = ['All', 'Chef Special', 'Quick Serve'];
+  const categories = ['All', 'Starters', 'Rice & Bowls', 'Beverages', 'Chef Special', 'Quick Serve'];
+  const filters: string[] = [];
 
   const filteredItems = menuItems.filter((item) => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
-    const matchesFilter =
-      selectedFilter === 'All' ||
-      (selectedFilter === 'Chef Special' && item.badge === 'Chef Special') ||
-      // (selectedFilter === 'Pure Veg' && !!item.isVeg) ||
-      (selectedFilter === 'Quick Serve' && (item.category === 'Starters' || item.category === 'Desserts'));
+    const matchesCategory =
+      selectedCategory === 'All' ||
+      (selectedCategory === 'Chef Special' && item.badge === 'Chef Special') ||
+      (selectedCategory === 'Quick Serve' && (item.category === 'Starters' || item.category === 'Desserts')) ||
+      item.category === selectedCategory;
+    const matchesFilter = true;
     return matchesSearch && matchesCategory && matchesFilter;
   });
 
@@ -96,7 +96,12 @@ export const Screen2Menu: React.FC = () => {
   return (
     <ScreenHousing screenNumber={2} screenTitle="MENU PAGE (DOUBLE COLUMN GRID)">
       <WireHeader
-        title="Menu"
+        title={
+          <span className="inline-flex items-center gap-2">
+            <Menu className="h-4 w-4 stroke-[2.2]" />
+            <span>Menu</span>
+          </span>
+        }
         leftSubtitle={`${venueName} | TABLE ${tableNumber}`}
         showBack={false}
         showCallWaiter={true}
@@ -119,7 +124,7 @@ export const Screen2Menu: React.FC = () => {
 
         <div className="border-b border-orange-100 bg-white/70 px-4 py-2 backdrop-blur-sm">
           <div className="mb-1 text-[9.5px] font-black tracking-[0.24em] text-slate-400">
-            Food Categories
+            Explore Categories
           </div>
           <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-none">
             {categories.map((cat) => {
@@ -141,29 +146,6 @@ export const Screen2Menu: React.FC = () => {
           </div>
         </div>
 
-        <div className="border-b border-orange-100 bg-[#fff8f3] px-4 py-2">
-          <div className="mb-1 text-[9.5px] font-black tracking-[0.24em] text-slate-400">
-            Food Filters
-          </div>
-          <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
-            {filters.map((fil) => {
-              const isActive = selectedFilter === fil;
-              return (
-                <button
-                  key={fil}
-                  onClick={() => setSelectedFilter(fil)}
-                  className={`whitespace-nowrap rounded-xl border px-2.5 py-1.5 text-[10px] font-black tracking-[0.08em] transition ${
-                    isActive
-                      ? 'border-orange-500 bg-orange-50 text-orange-700'
-                      : 'border-slate-200 bg-white text-slate-600 hover:border-orange-200 hover:bg-orange-50'
-                  }`}
-                >
-                  {fil}
-                </button>
-              );
-            })}
-          </div>
-        </div>
 
         {addedNotice && (
           <motion.div

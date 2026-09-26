@@ -92,22 +92,8 @@ export const Screen1Welcome: React.FC = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="flex flex-col gap-4 pb-2"
+          className="flex flex-col items-center pb-2 pt-1"
         >
-          <div>
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              onClick={() => {
-                if (!guestName.trim()) setGuestName('GUEST (TABLE A-04)');
-                setCurrentScreen(2);
-              }}
-              className="flex w-full items-center justify-center gap-2 rounded-[22px] bg-gradient-to-r from-[#f97316] via-[#ea580c] to-[#c2410c] py-3.5 px-4 text-[11px] font-black tracking-[0.16em] text-white shadow-[0_16px_28px_rgba(234,88,12,0.32)] transition hover:brightness-105"
-            >
-              <span className="capitalize">Proceed To Menu</span>
-              <ArrowRight className="h-4 w-4 stroke-[2.5]" />
-            </motion.button>
-          </div>
-
           <div className="flex flex-col items-center text-center">
             <div className="mt-1 flex items-center gap-1.5 rounded-full border border-orange-100 bg-white/90 px-3 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-slate-700 shadow-[0_5px_10px_rgba(15,23,42,0.04)]">
               <Sparkles className="h-3 w-3 text-orange-500" />

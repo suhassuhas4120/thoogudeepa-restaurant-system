@@ -6,7 +6,7 @@ import { ArrowLeft, Bell, ShoppingCart } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface WireHeaderProps {
-  title: string;
+  title: React.ReactNode;
   showBack?: boolean;
   onBack?: () => void;
   showCallWaiter?: boolean;
@@ -25,6 +25,7 @@ export const WireHeader: React.FC<WireHeaderProps> = ({
   const { navigateTo, previousScreen, cart } = useCustomer();
 
   const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const titleText = typeof title === 'string' ? title : '';
 
   return (
     <div className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 py-3 backdrop-blur-md">
@@ -46,8 +47,8 @@ export const WireHeader: React.FC<WireHeaderProps> = ({
             </div>
           )}
           <div className="flex items-center gap-1.5 truncate text-sm font-extrabold tracking-tight text-slate-900">
-            <span>{title}</span>
-            {title.toLowerCase() === 'cart' && (
+            {typeof title === 'string' ? <span>{title}</span> : title}
+            {titleText.toLowerCase() === 'cart' && (
               <ShoppingCart className="h-3.5 w-3.5 stroke-[2.3] text-slate-700" />
             )}
           </div>

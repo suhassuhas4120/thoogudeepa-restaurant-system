@@ -49,6 +49,7 @@ export const Screen5LiveTracking: React.FC = () => {
         return 0;
       case 'PREP':
         return 1;
+      case 'PLATED':
       case 'READY':
         return 2;
       case 'SERVED':
@@ -133,53 +134,59 @@ export const Screen5LiveTracking: React.FC = () => {
         <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm space-y-3">
           <div className="space-y-2.5">
             {myTicket && myTicket.items.length > 0 ? (
-              myTicket.items.map((it) => (
-                <div
-                  key={it.id}
-                  className="rounded-2xl border border-slate-100 bg-stone-50/60 p-3"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-black text-slate-900 truncate">
-                      {it.quantity}x {it.name}
-                    </span>
-                    <span className={`rounded-md border px-2 py-0.5 font-mono text-[9px] font-bold whitespace-nowrap ${
-                      it.stage === 'SERVED'
-                        ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
-                        : it.stage === 'READY'
-                        ? 'bg-blue-100 text-blue-800 border-blue-200'
-                        : it.stage === 'PREP'
-                        ? 'bg-orange-100 text-orange-800 border-orange-200'
-                        : 'bg-stone-100 text-slate-700 border-slate-200'
-                    }`}>
-                      STATUS: {it.stage}
-                    </span>
+              myTicket.items.map((it) => {
+                const displayStage = it.stage === 'PLATED' ? 'READY' : it.stage;
+                return (
+                  <div
+                    key={it.id}
+                    className="rounded-2xl border border-slate-100 bg-stone-50/60 p-3"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-black text-slate-900 truncate">
+                        {it.quantity}x {it.name}
+                      </span>
+                      <span className={`rounded-md border px-2 py-0.5 font-mono text-[9px] font-bold whitespace-nowrap ${
+                        displayStage === 'SERVED'
+                          ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                          : displayStage === 'READY'
+                          ? 'bg-blue-100 text-blue-800 border-blue-200'
+                          : displayStage === 'PREP'
+                          ? 'bg-orange-100 text-orange-800 border-orange-200'
+                          : 'bg-stone-100 text-slate-700 border-slate-200'
+                      }`}>
+                        STATUS: {displayStage}
+                      </span>
+                    </div>
+                    <div className="mt-1 flex items-center gap-1.5 text-[10px] font-bold text-slate-500 font-mono">
+                      <ChefHat className="h-3.5 w-3.5 text-orange-500" />
+                      <span>PREP MODE: {(it.prepMode || 'POT DUM').toUpperCase()}</span>
+                    </div>
                   </div>
-                  <div className="mt-1 flex items-center gap-1.5 text-[10px] font-bold text-slate-500 font-mono">
-                    <ChefHat className="h-3.5 w-3.5 text-orange-500" />
-                    <span>PREP MODE: {(it.prepMode || 'POT DUM').toUpperCase()}</span>
-                  </div>
-                </div>
-              ))
+                );
+              })
             ) : itemTracking.length > 0 ? (
-              itemTracking.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-2xl border border-slate-100 bg-stone-50/60 p-3"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-black text-slate-900 truncate">
-                      {item.name}
-                    </span>
-                    <span className="rounded-md border border-orange-200 bg-orange-50 px-2 py-0.5 font-mono text-[9px] font-bold text-orange-700 whitespace-nowrap">
-                      STATUS: {item.status.toUpperCase()}
-                    </span>
+              itemTracking.map((item) => {
+                const displayStatus = item.status === 'PLATED' ? 'READY' : item.status;
+                return (
+                  <div
+                    key={item.id}
+                    className="rounded-2xl border border-slate-100 bg-stone-50/60 p-3"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-black text-slate-900 truncate">
+                        {item.name}
+                      </span>
+                      <span className="rounded-md border border-orange-200 bg-orange-50 px-2 py-0.5 font-mono text-[9px] font-bold text-orange-700 whitespace-nowrap">
+                        STATUS: {displayStatus.toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="mt-1 flex items-center gap-1.5 text-[10px] font-bold text-slate-500 font-mono">
+                      <ChefHat className="h-3.5 w-3.5 text-orange-500" />
+                      <span>PREP MODE: {item.prepMode.toUpperCase()}</span>
+                    </div>
                   </div>
-                  <div className="mt-1 flex items-center gap-1.5 text-[10px] font-bold text-slate-500 font-mono">
-                    <ChefHat className="h-3.5 w-3.5 text-orange-500" />
-                    <span>PREP MODE: {item.prepMode.toUpperCase()}</span>
-                  </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="flex flex-col items-center justify-center p-6 text-center text-slate-400 bg-stone-50/50 rounded-2xl border border-dashed border-slate-200">
                 <ChefHat className="h-8 w-8 text-slate-300 mb-2 stroke-[1.5]" />
