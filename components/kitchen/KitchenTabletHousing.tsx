@@ -1,10 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Wifi, Bell, Flame } from 'lucide-react';
+import { Wifi, Flame } from 'lucide-react';
 import { useKitchenStore } from '../../store/useKitchenStore';
-import { STATION_LABELS } from '../../types/kitchen';
-import { KitchenProfileDropdown } from './KitchenProfileDropdown';
 
 interface KitchenTabletHousingProps {
   children: React.ReactNode;
@@ -20,8 +18,6 @@ export const KitchenTabletHousing: React.FC<KitchenTabletHousingProps> = ({
   className = '',
 }) => {
   const {
-    activeStation,
-    callFloorWaiter,
     waiterAlertNotice,
     dismissWaiterAlert,
   } = useKitchenStore();
@@ -48,28 +44,16 @@ export const KitchenTabletHousing: React.FC<KitchenTabletHousingProps> = ({
           <div className="h-1 w-4 rounded-full bg-slate-700" />
         </div>
 
-        {/* KDS Tablet Status Header */}
-        <header className="h-11 bg-white border-b border-slate-200 px-5 flex items-center justify-between text-xs font-bold select-none shrink-0 z-20">
+        {/* KDS Tablet Status Header — no profile, no chef name */}
+        <header className="h-12 bg-white border-b border-slate-200 px-5 flex items-center justify-between text-xs font-bold select-none shrink-0 z-30">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 text-orange-700 font-black font-mono">
               <Flame className="h-4 w-4 text-orange-600 fill-orange-500" />
               <span>THOOGUDEEPA KDS</span>
             </div>
-            <span className="text-slate-300">|</span>
-            <span className="rounded-md border border-slate-200 bg-stone-50 px-2 py-0.5 text-[10.5px] font-mono text-slate-700">
-              STATION: {STATION_LABELS[activeStation] || 'Master Dispatch'}
-            </span>
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <KitchenProfileDropdown />
-            <button
-              onClick={() => callFloorWaiter('ALL', 'Dishes Ready for Floor Pickup')}
-              className="flex items-center gap-1 rounded-lg border border-orange-200 bg-orange-50 px-2.5 py-1 text-[10.5px] font-extrabold text-orange-800 hover:bg-orange-100 transition shadow-2xs cursor-pointer"
-            >
-              <Bell className="h-3 w-3 text-orange-600" />
-              <span>[CALL RUNNER]</span>
-            </button>
+          <div className="flex items-center gap-3">
             <div className="flex items-center gap-1 text-emerald-600 font-mono text-[10px] font-bold">
               <Wifi className="h-3.5 w-3.5" />
               <span>ONLINE</span>

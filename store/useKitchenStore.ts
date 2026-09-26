@@ -8,19 +8,14 @@ interface KitchenStoreState {
   previousScreen: KitchenScreenId;
   viewMode: 'single' | 'all';
   activeStation: KitchenStation;
-  chefName: string;
   selectedTableNumber: string;
   soundAlertsEnabled: boolean;
   tickets: KDSTicket[];
   waiterAlertNotice: string | null;
 
-  // Shift & profile tracking
-  shiftStartTime: string;
-
   setCurrentScreen: (screen: KitchenScreenId) => void;
   setViewMode: (mode: 'single' | 'all') => void;
   setActiveStation: (station: KitchenStation) => void;
-  setChefName: (name: string) => void;
   setSelectedTableNumber: (table: string) => void;
   toggleSoundAlerts: () => void;
   bumpItemStage: (ticketId: string, itemId: string) => void;
@@ -28,102 +23,18 @@ interface KitchenStoreState {
   callFloorWaiter: (tableNumber: string, reason?: string) => void;
   dismissWaiterAlert: () => void;
   resetKitchenDemo: () => void;
-
-  setShiftStartTime: (time: string) => void;
-  resetForSignOut: () => void;
 }
-
-const demoTickets: KDSTicket[] = [
-  {
-    id: 'KDS-101',
-    tableNumber: 'A-04',
-    serverName: 'Captain Ramesh',
-    timestamp: '12:40 PM',
-    elapsedMinutes: 14,
-    status: 'PREP',
-    source: 'WAITER',
-    items: [
-      {
-        id: 'd-101-1',
-        name: 'Special Chicken Donne Biryani',
-        quantity: 2,
-        prepMode: 'Direct Wok',
-        stage: 'PREP',
-        notes: 'Less spicy',
-      },
-      {
-        id: 'd-101-2',
-        name: 'Kshatriya Chicken Kebab (Crispy)',
-        quantity: 1,
-        prepMode: 'Deep Fry',
-        stage: 'PLACED',
-        notes: 'Extra crispy',
-      },
-    ],
-  },
-  {
-    id: 'KDS-102',
-    tableNumber: 'A-01',
-    serverName: 'Captain Ramesh',
-    timestamp: '12:44 PM',
-    elapsedMinutes: 10,
-    status: 'NEW',
-    source: 'CUSTOMER',
-    items: [
-      {
-        id: 'd-102-1',
-        name: 'Thoogudeepa Mutton Donne Biryani',
-        quantity: 1,
-        prepMode: 'Clay Pot',
-        stage: 'PLACED',
-      },
-      {
-        id: 'd-102-2',
-        name: 'Gunpowder Pepper Chicken Dry',
-        quantity: 1,
-        prepMode: 'Tawa Toss',
-        stage: 'PLACED',
-      },
-    ],
-  },
-  {
-    id: 'KDS-103',
-    tableNumber: 'B-01',
-    serverName: 'Captain Suresh',
-    timestamp: '12:48 PM',
-    elapsedMinutes: 6,
-    status: 'PREP',
-    source: 'WAITER',
-    items: [
-      {
-        id: 'd-103-1',
-        name: 'Ceylon Coin Parotta (2 Pcs)',
-        quantity: 2,
-        prepMode: 'Tawa Ghee Roast',
-        stage: 'PLATED',
-      },
-      {
-        id: 'd-103-2',
-        name: 'Nati Koli Saaru (Country Chicken Curry)',
-        quantity: 1,
-        prepMode: 'Clay Pot Simmer',
-        stage: 'PLATED',
-      },
-    ],
-  },
-];
 
 export const useKitchenStore = create<KitchenStoreState>((set) => ({
   currentScreen: 1,
   previousScreen: 1,
   viewMode: 'single',
   activeStation: 'MASTER_DISPATCH',
-  chefName: 'Master Chef Manjunath',
-  selectedTableNumber: 'A-04',
+  selectedTableNumber: '',
   soundAlertsEnabled: true,
-  tickets: demoTickets,
+  // ✅ No demo tickets — real orders come from bridge only
+  tickets: [],
   waiterAlertNotice: null,
-  shiftStartTime: '',
 
   setCurrentScreen: (screen) =>
     set((state) => ({
@@ -133,7 +44,6 @@ export const useKitchenStore = create<KitchenStoreState>((set) => ({
 
   setViewMode: (mode) => set({ viewMode: mode }),
   setActiveStation: (station) => set({ activeStation: station }),
-  setChefName: (name) => set({ chefName: name }),
   setSelectedTableNumber: (table) => set({ selectedTableNumber: table }),
   toggleSoundAlerts: () =>
     set((state) => ({ soundAlertsEnabled: !state.soundAlertsEnabled })),
@@ -199,19 +109,7 @@ export const useKitchenStore = create<KitchenStoreState>((set) => ({
 
   dismissWaiterAlert: () => set({ waiterAlertNotice: null }),
 
-  resetKitchenDemo: () => set({ tickets: demoTickets }),
-
-  setShiftStartTime: (time) => set({ shiftStartTime: time }),
-
-  resetForSignOut: () =>
-    set({
-      currentScreen: 1,
-      previousScreen: 1,
-      activeStation: 'MASTER_DISPATCH',
-      chefName: '',
-      shiftStartTime: '',
-      waiterAlertNotice: null,
-    }),
+  resetKitchenDemo: () => set({ tickets: [] }),
 }));
 
 export const useBridgeKDSTickets = () => useSharedBridge((s) => s.kdsTickets);

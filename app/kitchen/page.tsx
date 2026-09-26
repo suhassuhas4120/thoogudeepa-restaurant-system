@@ -179,7 +179,6 @@ export default function KitchenKDSPage() {
             </div>
           </div>
         ) : (
-          /* All 3 Screens Grid Mode */
           <div className="w-full max-w-[1500px] flex flex-col lg:flex-row items-center justify-center gap-8 py-4">
             <div className="flex flex-col items-center w-full max-w-[480px]">
               <div className="mb-2 flex items-center gap-2 font-mono text-xs font-extrabold text-slate-700">
