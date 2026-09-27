@@ -254,8 +254,8 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
         id: 'track-' + c.cartItemId,
         name: `${c.menuItem.name} × ${c.quantity}`,
         prepMode: c.prepMode,
-        status: 'In Preparation',
-        stage: 'PREP' as OrderStage,
+        status: 'Order Placed',
+        stage: 'PLACED' as OrderStage,
       }));
 
       const updatedCart = state.cart.map((c) => ({ ...c, isOrdered: true }));
@@ -263,7 +263,7 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
       return {
         cart: updatedCart,
         itemTracking: [...state.itemTracking, ...newTracking],
-        orderStage: 'PREP',
+        orderStage: 'PLACED',
         previousScreen: state.currentScreen,
         currentScreen: 5, // Proceed to Live Tracking Screen 5
       };
