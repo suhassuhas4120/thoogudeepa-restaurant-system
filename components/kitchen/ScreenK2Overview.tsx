@@ -355,8 +355,9 @@ export const ScreenK2Overview: React.FC = () => {
   };
 
   const timeQueueTickets = useMemo(() => {
-    if (bridgeTickets.length > 0) {
-      return bridgeTickets.map((tk) => ({
+    const activeTickets = bridgeTickets.filter((tk) => tk.status !== 'COMPLETED');
+    if (activeTickets.length > 0) {
+      return activeTickets.map((tk) => ({
         ticketNum: tk.id.replace('KDS-', ''),
         table: `TABLE ${tk.tableNumber}`,
         time: ` (${tk.elapsedMinutes || 1}m)`,

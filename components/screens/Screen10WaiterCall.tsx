@@ -12,7 +12,15 @@ import { motion } from 'framer-motion';
 export const Screen10WaiterCall: React.FC = () => {
   const { navigateTo, previousScreen, pingWaiter, waiterNotification, tableNumber } = useCustomer();
   const { pings } = useSharedBridge();
-  const activePing = pings.find((p) => p.tableNumber === tableNumber);
+  const normalizedTable = tableNumber.replace(/^TABLE\s*/i, '').trim();
+  const activePing = pings
+    .slice()
+    .reverse()
+    .find(
+      (p) =>
+        (p.tableNumber === tableNumber || p.tableNumber === normalizedTable) &&
+        (p.status === 'PENDING' || p.status === 'ACCEPTED')
+    );
   const [customText, setCustomText] = useState('');
 
   const handlePing = (type: WaiterPingType) => {

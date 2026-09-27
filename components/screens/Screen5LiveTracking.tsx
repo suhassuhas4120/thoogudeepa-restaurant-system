@@ -21,7 +21,16 @@ export const Screen5LiveTracking: React.FC = () => {
   } = useCustomer();
 
   const { kdsTickets } = useSharedBridge();
-  const myTicket = kdsTickets.find((t) => t.tableNumber === tableNumber);
+  const normalizedTable = tableNumber.replace(/^TABLE\s*/i, '').trim();
+  const myTicket =
+    kdsTickets.slice().reverse().find(
+      (t) =>
+        (t.tableNumber === tableNumber || t.tableNumber === normalizedTable) &&
+        t.status !== 'COMPLETED'
+    ) ||
+    kdsTickets.slice().reverse().find(
+      (t) => t.tableNumber === tableNumber || t.tableNumber === normalizedTable
+    );
 
   // Derive live stage directly from kitchen KDS ticket if available!
   const currentStage: OrderStage = myTicket

@@ -601,16 +601,33 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
 
   /* ─── Kitchen Bumps Entire Table ─────────────────────────────── */
   kitchenBumpTable: (ticketId) => {
-    set((state) => ({
-      kdsTickets: state.kdsTickets.map((t) => {
+    set((state) => {
+      const newTickets = state.kdsTickets.map((t) => {
         if (t.id !== ticketId) return t;
         return {
           ...t,
-          status: 'READY',
+          status: 'READY' as const,
           items: t.items.map((i) => ({ ...i, stage: 'PLATED' as OrderStage })),
         };
-      }),
-    }));
+      });
+
+      const targetTicket = newTickets.find((t) => t.id === ticketId);
+      const updatedTables = targetTicket
+        ? state.tables.map((tbl) => {
+            if (tbl.number !== targetTicket.tableNumber) return tbl;
+            return {
+              ...tbl,
+              activeItems: targetTicket.items.map((it) => ({
+                name: it.name,
+                quantity: it.quantity,
+                status: 'Ready',
+              })),
+            };
+          })
+        : state.tables;
+
+      return { kdsTickets: newTickets, tables: updatedTables };
+    });
   },
 
   /* ─── Kitchen Toggle 86 ──────────────────────────────────────── */
@@ -954,6 +971,18 @@ if (typeof window !== 'undefined') {
       }
     });
   }
+
+  // Fallback storage event listener for cross-tab synchronization
+  window.addEventListener('storage', (event) => {
+    if (event.key === 'thoogudeepa_bridge_v2' && event.newValue) {
+      try {
+        const parsed = JSON.parse(event.newValue);
+        if (parsed && Array.isArray(parsed.tables)) {
+          useSharedBridge.setState(parsed);
+        }
+      } catch {}
+    }
+  });
 
   // 2. Optional WebSocket client for multi-device sync
   try {

@@ -44,11 +44,17 @@ export const ScreenK3Detail: React.FC = () => {
       ? bridgeTickets
       : localTickets.map((t) => ({ ...t, source: 'WAITER' as const }));
 
+  const normalizedSelectedTable = selectedTableNumber.replace(/^TABLE\s*/i, '').trim();
   const currentTicket =
-    allTickets.find(
-      (t) => t.tableNumber === selectedTableNumber.replace('TABLE ', '')
+    allTickets.slice().reverse().find(
+      (t) =>
+        (t.tableNumber === normalizedSelectedTable || t.tableNumber === selectedTableNumber) &&
+        t.status !== 'COMPLETED'
     ) ||
-    allTickets.find((t) => t.tableNumber === selectedTableNumber) ||
+    allTickets.slice().reverse().find(
+      (t) =>
+        t.tableNumber === normalizedSelectedTable || t.tableNumber === selectedTableNumber
+    ) ||
     allTickets[0];
 
   const handlePendingToggle = (itemId: string, currentIs86: boolean) => {
