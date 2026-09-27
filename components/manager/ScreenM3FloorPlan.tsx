@@ -6,7 +6,7 @@ import { useManagerStore } from '../../store/useManagerStore';
 import { LayoutGrid, Printer, ArrowRightLeft, Users, CheckCircle, IndianRupee, ArrowRight, Utensils } from 'lucide-react';
 
 export function ScreenM3FloorPlan() {
-  const { tables, waiterVacatesTable } = useSharedBridge();
+  const { tables } = useSharedBridge();
   const { selectedTableNumber, setSelectedTableNumber, setCurrentScreen } = useManagerStore();
   const [activeSection, setActiveSection] = useState('ALL');
 
@@ -14,12 +14,6 @@ export function ScreenM3FloorPlan() {
   const filteredTables = activeSection === 'ALL' ? tables : tables.filter((t) => t.section.includes(activeSection));
 
   const selectedTable = tables.find((t) => t.number === selectedTableNumber) || tables[0];
-
-  const handleVacate = () => {
-    if (selectedTable) {
-      waiterVacatesTable(selectedTable.number);
-    }
-  };
 
   return (
     <div className="w-full max-w-6xl mx-auto p-4 grid grid-cols-1 md:grid-cols-12 gap-5">
@@ -180,18 +174,12 @@ export function ScreenM3FloorPlan() {
           >
             <span>OPEN BILLING / POS ➔</span>
           </button>
-          <div className="grid grid-cols-2 gap-2">
+          <div>
             <button
               onClick={() => alert(`Thermal Running KOT Printed for Table ${selectedTable?.number}`)}
-              className="bg-stone-100 border border-slate-300 py-2 px-3 rounded-lg font-mono text-xs font-bold text-slate-700 hover:bg-stone-200 transition text-center"
+              className="w-full bg-stone-100 border border-slate-300 py-2 px-3 rounded-lg font-mono text-xs font-bold text-slate-700 hover:bg-stone-200 transition text-center"
             >
               PRINT KOT
-            </button>
-            <button
-              onClick={handleVacate}
-              className="bg-rose-50 border border-rose-200 py-2 px-3 rounded-lg font-mono text-xs font-bold text-rose-700 hover:bg-rose-100 transition text-center"
-            >
-              VACATE TABLE
             </button>
           </div>
         </div>

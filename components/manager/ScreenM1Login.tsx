@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useManagerStore, MANAGER_PROFILES, INITIAL_SHIFTS } from '../../store/useManagerStore';
-import { ShieldCheck, Lock, Unlock, Clock, AlertCircle, CheckCircle2, RefreshCw, KeyRound, Printer } from 'lucide-react';
+import { ShieldCheck, Lock, Unlock, Clock, AlertCircle, CheckCircle2, RefreshCw, KeyRound } from 'lucide-react';
 
 export function ScreenM1Login() {
   const {
@@ -17,10 +17,16 @@ export function ScreenM1Login() {
     verifyPin,
     isAuthenticated,
     openingFloat,
+    verifyOpeningFloat,
     setCurrentScreen,
   } = useManagerStore();
 
   const [authError, setAuthError] = useState(false);
+  const [floatInput, setFloatInput] = useState('');
+  const [floatError, setFloatError] = useState('');
+  const [isEditingFloat, setIsEditingFloat] = useState(false);
+  const [isCustomProfile, setIsCustomProfile] = useState(false);
+  const [customProfileName, setCustomProfileName] = useState('');
 
   const handlePress = (d: string) => {
     setAuthError(false);
@@ -28,11 +34,27 @@ export function ScreenM1Login() {
   };
 
   const handleUnlock = () => {
+    if (!openingFloat) {
+      setFloatError('Verify the opening cash float before unlocking the desk.');
+      return;
+    }
     const ok = verifyPin();
     if (!ok) {
       setAuthError(true);
       setTimeout(() => setAuthError(false), 2000);
     }
+  };
+
+  const handleVerifyFloat = () => {
+    const amount = Number(floatInput);
+    if (!floatInput.trim() || !Number.isFinite(amount) || amount < 0) {
+      setFloatError('Enter a valid non-negative opening amount.');
+      return;
+    }
+    verifyOpeningFloat(amount);
+    setFloatInput('');
+    setFloatError('');
+    setIsEditingFloat(false);
   };
 
   return (
@@ -41,18 +63,9 @@ export function ScreenM1Login() {
       <div className="md:col-span-5 flex flex-col gap-4">
         {/* Terminal Header */}
         <div className="bg-white border-2 border-slate-900 rounded-xl p-5 shadow-[4px_4px_0px_#0f172a]">
-          <div className="flex items-center justify-between pb-3 border-b border-dashed border-slate-300">
-            <span className="bg-slate-900 text-white font-mono text-xs font-bold px-2 py-0.5 rounded">
-              [AUTH TERMINAL 01]
-            </span>
-            <span className="font-mono text-xs text-slate-500 font-semibold">POS v4.2 PRO</span>
-          </div>
           <h2 className="text-base font-black text-slate-900 mt-3 font-mono">
             THOOGUDEEPA DONNE BIRYANI MANE
           </h2>
-          <p className="text-xs text-slate-500 font-mono mt-0.5">
-            Command Center • Shift Cashier & Floor Management
-          </p>
         </div>
 
         {/* Shift Selection */}
@@ -89,35 +102,47 @@ export function ScreenM1Login() {
         <div className="bg-white border-2 border-slate-900 rounded-xl p-4 shadow-[3px_3px_0px_#0f172a]">
           <div className="flex justify-between items-center text-xs font-mono text-slate-500">
             <span>OPENING CASH FLOAT:</span>
-            <span className="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-bold">VERIFIED</span>
+            <span className={`px-1.5 py-0.5 rounded font-bold ${openingFloat ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+              {openingFloat ? 'VERIFIED' : 'REQUIRED'}
+            </span>
           </div>
-          <div className="text-2xl font-black font-mono text-slate-900 mt-1">
-            ₹ {openingFloat.toLocaleString('en-IN')}.00
-          </div>
+          {openingFloat ? (
+            <div className="mt-1">
+              {!isEditingFloat ? (
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-2xl font-black font-mono text-slate-900">₹ {openingFloat.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFloatInput(String(openingFloat.amount));
+                      setFloatError('');
+                      setIsEditingFloat(true);
+                    }}
+                    className="border border-slate-900 rounded-lg px-2.5 py-1.5 text-[11px] font-bold text-slate-900 hover:bg-slate-100"
+                  >
+                    ADJUST FLOAT
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input type="number" min="0" step="0.01" value={floatInput} onChange={(e) => setFloatInput(e.target.value)} autoFocus className="min-w-0 flex-1 border border-slate-900 rounded-lg p-2 font-mono text-sm" />
+                  <button type="button" onClick={handleVerifyFloat} className="bg-slate-900 text-white rounded-lg px-3 text-xs font-bold">UPDATE</button>
+                  <button type="button" onClick={() => { setFloatInput(''); setFloatError(''); setIsEditingFloat(false); }} className="border border-slate-300 rounded-lg px-2 text-xs font-bold text-slate-600">CANCEL</button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="mt-2 flex gap-2">
+              <input type="number" min="0" step="0.01" value={floatInput} onChange={(e) => setFloatInput(e.target.value)} placeholder="Count till amount" className="min-w-0 flex-1 border border-slate-900 rounded-lg p-2 font-mono text-sm" />
+              <button type="button" onClick={handleVerifyFloat} className="bg-slate-900 text-white rounded-lg px-3 text-xs font-bold">VERIFY</button>
+            </div>
+          )}
+          {floatError && <p className="text-[11px] text-rose-600 font-bold mt-1">{floatError}</p>}
           <p className="text-[11px] font-mono text-slate-500 mt-1">
-            Counted in Till Safe • Ready for change distribution
+            {openingFloat ? 'Counted in Till Safe • Ready for change distribution' : 'Enter and verify the physical till count before trading'}
           </p>
         </div>
 
-        {/* Hardware Status Preview */}
-        <div className="bg-slate-900 text-white rounded-xl p-4 text-xs font-mono space-y-1.5">
-          <div className="text-slate-400 font-bold mb-2 flex items-center gap-1.5">
-            <Printer className="h-3.5 w-3.5 text-emerald-400" />
-            <span>PERIPHERALS READY:</span>
-          </div>
-          <div className="flex justify-between text-slate-300">
-            <span>Thermal Bill Printer (80mm)</span>
-            <span className="text-emerald-400 font-bold">[ONLINE]</span>
-          </div>
-          <div className="flex justify-between text-slate-300">
-            <span>Dum Kitchen KDS Display</span>
-            <span className="text-emerald-400 font-bold">[ONLINE]</span>
-          </div>
-          <div className="flex justify-between text-slate-300">
-            <span>Automatic Cash Drawer Kick</span>
-            <span className="text-emerald-400 font-bold">[LOCKED]</span>
-          </div>
-        </div>
       </div>
 
       {/* Right PIN Pad Column */}
@@ -141,8 +166,15 @@ export function ScreenM1Login() {
               [ACTIVE PROFILE]:
             </label>
             <select
-              value={activeManager.id}
+              value={isCustomProfile ? 'custom' : activeManager.id}
               onChange={(e) => {
+                if (e.target.value === 'custom') {
+                  setIsCustomProfile(true);
+                  setCustomProfileName('');
+                  setActiveManager({ ...MANAGER_PROFILES[0], id: 'custom-manager', name: 'OTHER STAFF' });
+                  return;
+                }
+                setIsCustomProfile(false);
                 const found = MANAGER_PROFILES.find((m) => m.id === e.target.value);
                 if (found) setActiveManager(found);
               }}
@@ -153,7 +185,23 @@ export function ScreenM1Login() {
                   {p.name} — ({p.role})
                 </option>
               ))}
+              <option value="custom">OTHER STAFF — (ENTER NAME)</option>
             </select>
+            {isCustomProfile && (
+              <input
+                type="text"
+                value={customProfileName}
+                onChange={(e) => {
+                  const name = e.target.value;
+                  setCustomProfileName(name);
+                  setActiveManager({ ...MANAGER_PROFILES[0], id: 'custom-manager', name: name || 'OTHER STAFF' });
+                }}
+                placeholder="Enter staff name"
+                aria-label="Staff name"
+                className="w-full mt-2 bg-white border-2 border-slate-900 rounded-lg p-2.5 font-mono text-xs font-bold text-slate-900 focus:outline-none"
+                autoFocus
+              />
+            )}
           </div>
 
           {/* PIN Indicators */}
@@ -173,9 +221,9 @@ export function ScreenM1Login() {
             </div>
             <div className="font-mono text-xs font-bold text-slate-500">
               {authError ? (
-                <span className="text-rose-600 font-black">❌ INVALID PIN — TRY DEFAULT 1234</span>
+                <span className="text-rose-600 font-black">INVALID PIN</span>
               ) : (
-                <span>[{pinInput.length} OF 4 DIGITS ENTERED • DEFAULT PIN: 1234]</span>
+                <span>[{pinInput.length} OF 4 DIGITS ENTERED]</span>
               )}
             </div>
           </div>
@@ -215,7 +263,7 @@ export function ScreenM1Login() {
         {/* Action Button */}
         <div className="mt-6 pt-4 border-t border-slate-200 flex gap-3">
           <button
-            onClick={() => setCurrentScreen(2)}
+            onClick={handleUnlock}
             className="flex-1 bg-slate-900 text-white py-3 px-4 rounded-xl font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-[3px_3px_0px_#0f172a] hover:bg-orange-600 transition"
           >
             <Unlock className="h-4 w-4" />

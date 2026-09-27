@@ -5,7 +5,7 @@ import { useManagerStore } from '../../store/useManagerStore';
 import { useSharedBridge } from '../../store/useSharedBridge';
 import { Clock, Gift, Users } from 'lucide-react';
 
-export function ScreenM14AttendanceTips() {
+export function ScreenM10AttendanceTips() {
   const { staffRoster } = useManagerStore();
   const { shiftStats } = useSharedBridge();
 
@@ -84,7 +84,6 @@ export function ScreenM14AttendanceTips() {
                   <span className="text-[10px] text-slate-400 ml-1.5">({st.role})</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-500">In: 17:45</span>
                   <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
                     st.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'
                   }`}>

@@ -10,18 +10,13 @@ import { ScreenM1Login } from '../../components/manager/ScreenM1Login';
 import { ScreenM2LiveOverview } from '../../components/manager/ScreenM2LiveOverview';
 import { ScreenM3FloorPlan } from '../../components/manager/ScreenM3FloorPlan';
 import { ScreenM4BillingPOS } from '../../components/manager/ScreenM4BillingPOS';
-import { ScreenM5KitchenSpeed } from '../../components/manager/ScreenM5KitchenSpeed';
-import { ScreenM6WaitingQueue } from '../../components/manager/ScreenM6WaitingQueue';
-import { ScreenM7StaffRoster } from '../../components/manager/ScreenM7StaffRoster';
-import { ScreenM8CallsAlerts } from '../../components/manager/ScreenM8CallsAlerts';
-import { ScreenM9WaiterCash } from '../../components/manager/ScreenM9WaiterCash';
-import { ScreenM10Menu86Stock } from '../../components/manager/ScreenM10Menu86Stock';
-import { ScreenM11SalesReport } from '../../components/manager/ScreenM11SalesReport';
-import { ScreenM12OffersRules } from '../../components/manager/ScreenM12OffersRules';
-import { ScreenM13PettyExpenses } from '../../components/manager/ScreenM13PettyExpenses';
-import { ScreenM14AttendanceTips } from '../../components/manager/ScreenM14AttendanceTips';
-import { ScreenM15PrinterHealth } from '../../components/manager/ScreenM15PrinterHealth';
-import { ScreenM16DayCloseZReport } from '../../components/manager/ScreenM16DayCloseZReport';
+import { ScreenM5StaffRoster } from '../../components/manager/ScreenM5StaffRoster';
+import { ScreenM6WaiterCash } from '../../components/manager/ScreenM6WaiterCash';
+import { ScreenM7SalesReport } from '../../components/manager/ScreenM7SalesReport';
+import { ScreenM8OffersRules } from '../../components/manager/ScreenM8OffersRules';
+import { ScreenM9PettyExpenses } from '../../components/manager/ScreenM9PettyExpenses';
+import { ScreenM10AttendanceTips } from '../../components/manager/ScreenM10AttendanceTips';
+import { ScreenM11DayCloseZReport } from '../../components/manager/ScreenM11DayCloseZReport';
 
 import {
   Briefcase,
@@ -46,6 +41,7 @@ export default function ManagerPortalPage() {
     setViewMode,
     activeManager,
     activeShift,
+    isAuthenticated,
     logout,
   } = useManagerStore();
 
@@ -71,24 +67,27 @@ export default function ManagerPortalPage() {
     { id: 2 as ManagerScreenId, name: '02. Live Overview', comp: <ScreenM2LiveOverview /> },
     { id: 3 as ManagerScreenId, name: '03. Floor Plan', comp: <ScreenM3FloorPlan /> },
     { id: 4 as ManagerScreenId, name: '04. Billing & POS', comp: <ScreenM4BillingPOS /> },
-    { id: 5 as ManagerScreenId, name: '05. Kitchen Speed', comp: <ScreenM5KitchenSpeed /> },
-    { id: 6 as ManagerScreenId, name: '06. Waiting Queue', comp: <ScreenM6WaitingQueue /> },
-    { id: 7 as ManagerScreenId, name: '07. Staff Roster', comp: <ScreenM7StaffRoster /> },
-    { id: 8 as ManagerScreenId, name: '08. Calls & Alerts', comp: <ScreenM8CallsAlerts /> },
-    { id: 9 as ManagerScreenId, name: '09. Waiter Cash', comp: <ScreenM9WaiterCash /> },
-    { id: 10 as ManagerScreenId, name: '10. Menu 86 Stock', comp: <ScreenM10Menu86Stock /> },
-    { id: 11 as ManagerScreenId, name: '11. Sales Report', comp: <ScreenM11SalesReport /> },
-    { id: 12 as ManagerScreenId, name: '12. Offers & Rules', comp: <ScreenM12OffersRules /> },
-    { id: 13 as ManagerScreenId, name: '13. Petty Expenses', comp: <ScreenM13PettyExpenses /> },
-    { id: 14 as ManagerScreenId, name: '14. Attendance & Tips', comp: <ScreenM14AttendanceTips /> },
-    { id: 15 as ManagerScreenId, name: '15. Printer Health', comp: <ScreenM15PrinterHealth /> },
-    { id: 16 as ManagerScreenId, name: '16. Day Close Z-Report', comp: <ScreenM16DayCloseZReport /> },
+    { id: 5 as ManagerScreenId, name: '05. Staff Roster', comp: <ScreenM5StaffRoster /> },
+    { id: 6 as ManagerScreenId, name: '06. Waiter Cash', comp: <ScreenM6WaiterCash /> },
+    { id: 7 as ManagerScreenId, name: '07. Sales Report', comp: <ScreenM7SalesReport /> },
+    { id: 8 as ManagerScreenId, name: '08. Offers & Rules', comp: <ScreenM8OffersRules /> },
+    { id: 9 as ManagerScreenId, name: '09. Petty Expenses', comp: <ScreenM9PettyExpenses /> },
+    { id: 10 as ManagerScreenId, name: '10. Attendance & Tips', comp: <ScreenM10AttendanceTips /> },
+    { id: 11 as ManagerScreenId, name: '11. Day Close Z-Report', comp: <ScreenM11DayCloseZReport /> },
   ];
 
   const renderActiveScreen = () => {
     const s = screens.find((item) => item.id === currentScreen);
     return s ? s.comp : <ScreenM1Login />;
   };
+
+  if (!isAuthenticated) {
+    return (
+      <main className="min-h-screen bg-stone-100 flex items-center justify-center">
+        <ScreenM1Login />
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-stone-100 flex flex-col font-sans">
@@ -101,7 +100,7 @@ export default function ManagerPortalPage() {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-mono text-[10px] font-black uppercase tracking-wider text-slate-900 bg-stone-100 border border-slate-300 rounded-md px-1.5 py-0.5">
-                MANAGER COMMAND DESK • 16 SCREENS • REACT 19
+                MANAGER COMMAND DESK • 11 SCREENS • REACT 19
               </span>
               <span className="font-mono text-[10px] font-bold text-slate-400">
                 THOOGUDEEPA DONNE BIRYANI MANE
@@ -147,7 +146,7 @@ export default function ManagerPortalPage() {
             </Link>
             <span className="rounded-xl bg-slate-900 text-white px-3 py-1.5 shadow-xs flex items-center gap-1">
               <Briefcase className="h-3.5 w-3.5 fill-white" />
-              <span>MANAGER (16)</span>
+              <span>MANAGER (11)</span>
             </span>
           </div>
 
@@ -173,13 +172,13 @@ export default function ManagerPortalPage() {
               }`}
             >
               <LayoutGrid className="h-3.5 w-3.5" />
-              <span>ALL 16 SCREENS</span>
+              <span>ALL 11 SCREENS</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Screen Tabs Bar (1 to 16) */}
+      {/* Screen Tabs Bar */}
       <nav className="w-full max-w-7xl mx-auto flex gap-1.5 overflow-x-auto px-6 py-2.5 scrollbar-none font-mono">
         {screens.map((sc) => {
           const isActive = viewMode === 'single' && currentScreen === sc.id;

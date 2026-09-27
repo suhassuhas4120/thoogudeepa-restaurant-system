@@ -2,14 +2,10 @@
 
 import React from 'react';
 import { useManagerStore } from '../../store/useManagerStore';
-import { Users, Phone, Radio, CheckCircle, Clock } from 'lucide-react';
+import { Users, Phone, CheckCircle, Clock } from 'lucide-react';
 
-export function ScreenM7StaffRoster() {
+export function ScreenM5StaffRoster() {
   const { staffRoster, updateStaffStatus } = useManagerStore();
-
-  const handleBroadcast = () => {
-    alert('BEEP! Broadcast Paged to All Waiter Handhelds: All Captains report to Billing Counter 01!');
-  };
 
   return (
     <div className="w-full max-w-6xl mx-auto p-4 space-y-5 font-mono">
@@ -23,16 +19,9 @@ export function ScreenM7StaffRoster() {
             <span className="text-xs font-bold text-slate-500">DINNER SERVICE SQUAD</span>
           </div>
           <h3 className="text-base font-black text-slate-900 mt-1">
-            FLOOR CAPTAINS &amp; TABLE ASSIGNMENTS
+            FLOOR CAPTAINS
           </h3>
         </div>
-        <button
-          onClick={handleBroadcast}
-          className="bg-slate-900 text-white py-2 px-4 rounded-xl text-xs font-bold hover:bg-orange-600 transition flex items-center gap-2 shadow-[2px_2px_0px_#0f172a]"
-        >
-          <Radio className="h-4 w-4 text-emerald-400" />
-          <span>PAGE ALL CAPTAINS TO TILL</span>
-        </button>
       </div>
 
       {/* Staff Cards Grid */}
@@ -82,12 +71,6 @@ export function ScreenM7StaffRoster() {
                 className="flex-1 bg-stone-100 border border-slate-300 py-1.5 rounded text-xs font-bold text-slate-700 hover:bg-stone-200 transition text-center"
               >
                 {st.status === 'ACTIVE' ? 'MARK ON BREAK' : 'SET ACTIVE'}
-              </button>
-              <button
-                onClick={() => alert(`Vibrating smartwatch & handheld of ${st.name}!`)}
-                className="bg-slate-900 text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-orange-600 transition"
-              >
-                PAGE
               </button>
             </div>
           </div>
