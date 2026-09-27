@@ -6,28 +6,29 @@ import { Banknote } from 'lucide-react';
 
 export function ScreenM6WaiterCash() {
   const { staffRoster, reconcileStaffCash } = useManagerStore();
-  const [cashInputs, setCashInputs] = useState<Record<string, { collected: string; handedOver: string }>>(() =>
-    Object.fromEntries(staffRoster.map((st) => [st.id, { collected: String(st.cashCollected), handedOver: String(st.cashHandedOver) }]))
+  const [cashInputs, setCashInputs] = useState<Record<string, string>>(() =>
+    Object.fromEntries(staffRoster.map((st) => [st.id, String(st.cashHandedOver)]))
   );
   const [inputError, setInputError] = useState('');
 
-  const handleCashInput = (staffId: string, field: 'collected' | 'handedOver', value: string) => {
+  const handleCashInput = (staffId: string, value: string) => {
     setInputError('');
     setCashInputs((prev) => ({
       ...prev,
-      [staffId]: { ...prev[staffId], [field]: value },
+      [staffId]: value,
     }));
   };
 
   const handleSaveCash = (staffId: string, staffName: string) => {
     const input = cashInputs[staffId];
-    const collected = Number(input?.collected);
-    const handedOver = Number(input?.handedOver);
-    if (!input || !Number.isFinite(collected) || !Number.isFinite(handedOver) || collected < 0 || handedOver < 0) {
-      setInputError('Enter valid non-negative amounts before saving.');
+    const handedOver = Number(input);
+    if (input === undefined || !Number.isFinite(handedOver) || handedOver < 0) {
+      setInputError('Enter a valid non-negative handover amount before saving.');
       return;
     }
-    reconcileStaffCash(staffId, collected, handedOver);
+    const staff = staffRoster.find((st) => st.id === staffId);
+    if (!staff) return;
+    reconcileStaffCash(staffId, staff.cashCollected, handedOver);
     setInputError(`${staffName} cash reconciliation saved.`);
   };
 
@@ -48,8 +49,11 @@ export function ScreenM6WaiterCash() {
 
           <div className="space-y-3 mt-4">
             {staffRoster.map((st) => {
-                const diff = st.cashCollected - st.cashHandedOver;
-                const input = cashInputs[st.id] || { collected: String(st.cashCollected), handedOver: String(st.cashHandedOver) };
+                const handedOverInput = cashInputs[st.id] ?? String(st.cashHandedOver);
+                const enteredHandedOver = handedOverInput.trim() === '' ? null : Number(handedOverInput);
+                const diff = enteredHandedOver !== null && Number.isFinite(enteredHandedOver)
+                  ? st.cashCollected - enteredHandedOver
+                  : st.cashCollected - st.cashHandedOver;
                 return (
                   <div key={st.id} className="p-3 bg-stone-50 rounded-xl border border-slate-300 text-xs">
                     <div className="flex justify-between items-center">
@@ -59,18 +63,7 @@ export function ScreenM6WaiterCash() {
                     <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-200">
                       <div>
                         <div className="text-[10px] text-slate-400">COLLECTED</div>
-                        <div className="flex items-center gap-1 mt-1">
-                          <span className="text-slate-600">₹</span>
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={input.collected}
-                            onChange={(e) => handleCashInput(st.id, 'collected', e.target.value)}
-                            className="w-full min-w-0 border border-slate-900 rounded p-1 font-bold"
-                            aria-label={`${st.name} cash collected`}
-                          />
-                        </div>
+                        <div className="font-bold text-slate-800 mt-1">₹ {st.cashCollected}</div>
                       </div>
                       <div>
                         <div className="text-[10px] text-slate-400">HANDED OVER</div>
@@ -80,9 +73,10 @@ export function ScreenM6WaiterCash() {
                             type="number"
                             min="0"
                             step="0.01"
-                            value={input.handedOver}
-                            onChange={(e) => handleCashInput(st.id, 'handedOver', e.target.value)}
-                            className="w-full min-w-0 border border-slate-900 rounded p-1 font-bold text-emerald-700"
+                            inputMode="decimal"
+                            value={handedOverInput}
+                            onChange={(e) => handleCashInput(st.id, e.target.value)}
+                            className="w-full min-w-0 h-10 border-2 border-slate-900 rounded p-2 text-base font-bold text-emerald-700"
                             aria-label={`${st.name} cash handed over`}
                           />
                         </div>
