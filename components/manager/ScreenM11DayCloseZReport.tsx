@@ -5,7 +5,7 @@ import { useSharedBridge } from '../../store/useSharedBridge';
 import { useManagerStore } from '../../store/useManagerStore';
 import { FileText, Printer, Lock, AlertTriangle, CheckCircle2, IndianRupee } from 'lucide-react';
 
-export function ScreenM16DayCloseZReport() {
+export function ScreenM11DayCloseZReport() {
   const { shiftStats, tables, kdsTickets } = useSharedBridge();
   const { openingFloat, pettyExpenses, activeManager } = useManagerStore();
 
@@ -20,12 +20,8 @@ export function ScreenM16DayCloseZReport() {
   const cashSales = shiftStats.cashRevenue;
   const expectedCashInTill = openingFloat ? openingFloat.amount + cashSales - totalPetty : null;
 
-  const [actualCashCounted, setActualCashCounted] = useState('');
   const [shiftLocked, setShiftLocked] = useState(false);
   const [closeError, setCloseError] = useState('');
-
-  const actualCash = actualCashCounted.trim() === '' ? null : Number(actualCashCounted);
-  const variance = expectedCashInTill !== null && actualCash !== null ? actualCash - expectedCashInTill : null;
 
   const handlePrintZ = () => {
     setCloseError('Print integration requires the printer service. The report remains available on screen.');
@@ -34,10 +30,6 @@ export function ScreenM16DayCloseZReport() {
   const handleLockShift = () => {
     if (openingFloat === null || expectedCashInTill === null) {
       setCloseError('Verify the opening float before closing the shift.');
-      return;
-    }
-    if (actualCash === null || !Number.isFinite(actualCash) || actualCash < 0) {
-      setCloseError('Enter the physical cash counted before closing the shift.');
       return;
     }
     if (tables.some((table) => table.status !== 'VACANT') || kdsTickets.some((ticket) => ticket.status !== 'COMPLETED')) {
@@ -128,23 +120,6 @@ export function ScreenM16DayCloseZReport() {
               <span>{expectedCashInTill === null ? 'NOT AVAILABLE' : `₹ ${expectedCashInTill.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}</span>
             </div>
 
-            <div className="mt-3 p-3 bg-stone-50 rounded-lg border border-slate-200 space-y-1">
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-slate-700">ACTUAL PHYSICAL CASH:</span>
-                <input
-                  type="number"
-                  value={actualCashCounted}
-                  onChange={(e) => setActualCashCounted(e.target.value)}
-                  className="w-28 text-right bg-white border border-slate-900 rounded p-1 font-mono font-bold"
-                />
-              </div>
-              <div className="flex justify-between font-black pt-1 border-t border-slate-200">
-                <span>CASH VARIANCE:</span>
-                  <span className={variance === 0 ? 'text-emerald-700' : 'text-rose-600'}>
-                  {variance === null ? 'COUNT REQUIRED' : variance === 0 ? '₹ 0.00 (PERFECT)' : `₹ ${variance.toFixed(2)} (${variance > 0 ? 'OVER' : 'SHORT'})`}
-                </span>
-              </div>
-            </div>
           </div>
 
           {closeError && <p className="mt-3 text-xs font-bold text-rose-600">{closeError}</p>}

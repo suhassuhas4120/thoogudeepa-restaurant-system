@@ -248,9 +248,6 @@ export function ScreenM4BillingPOS() {
                     <div className="font-mono text-xs font-bold text-slate-900 group-hover:text-orange-950">
                       {menuItem.name}
                     </div>
-                    <div className="font-mono text-[10.5px] text-slate-500">
-                      {menuItem.category} • {menuItem.prepMode}
-                    </div>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">

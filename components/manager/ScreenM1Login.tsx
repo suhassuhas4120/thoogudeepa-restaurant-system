@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useManagerStore, MANAGER_PROFILES, INITIAL_SHIFTS } from '../../store/useManagerStore';
-import { ShieldCheck, Lock, Unlock, Clock, AlertCircle, CheckCircle2, RefreshCw, KeyRound, Printer } from 'lucide-react';
+import { ShieldCheck, Lock, Unlock, Clock, AlertCircle, CheckCircle2, RefreshCw, KeyRound } from 'lucide-react';
 
 export function ScreenM1Login() {
   const {
@@ -25,6 +25,8 @@ export function ScreenM1Login() {
   const [floatInput, setFloatInput] = useState('');
   const [floatError, setFloatError] = useState('');
   const [isEditingFloat, setIsEditingFloat] = useState(false);
+  const [isCustomProfile, setIsCustomProfile] = useState(false);
+  const [customProfileName, setCustomProfileName] = useState('');
 
   const handlePress = (d: string) => {
     setAuthError(false);
@@ -61,18 +63,9 @@ export function ScreenM1Login() {
       <div className="md:col-span-5 flex flex-col gap-4">
         {/* Terminal Header */}
         <div className="bg-white border-2 border-slate-900 rounded-xl p-5 shadow-[4px_4px_0px_#0f172a]">
-          <div className="flex items-center justify-between pb-3 border-b border-dashed border-slate-300">
-            <span className="bg-slate-900 text-white font-mono text-xs font-bold px-2 py-0.5 rounded">
-              [AUTH TERMINAL 01]
-            </span>
-            <span className="font-mono text-xs text-slate-500 font-semibold">POS v4.2 PRO</span>
-          </div>
           <h2 className="text-base font-black text-slate-900 mt-3 font-mono">
             THOOGUDEEPA DONNE BIRYANI MANE
           </h2>
-          <p className="text-xs text-slate-500 font-mono mt-0.5">
-            Command Center • Shift Cashier & Floor Management
-          </p>
         </div>
 
         {/* Shift Selection */}
@@ -150,25 +143,6 @@ export function ScreenM1Login() {
           </p>
         </div>
 
-        {/* Hardware Status Preview */}
-        <div className="bg-slate-900 text-white rounded-xl p-4 text-xs font-mono space-y-1.5">
-          <div className="text-slate-400 font-bold mb-2 flex items-center gap-1.5">
-            <Printer className="h-3.5 w-3.5 text-emerald-400" />
-            <span>PERIPHERALS READY:</span>
-          </div>
-          <div className="flex justify-between text-slate-300">
-            <span>Thermal Bill Printer (80mm)</span>
-            <span className="text-emerald-400 font-bold">[ONLINE]</span>
-          </div>
-          <div className="flex justify-between text-slate-300">
-            <span>Dum Kitchen KDS Display</span>
-            <span className="text-emerald-400 font-bold">[ONLINE]</span>
-          </div>
-          <div className="flex justify-between text-slate-300">
-            <span>Automatic Cash Drawer Kick</span>
-            <span className="text-emerald-400 font-bold">[LOCKED]</span>
-          </div>
-        </div>
       </div>
 
       {/* Right PIN Pad Column */}
@@ -192,8 +166,15 @@ export function ScreenM1Login() {
               [ACTIVE PROFILE]:
             </label>
             <select
-              value={activeManager.id}
+              value={isCustomProfile ? 'custom' : activeManager.id}
               onChange={(e) => {
+                if (e.target.value === 'custom') {
+                  setIsCustomProfile(true);
+                  setCustomProfileName('');
+                  setActiveManager({ ...MANAGER_PROFILES[0], id: 'custom-manager', name: 'OTHER STAFF' });
+                  return;
+                }
+                setIsCustomProfile(false);
                 const found = MANAGER_PROFILES.find((m) => m.id === e.target.value);
                 if (found) setActiveManager(found);
               }}
@@ -204,7 +185,23 @@ export function ScreenM1Login() {
                   {p.name} — ({p.role})
                 </option>
               ))}
+              <option value="custom">OTHER STAFF — (ENTER NAME)</option>
             </select>
+            {isCustomProfile && (
+              <input
+                type="text"
+                value={customProfileName}
+                onChange={(e) => {
+                  const name = e.target.value;
+                  setCustomProfileName(name);
+                  setActiveManager({ ...MANAGER_PROFILES[0], id: 'custom-manager', name: name || 'OTHER STAFF' });
+                }}
+                placeholder="Enter staff name"
+                aria-label="Staff name"
+                className="w-full mt-2 bg-white border-2 border-slate-900 rounded-lg p-2.5 font-mono text-xs font-bold text-slate-900 focus:outline-none"
+                autoFocus
+              />
+            )}
           </div>
 
           {/* PIN Indicators */}

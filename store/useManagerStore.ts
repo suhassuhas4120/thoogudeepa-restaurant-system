@@ -77,7 +77,7 @@ interface ManagerStoreState {
   
   // Staff actions
   updateStaffStatus: (id: string, status: StaffRosterMember['status']) => void;
-  reconcileStaffCash: (id: string, amountHandedOver: number) => void;
+  reconcileStaffCash: (id: string, amountCollected: number, amountHandedOver: number) => void;
   
   // Hardware actions
   toggleHardwareStatus: (id: string) => void;
@@ -170,8 +170,8 @@ export const useManagerStore = create<ManagerStoreState>((set, get) => ({
   updateStaffStatus: (id, status) => set((s) => ({
     staffRoster: s.staffRoster.map((st) => (st.id === id ? { ...st, status } : st)),
   })),
-  reconcileStaffCash: (id, amountHandedOver) => set((s) => ({
-    staffRoster: s.staffRoster.map((st) => (st.id === id ? { ...st, cashHandedOver: amountHandedOver } : st)),
+  reconcileStaffCash: (id, amountCollected, amountHandedOver) => set((s) => ({
+    staffRoster: s.staffRoster.map((st) => (st.id === id ? { ...st, cashCollected: amountCollected, cashHandedOver: amountHandedOver } : st)),
   })),
   
   toggleHardwareStatus: (id) => set((s) => ({

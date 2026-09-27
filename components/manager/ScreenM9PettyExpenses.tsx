@@ -5,7 +5,7 @@ import { useManagerStore } from '../../store/useManagerStore';
 import { useSharedBridge } from '../../store/useSharedBridge';
 import { Receipt, Plus, IndianRupee } from 'lucide-react';
 
-export function ScreenM13PettyExpenses() {
+export function ScreenM9PettyExpenses() {
   const { pettyExpenses, addPettyExpense } = useManagerStore();
   const recordCashExpense = useSharedBridge((state) => state.recordCashExpense);
 

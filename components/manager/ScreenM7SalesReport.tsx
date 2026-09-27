@@ -4,7 +4,7 @@ import React from 'react';
 import { useSharedBridge } from '../../store/useSharedBridge';
 import { TrendingUp, PieChart, IndianRupee, Trophy } from 'lucide-react';
 
-export function ScreenM11SalesReport() {
+export function ScreenM7SalesReport() {
   const { shiftStats } = useSharedBridge();
 
   const totalSales = Math.max(38400, shiftStats.totalRevenue);

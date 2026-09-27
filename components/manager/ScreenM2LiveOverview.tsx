@@ -3,14 +3,13 @@
 import React from 'react';
 import { useSharedBridge } from '../../store/useSharedBridge';
 import { useManagerStore } from '../../store/useManagerStore';
-import { IndianRupee, Users, Utensils, AlertTriangle, TrendingUp, Clock, CheckCircle2, ArrowRight } from 'lucide-react';
+import { IndianRupee, Utensils, AlertTriangle, TrendingUp, Clock, CheckCircle2, ArrowRight, Bell } from 'lucide-react';
 
 export function ScreenM2LiveOverview() {
-  const { tables, kdsTickets, shiftStats } = useSharedBridge();
-  const { setCurrentScreen, setSelectedTableNumber, openingFloat } = useManagerStore();
+  const { tables, kdsTickets, pings, shiftStats, waiterResolvePing } = useSharedBridge();
+  const { setCurrentScreen, setSelectedTableNumber } = useManagerStore();
 
   const occupiedTables = tables.filter((t) => t.status === 'OCCUPIED' || t.status === 'BILLING');
-  const totalSeated = occupiedTables.reduce((acc, t) => acc + (t.guestCount || 0), 0);
   const activeKdsCount = kdsTickets.filter((tk) => tk.status !== 'COMPLETED').length;
   const currentLiveBillSum = tables.reduce((acc, t) => acc + t.currentBill, 0);
 
@@ -31,22 +30,6 @@ export function ScreenM2LiveOverview() {
           <div className="text-xl md:text-2xl font-black font-mono text-slate-900 mt-1">
             ₹ {(shiftStats.totalRevenue + currentLiveBillSum).toLocaleString('en-IN')}.00
           </div>
-          <p className="text-[11px] font-mono text-emerald-700 font-bold mt-1">
-            +18% vs Yesterday Dinner
-          </p>
-        </div>
-
-        <div className="bg-white border-2 border-slate-900 rounded-xl p-4 shadow-[3px_3px_0px_#0f172a]">
-          <div className="flex items-center justify-between text-xs font-mono text-slate-500">
-            <span>GUESTS SEATED</span>
-            <Users className="h-4 w-4 text-blue-600" />
-          </div>
-          <div className="text-xl md:text-2xl font-black font-mono text-slate-900 mt-1">
-            {totalSeated} Guests
-          </div>
-          <p className="text-[11px] font-mono text-slate-500 mt-1">
-            Across {occupiedTables.length} active tables
-          </p>
         </div>
 
         <div className="bg-white border-2 border-slate-900 rounded-xl p-4 shadow-[3px_3px_0px_#0f172a]">
@@ -57,9 +40,6 @@ export function ScreenM2LiveOverview() {
           <div className="text-xl md:text-2xl font-black font-mono text-slate-900 mt-1">
             {activeKdsCount} Orders
           </div>
-          <p className="text-[11px] font-mono text-orange-700 font-bold mt-1">
-            Avg Cook Time: 12 mins
-          </p>
         </div>
 
         <div className="bg-white border-2 border-slate-900 rounded-xl p-4 shadow-[3px_3px_0px_#0f172a]">
@@ -68,7 +48,7 @@ export function ScreenM2LiveOverview() {
             <Clock className="h-4 w-4 text-purple-600" />
           </div>
           <div className="text-xl md:text-2xl font-black font-mono text-slate-900 mt-1">
-            {Math.round((occupiedTables.length / tables.length) * 100)}%
+            {occupiedTables.length} / {tables.length}
           </div>
           <p className="text-[11px] font-mono text-slate-500 mt-1">
             {tables.length - occupiedTables.length} tables vacant
@@ -140,13 +120,6 @@ export function ScreenM2LiveOverview() {
               <AlertTriangle className="h-4 w-4 text-amber-500" />
               <span>LIVE KITCHEN SPEED & BOTTLENECKS</span>
             </h4>
-            <button
-              onClick={() => setCurrentScreen(5)}
-              className="text-[11px] font-mono font-bold text-orange-600 hover:underline flex items-center gap-1"
-            >
-              <span>VIEW KDS</span>
-              <ArrowRight className="h-3 w-3" />
-            </button>
           </div>
           {activeKdsCount > 0 ? (
             <div className="space-y-2 mt-2">
@@ -171,50 +144,43 @@ export function ScreenM2LiveOverview() {
           )}
         </div>
 
-        {/* Shift Cash & Settlements */}
+        {/* Customer Notifications */}
         <div className="bg-white border-2 border-slate-900 rounded-xl p-4 shadow-[3px_3px_0px_#0f172a] flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="text-xs font-mono font-black text-slate-900">
-                SHIFT CASH DRAWER SUMMARY
-              </h4>
-              <button
-                onClick={() => setCurrentScreen(9)}
-                className="text-[11px] font-mono font-bold text-slate-600 hover:underline flex items-center gap-1"
-              >
-                <span>RECONCILE</span>
-                <ArrowRight className="h-3 w-3" />
-              </button>
-            </div>
-            <div className="space-y-1.5 text-xs font-mono">
-              <div className="flex justify-between text-slate-600">
-                <span>Opening Cash Float:</span>
-                <span className="font-bold">{openingFloat ? `₹ ${openingFloat.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : 'NOT VERIFIED'}</span>
-              </div>
-              <div className="flex justify-between text-slate-600">
-                <span>Cash Collected Today:</span>
-                <span className="font-bold text-emerald-700">₹ {shiftStats.cashRevenue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-              </div>
-              <div className="flex justify-between text-slate-600">
-                <span>Total Tables Served:</span>
-                <span className="font-bold">{shiftStats.tablesServed} Tables</span>
-              </div>
-            </div>
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-xs font-mono font-black text-slate-900 flex items-center gap-1.5">
+              <Bell className="h-4 w-4 text-orange-600" />
+              CUSTOMER NOTIFICATIONS
+            </h4>
+            <span className="text-[10px] font-mono font-bold text-slate-500">
+              {pings.length} ACTIVE
+            </span>
           </div>
-          <div className="pt-3 border-t border-slate-200 mt-3 flex gap-2">
-            <button
-              onClick={() => setCurrentScreen(4)}
-              className="flex-1 bg-slate-900 text-white py-2 px-3 rounded-lg text-xs font-mono font-bold hover:bg-orange-600 transition text-center"
-            >
-              OPEN BILLING POS ➔
-            </button>
-            <button
-              onClick={() => setCurrentScreen(16)}
-              className="bg-stone-100 text-slate-800 py-2 px-3 rounded-lg text-xs font-mono font-bold hover:bg-stone-200 transition"
-            >
-              Z-REPORT
-            </button>
-          </div>
+          {pings.length > 0 ? (
+            <div className="space-y-2">
+              {pings.slice(0, 3).map((ping) => (
+                <div key={ping.id} className="flex items-center justify-between gap-3 p-2 rounded-lg bg-stone-50 border border-slate-200 text-xs font-mono">
+                  <div className="min-w-0">
+                    <div className="font-bold text-slate-900 truncate">
+                      Table {ping.tableNumber}: {ping.type}
+                    </div>
+                    <div className="text-[10px] text-slate-500 truncate">
+                      {ping.guestName} • {ping.timestamp}{ping.message ? ` • ${ping.message}` : ''}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => waiterResolvePing(ping.id)}
+                    className="shrink-0 bg-slate-900 text-white px-2.5 py-1.5 rounded text-[10px] font-bold hover:bg-orange-600 transition"
+                  >
+                    RESOLVE
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center p-4 text-center text-xs font-mono text-slate-500 bg-stone-50 rounded-lg">
+              No customer notifications
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -4,7 +4,7 @@ import React from 'react';
 import { useManagerStore } from '../../store/useManagerStore';
 import { Tag, ShieldAlert, CheckCircle, Percent } from 'lucide-react';
 
-export function ScreenM12OffersRules() {
+export function ScreenM8OffersRules() {
   const { promos, togglePromo } = useManagerStore();
 
   return (
@@ -68,14 +68,12 @@ export function ScreenM12OffersRules() {
 
       {/* Audit Log */}
       <div className="bg-white border-2 border-slate-900 rounded-xl p-4 shadow-[3px_3px_0px_#0f172a] text-xs">
-        <h4 className="font-black text-slate-900 uppercase mb-2">Manager Goodwill Override Log (Today)</h4>
+        <h4 className="font-black text-slate-900 uppercase mb-2">Override Log</h4>
         <div className="space-y-1.5 text-slate-600">
           <div className="flex justify-between p-2 bg-stone-50 rounded border border-slate-200">
-            <span>Table A-03 • 20% Goodwill Off (Food Delay Apology)</span>
-            <span className="font-bold text-slate-900">Auth by GM Manjunath • PIN Verified</span>
+            <span className="font-bold text-slate-900">Auth by GM Manjunath</span>
           </div>
           <div className="flex justify-between p-2 bg-stone-50 rounded border border-slate-200">
-            <span>Table B-02 • 10% Corporate Badge Discount</span>
             <span className="font-bold text-slate-900">Auth by Floor Lead Raghav</span>
           </div>
         </div>
