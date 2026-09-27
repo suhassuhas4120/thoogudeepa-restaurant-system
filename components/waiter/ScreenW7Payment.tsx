@@ -187,9 +187,10 @@ export const ScreenW7Payment: React.FC = () => {
             </div>
             <div className="grid grid-cols-3 gap-1.5">
               {[
+                { id: 'CASH' as const, name: 'Cash', icon: <Banknote className="h-3.5 w-3.5" /> },
                 { id: 'UPI' as const, name: 'UPI QR', icon: <QrCode className="h-3.5 w-3.5" /> },
                 { id: 'CARD' as const, name: 'Card POS', icon: <CreditCard className="h-3.5 w-3.5" /> },
-                { id: 'CASH' as const, name: 'Cash', icon: <Banknote className="h-3.5 w-3.5" /> },
+            
               ].map((m) => {
                 const isSelected = method === m.id;
                 return (
@@ -554,11 +555,15 @@ export const ScreenW7Payment: React.FC = () => {
             {success ? (
               <span>✓ Payment Recorded!</span>
             ) : method === 'UPI' ? (
-              <span>Confirm &amp; Record ₹{breakdown.grandTotal} via UPI ➔</span>
-            ) : method === 'CARD' ? (
-              <span>Confirm &amp; Record ₹{breakdown.grandTotal} via Card POS ➔</span>
-            ) : (
               <span>Confirm &amp; Record ₹{breakdown.grandTotal} Cash ➔</span>
+              
+            ) : method === 'CARD' ? (
+              <span>Confirm &amp; Record ₹{breakdown.grandTotal} via UPI ➔</span>
+              
+            ) : (
+              <span>Confirm &amp; Record ₹{breakdown.grandTotal} via Card POS ➔</span>
+              
+              
             )}
           </motion.button>
         </div>
