@@ -5,7 +5,7 @@ import { useSharedBridge } from '../../store/useSharedBridge';
 import { Flame, Ban, CheckCircle, Clock } from 'lucide-react';
 
 export function ScreenM10Menu86Stock() {
-  const { inventory86, kitchenToggle86, kitchenUpdatePrepDelay } = useSharedBridge();
+  const { inventory86, kitchenToggle86 } = useSharedBridge();
 
   return (
     <div className="w-full max-w-6xl mx-auto p-4 space-y-5 font-mono">
@@ -73,23 +73,6 @@ export function ScreenM10Menu86Stock() {
                 {it.is86 ? '✓ RESTORE DISH (IN STOCK)' : '✕ 86 DISH (SOLD OUT)'}
               </button>
 
-              <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
-                <span>Delay:</span>
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => kitchenUpdatePrepDelay(it.id, 5)}
-                    className="bg-stone-100 hover:bg-stone-200 px-2 py-0.5 rounded font-bold text-slate-700"
-                  >
-                    +5m
-                  </button>
-                  <button
-                    onClick={() => kitchenUpdatePrepDelay(it.id, -5)}
-                    className="bg-stone-100 hover:bg-stone-200 px-2 py-0.5 rounded font-bold text-slate-700"
-                  >
-                    -5m
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         ))}

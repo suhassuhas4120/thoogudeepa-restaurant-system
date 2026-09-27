@@ -387,32 +387,8 @@ export const ScreenK3Detail: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Delay & 86 Controls */}
+                    {/* 86 Controls */}
                     <div className="flex items-center gap-2 shrink-0">
-                      {/* Prep Delay */}
-                      <div
-                        className={`flex items-center gap-1 bg-white p-0.5 rounded-lg border text-xs font-mono transition ${
-                          inventoryLocked
-                            ? 'border-slate-100 opacity-40 pointer-events-none'
-                            : 'border-slate-200'
-                        }`}
-                      >
-                        <button
-                          onClick={() => handlePendingDelay(item.id, -5)}
-                          disabled={inventoryLocked}
-                          className="px-1.5 py-0.5 hover:bg-stone-100 rounded text-slate-600 font-bold disabled:cursor-not-allowed"
-                        >
-                          -5m
-                        </button>
-                        <button
-                          onClick={() => handlePendingDelay(item.id, 5)}
-                          disabled={inventoryLocked}
-                          className="px-1.5 py-0.5 hover:bg-stone-100 rounded text-slate-900 font-black disabled:cursor-not-allowed"
-                        >
-                          +5m
-                        </button>
-                      </div>
-
                       {/* 86 Toggle Button */}
                       <button
                         onClick={() => handlePendingToggle(item.id, item.is86)}
