@@ -22,11 +22,11 @@ import { ScreenW10ShiftStats } from '../../components/waiter/ScreenW10ShiftStats
 import { TabletScreen1Login } from '../../components/waiter/tablet/TabletScreen1Login';
 import { TabletScreen2TablesFeed } from '../../components/waiter/tablet/TabletScreen2TablesFeed';
 import { TabletScreen3TableDetail } from '../../components/waiter/tablet/TabletScreen3TableDetail';
-import { TabletScreen4TakeOrder } from '../../components/waiter/tablet/TabletScreen4TakeOrder';
-import { TabletScreen5ItemCustom } from '../../components/waiter/tablet/TabletScreen5ItemCustom';
-import { TabletScreen6MergeSplit } from '../../components/waiter/tablet/TabletScreen6MergeSplit';
-import { TabletScreen7Payment } from '../../components/waiter/tablet/TabletScreen7Payment';
-import { TabletScreen8PrintBill } from '../../components/waiter/tablet/TabletScreen8PrintBill';
+// import { TabletScreen4TakeOrder } from '../../components/waiter/tablet/TabletScreen4TakeOrder';
+// import { TabletScreen5ItemCustom } from '../../components/waiter/tablet/TabletScreen5ItemCustom';
+// import { TabletScreen6MergeSplit } from '../../components/waiter/tablet/TabletScreen6MergeSplit';
+// import { TabletScreen7Payment } from '../../components/waiter/tablet/TabletScreen7Payment';
+// import { TabletScreen8PrintBill } from '../../components/waiter/tablet/TabletScreen8PrintBill';
 // import { TabletScreen9Vacate } from '../../components/waiter/tablet/TabletScreen9Vacate';
 import { TabletScreen10ShiftStats } from '../../components/waiter/tablet/TabletScreen10ShiftStats';
 
@@ -54,11 +54,11 @@ export default function WaiterTabletPage() {
     { id: 1 as WaiterScreenId, name: '1. Waiter Login', icon: <UserCheck className="h-3.5 w-3.5 text-orange-500" />, mobile: <ScreenW1Login />, tablet: <TabletScreen1Login /> },
     { id: 2 as WaiterScreenId, name: '2. All Tables & Feeds', icon: <Users className="h-3.5 w-3.5 text-purple-500" />, mobile: <ScreenW2TablesFeed />, tablet: <TabletScreen2TablesFeed /> },
     { id: 3 as WaiterScreenId, name: '3. Table Detail', icon: <UtensilsCrossed className="h-3.5 w-3.5 text-indigo-500" />, mobile: <ScreenW3TableDetail />, tablet: <TabletScreen3TableDetail /> },
-    { id: 4 as WaiterScreenId, name: '4. Take Order Menu', icon: <Utensils className="h-3.5 w-3.5 text-blue-500" />, mobile: <ScreenW4TakeOrder />, tablet: <TabletScreen4TakeOrder /> },
-    { id: 5 as WaiterScreenId, name: '5. Item Custom / KOT', icon: <Flame className="h-3.5 w-3.5 text-amber-500" />, mobile: <ScreenW5ItemCustom />, tablet: <TabletScreen5ItemCustom /> },
-    { id: 6 as WaiterScreenId, name: '6. Merge/Split Tables', icon: <Users className="h-3.5 w-3.5 text-teal-500" />, mobile: <ScreenW6MergeSplit />, tablet: <TabletScreen6MergeSplit /> },
-    { id: 7 as WaiterScreenId, name: '7. Collect Payment', icon: <CreditCard className="h-3.5 w-3.5 text-emerald-500" />, mobile: <ScreenW7Payment />, tablet: <TabletScreen7Payment /> },
-    { id: 8 as WaiterScreenId, name: '8. Print & WhatsApp', icon: <Receipt className="h-3.5 w-3.5 text-cyan-600" />, mobile: <ScreenW8PrintBill />, tablet: <TabletScreen8PrintBill /> },
+    // { id: 4 as WaiterScreenId, name: '4. Take Order Menu', icon: <Utensils className="h-3.5 w-3.5 text-blue-500" />, mobile: <ScreenW4TakeOrder />, tablet: <TabletScreen4TakeOrder /> },
+    // { id: 5 as WaiterScreenId, name: '5. Item Custom / KOT', icon: <Flame className="h-3.5 w-3.5 text-amber-500" />, mobile: <ScreenW5ItemCustom />, tablet: <TabletScreen5ItemCustom /> },
+    // { id: 6 as WaiterScreenId, name: '6. Merge/Split Tables', icon: <Users className="h-3.5 w-3.5 text-teal-500" />, mobile: <ScreenW6MergeSplit />, tablet: <TabletScreen6MergeSplit /> },
+    // { id: 7 as WaiterScreenId, name: '7. Collect Payment', icon: <CreditCard className="h-3.5 w-3.5 text-emerald-500" />, mobile: <ScreenW7Payment />, tablet: <TabletScreen7Payment /> },
+    // { id: 8 as WaiterScreenId, name: '8. Print & WhatsApp', icon: <Receipt className="h-3.5 w-3.5 text-cyan-600" />, mobile: <ScreenW8PrintBill />, tablet: <TabletScreen8PrintBill /> },
     { id: 10 as WaiterScreenId, name: '10. Shift Performance', icon: <TrendingUp className="h-3.5 w-3.5 text-slate-700" />, mobile: <ScreenW10ShiftStats />, tablet: <TabletScreen10ShiftStats /> },
   ];
 

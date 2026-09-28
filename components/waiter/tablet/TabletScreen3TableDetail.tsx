@@ -245,14 +245,14 @@ export const TabletScreen3TableDetail: React.FC = () => {
               className="bg-slate-100 hover:bg-slate-900 hover:text-white text-slate-800 border border-slate-300 px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span>Back to Floor Overview</span>
+              <span>Back</span>
             </button>
             <h3 className="font-black text-slate-950 text-sm">
               {activeTable.mergedWith
                 ? `Table ${activeTable.number} + ${activeTable.mergedWith} (Merged)`
                 : `Table ${activeTable.number}`}
             </h3>
-            <span className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] border ${
+            {/* <span className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] border ${
               activeTable.status === 'OCCUPIED'
                 ? 'bg-amber-50 text-amber-950 border-amber-300'
                 : activeTable.status === 'BILLING'
@@ -260,7 +260,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 : 'border-emerald-300 bg-emerald-50 text-emerald-950'
             }`}>
               ● Status: {activeTable.status} • {activeTable.status === 'BILLING' ? 'Settled' : 'Dining'}
-            </span>
+            </span> */}
           </div>
 
           <div className="flex items-center gap-3">
@@ -269,9 +269,9 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 🔗 Merged Table ({activeTable.guestCount} Guests)
               </span>
             )}
-            <span className="text-slate-600 font-bold text-[11px] bg-slate-100 px-2.5 py-0.5 rounded border border-slate-200">
+            {/* <span className="text-slate-600 font-bold text-[11px] bg-slate-100 px-2.5 py-0.5 rounded border border-slate-200">
               Assigned Captain: {activeCaptain || 'Staff Captain'}
-            </span>
+            </span> */}
           </div>
         </div>
 
@@ -426,7 +426,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
               </button>
 
               {/* 4. Print / Invoice Button */}
-              <button
+              {/* <button
                 type="button"
                 onClick={() => setRightPane(rightPane === 'bill_done' ? 'bill_summary' : 'bill_done')}
                 className={`py-3 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
@@ -437,10 +437,10 @@ export const TabletScreen3TableDetail: React.FC = () => {
               >
                 <Printer className="h-4 w-4" />
                 <span>Print Bill</span>
-              </button>
+              </button> */}
 
               {/* 5. Bill Summary Button */}
-              <button
+              {/* <button
                 type="button"
                 onClick={() => setRightPane('bill_summary')}
                 className={`py-2.5 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
@@ -451,7 +451,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
               >
                 <Receipt className="h-3.5 w-3.5" />
                 <span>Live Bill Summary</span>
-              </button>
+              </button> */}
 
               {/* 6. Table Vacate Button (ENABLED ONLY WHEN PAYMENT IS DONE) */}
               <button
