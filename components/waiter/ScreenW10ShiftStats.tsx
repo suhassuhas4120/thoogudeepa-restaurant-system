@@ -39,15 +39,15 @@ export const ScreenW10ShiftStats: React.FC = () => {
 
           {/* Scorecard Hero */}
           <div className="rounded-2xl border border-orange-200 bg-gradient-to-br from-orange-50 via-white to-amber-50 p-4 shadow-xs text-center">
-            <div className="font-mono text-[10px] font-bold text-orange-600 uppercase">
+            {/* <div className="font-mono text-[10px] font-bold text-orange-600 uppercase">
               [CAPTAIN SHIFT PERFORMANCE SCORECARD]
-            </div>
+            </div> */}
             <div className="font-mono text-2xl font-black text-slate-900 mt-1">
               ₹ {shiftStats.totalRevenue.toLocaleString()}
             </div>
-            <div className="text-[11px] font-bold text-slate-500 font-mono mt-0.5">
+            {/* <div className="text-[11px] font-bold text-slate-500 font-mono mt-0.5">
               Total F&amp;B Collection Settled Today
-            </div>
+            </div> */}
           </div>
 
           {/* 3 Metric Cards */}
@@ -79,9 +79,9 @@ export const ScreenW10ShiftStats: React.FC = () => {
 
           {/* Restaurant Metadata */}
           <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-2xs text-xs space-y-1">
-            <div className="font-mono text-[10px] font-bold text-slate-400 uppercase">
+            {/* <div className="font-mono text-[10px] font-bold text-slate-400 uppercase">
               [ESTABLISHMENT LOG]
-            </div>
+            </div> */}
             <div className="font-bold text-slate-800">Thoogudeepa donne biryani mane</div>
             <div className="text-[10.5px] text-slate-500 font-mono">
               Terminal POS Floor #03 • Shift: Afternoon Peak (11:00 AM - 4:00 PM)

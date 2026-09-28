@@ -150,7 +150,7 @@ export const ScreenW6MergeSplit: React.FC = () => {
             onClick={() => setCurrentScreen(4)}
             className="w-full py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-stone-50 text-slate-800 font-mono text-xs font-black transition cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
           >
-            <span>Punch Order for Table {activeTable?.number} ➔</span>
+            <span>Take Order {activeTable?.number} ➔</span>
           </button>
           <button
             onClick={() => setCurrentScreen(7)}

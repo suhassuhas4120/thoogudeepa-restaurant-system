@@ -51,11 +51,11 @@ export const ScreenW8PrintBill: React.FC = () => {
             <div className="font-mono text-xs font-black text-slate-900">
               THOOGUDEEPA DONNE BIRYANI MANE
             </div>
-            <div className="font-mono text-[10px] text-slate-400">
+            {/* <div className="font-mono text-[10px] text-slate-400">
               Tax Invoice #{invoiceNum} • SAC 996331
-            </div>
+            </div> */}
             <div className="font-mono text-[10.5px] font-bold text-slate-700 pb-2 border-b border-dashed border-slate-200">
-              Table: {activeTable.number} • Captain: {captainName}
+              Table: {activeTable.number} - {captainName}
             </div>
 
             <div className="space-y-1 text-left text-xs font-medium text-slate-800 py-1">
@@ -144,15 +144,15 @@ export const ScreenW8PrintBill: React.FC = () => {
             className="w-full py-2.5 rounded-xl border border-dashed border-rose-300 bg-rose-50/60 hover:bg-rose-100 font-mono text-xs font-black text-rose-700 text-center cursor-pointer flex items-center justify-center gap-1.5 transition"
           >
             <Trash2 className="h-3.5 w-3.5" />
-            <span>Vacate &amp; Return to Tables (Screen 2) ➔</span>
+            <span>Vacate &amp;  ➔</span>
           </button>
 
-          <button
+          {/* <button
             onClick={() => setCurrentScreen(3)}
             className="w-full py-1.5 font-mono text-[11px] font-bold text-slate-500 hover:text-slate-800 text-center cursor-pointer"
           >
             Return to Table Management
-          </button>
+          </button> */}
         </div>
       </div>
     </WaiterTabletHousing>

@@ -57,9 +57,9 @@ export const ScreenW5ItemCustom: React.FC = () => {
             </span>
           </div>
 
-          <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-500">
+          {/* <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-500">
             KOT Items for Kitchen Submission
-          </div>
+          </div> */}
 
           {/* Cart List */}
           <div className="space-y-2">
@@ -128,7 +128,7 @@ export const ScreenW5ItemCustom: React.FC = () => {
         >
           <div className="flex items-center gap-1.5">
             <Flame className="h-4 w-4 fill-white" />
-            <span>Fire KOT to Kitchen</span>
+            <span>Kitchen</span>
           </div>
           <span>₹ {cartTotal} ➔</span>
         </motion.button>

@@ -12,13 +12,13 @@ export const ScreenW1Login: React.FC = () => {
   const [pin, setPin] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  const sections = ['ALL', 'SECTION A', 'SECTION B', 'TERRACE', 'FAMILY DINING'];
+  const sections = ['ALL', 'SECTION A', 'SECTION B', 'SECTION C', 'SECTION D'];
 
   const presetWaiters = [
     { name: 'Captain Ramesh', section: 'SECTION A' },
     { name: 'Captain Suresh', section: 'SECTION B' },
-    { name: 'Captain Vijay', section: 'TERRACE' },
-    { name: 'Captain Kiran', section: 'FAMILY DINING' },
+    { name: 'Captain Vijay', section: 'SECTION C' },
+    { name: 'Captain Kiran', section: 'SECTION D' },
   ];
 
   const handleNum = (num: string) => {
@@ -55,14 +55,14 @@ export const ScreenW1Login: React.FC = () => {
           </div>
 
           <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 mb-1">
-            Floor Captain Login
+            
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-xs mb-3">
             <div className="flex justify-between items-center mb-1">
               <label className="text-[10px] font-bold text-slate-600 font-mono uppercase">
                 Captain Name
               </label>
-              <span className="text-[9px] font-mono text-slate-400">QUICK TAP PROFILE</span>
+              {/* <span className="text-[9px] font-mono text-slate-400">QUICK TAP PROFILE</span> */}
             </div>
             <div className="grid grid-cols-4 gap-1 mb-2">
               {presetWaiters.map((w) => {
@@ -95,9 +95,9 @@ export const ScreenW1Login: React.FC = () => {
             />
           </div>
 
-          <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 mb-1">
+          {/* <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 mb-1">
             Assigned Floor Section
-          </div>
+          </div> */}
           <div className="grid grid-cols-2 gap-1.5 mb-3">
             {sections.map((sec) => (
               <button
@@ -116,16 +116,14 @@ export const ScreenW1Login: React.FC = () => {
           </div>
 
           <div className="flex justify-between items-center text-[10px] font-bold font-mono mb-1">
-            <span className="uppercase tracking-wider text-slate-400">Passcode PIN:</span>
+            {/* <span className="uppercase tracking-wider text-slate-400">Passcode PIN:</span> */}
             {errorMsg ? (
               <span className="text-rose-600 animate-pulse font-bold">{errorMsg}</span>
             ) : pin === '1234' ? (
               <span className="text-emerald-600 font-black">PIN Verified ✓</span>
             ) : pin.length === 4 ? (
               <span className="text-rose-600 font-bold">Invalid PIN (Enter 1234)</span>
-            ) : (
-              <span className="text-orange-500">{4 - pin.length} digits left • PIN: 1234</span>
-            )}
+            ) : null }
           </div>
           <div
             className={`h-10 rounded-xl border flex items-center justify-center gap-3 mb-2 shadow-2xs transition-colors ${

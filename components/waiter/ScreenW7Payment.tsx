@@ -89,24 +89,24 @@ export const ScreenW7Payment: React.FC = () => {
               <span className="font-mono text-xs font-black text-slate-900 bg-stone-100 px-2 py-0.5 rounded border border-slate-200">
                 Table: {currentTableNum}
               </span>
-              <span className="font-mono text-[10px] text-slate-500 font-bold">
+              {/* <span className="font-mono text-[10px] text-slate-500 font-bold">
                 {activeTable?.guestCount || 2} Guests
-              </span>
+              </span> */}
             </div>
           </div>
 
           {/* Amount Box */}
           <div className="rounded-2xl border-2 border-orange-500/30 bg-orange-50/40 p-3.5 shadow-xs text-center">
-            <div className="font-mono text-[10px] font-bold text-orange-700 uppercase tracking-wider">
+            {/* <div className="font-mono text-[10px] font-bold text-orange-700 uppercase tracking-wider">
               Total Collection Amount
-            </div>
+            </div> */}
             <div className="font-mono text-3xl font-black text-orange-600 mt-0.5">
               ₹ {breakdown.grandTotal}
             </div>
-            <div className="font-mono text-[10.5px] text-slate-600 mt-1 font-semibold">
+            {/* <div className="font-mono text-[10.5px] text-slate-600 mt-1 font-semibold">
               Net Food: ₹{breakdown.foodSubtotal} + 5% GST: ₹{breakdown.totalTax}
               {breakdown.tip > 0 ? ` + Tip: ₹${breakdown.tip}` : ''}
-            </div>
+            </div> */}
           </div>
 
           {/* Selected Food Order Items Breakdown */}
@@ -116,9 +116,9 @@ export const ScreenW7Payment: React.FC = () => {
                 <UtensilsCrossed className="h-3.5 w-3.5 text-orange-600" />
                 <span>Selected Food Items ({breakdown.itemCount})</span>
               </div>
-              <span className="font-mono text-[10px] font-bold text-slate-500">
+              {/* <span className="font-mono text-[10px] font-bold text-slate-500">
                 Subtotal: ₹{breakdown.foodSubtotal}
-              </span>
+              </span> */}
             </div>
 
             <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
@@ -137,9 +137,9 @@ export const ScreenW7Payment: React.FC = () => {
                       </span>
                     </div>
                     <div className="text-right font-mono">
-                      <span className="text-[10px] text-slate-400 mr-2">
+                      {/* <span className="text-[10px] text-slate-400 mr-2">
                         @ ₹{item.unitPrice}
-                      </span>
+                      </span> */}
                       <span className="font-black text-slate-900 text-xs">
                         ₹{item.lineTotal}
                       </span>
@@ -182,9 +182,9 @@ export const ScreenW7Payment: React.FC = () => {
 
           {/* 3-Tab Payment Method Switcher */}
           <div>
-            <div className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+            {/* <div className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
               Select Settlement Method
-            </div>
+            </div> */}
             <div className="grid grid-cols-3 gap-1.5">
               {[
                 { id: 'CASH' as const, name: 'Cash', icon: <Banknote className="h-3.5 w-3.5" /> },
@@ -410,7 +410,7 @@ export const ScreenW7Payment: React.FC = () => {
                 </div>
 
                 {/* POS Auth Reference ID Input */}
-                <div>
+                {/* <div>
                   <div className="flex items-center justify-between text-[10px] font-mono font-bold text-slate-600 mb-1">
                     <span>POS TRANSACTION AUTH CODE:</span>
                     <button
@@ -431,7 +431,7 @@ export const ScreenW7Payment: React.FC = () => {
                     placeholder="e.g. AUTH-982341"
                     className="w-full px-3 py-1.5 rounded-lg border border-slate-300 font-mono text-xs font-bold bg-white focus:outline-none focus:border-slate-800"
                   />
-                </div>
+                </div> */}
 
                 {cardAuthorized && (
                   <div className="p-2 bg-emerald-50 border border-emerald-300 rounded-lg text-emerald-800 text-[10.5px] font-mono font-bold flex items-center gap-1.5">
@@ -443,15 +443,15 @@ export const ScreenW7Payment: React.FC = () => {
             )}
 
             {/* 3. CASH TENDER WORKSPACE */}
-            {method === 'CASH' && (
+            {/* {method === 'CASH' && (
               <div className="space-y-2.5 py-1">
                 <div className="border border-slate-200 bg-stone-50 rounded-xl p-2.5 flex items-center justify-between font-mono text-[10px]">
                   <span className="font-bold text-slate-600">CASH TENDER PAYABLE:</span>
                   <span className="font-black text-slate-900 text-xs">₹ {breakdown.grandTotal}</span>
-                </div>
+                </div> */}
 
                 {/* Quick Tender Currency Presets */}
-                <div>
+                {/* <div>
                   <span className="font-mono text-[9.5px] font-bold text-slate-500 uppercase block mb-1">
                     Quick Currency Presets:
                   </span>
@@ -479,10 +479,10 @@ export const ScreenW7Payment: React.FC = () => {
                       </button>
                     ))}
                   </div>
-                </div>
+                </div> */}
 
                 {/* Cash Tendered Input */}
-                <div>
+                {/* <div>
                   <label className="block font-mono text-[10px] font-bold text-slate-600 mb-1">
                     CASH RECEIVED FROM GUEST:
                   </label>
@@ -494,11 +494,11 @@ export const ScreenW7Payment: React.FC = () => {
                       onChange={(e) => setCashReceived(Number(e.target.value))}
                       className="w-full pl-7 pr-3 py-1.5 rounded-lg border border-slate-300 font-mono text-xs font-bold bg-white focus:outline-none focus:border-slate-800"
                     />
-                  </div>
-                </div>
+                  </div> */}
+                {/* </div> */}
 
                 {/* Change Due Return Box */}
-                <div
+                {/* <div
                   className={`p-2.5 rounded-xl border font-mono text-xs font-bold flex justify-between items-center ${
                     cashReceived >= breakdown.grandTotal
                       ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
@@ -513,10 +513,10 @@ export const ScreenW7Payment: React.FC = () => {
                   <span className="font-black text-sm">
                     ₹ {Math.abs(cashReceived - breakdown.grandTotal)}
                   </span>
-                </div>
+                </div> */}
               </div>
-            )}
-          </div>
+            {/* )} */}
+          {/* </div> */}
 
           {/* Staff Tip Selection */}
           {/* <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-2xs">
