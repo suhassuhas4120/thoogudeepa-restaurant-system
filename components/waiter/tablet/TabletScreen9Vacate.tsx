@@ -7,12 +7,12 @@ import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 
 const CHECKLIST = [
-  { id: 1, emoji: '🧽', title: '[1. CLEAN TABLE]', desc: '[CLEAR DISHES, WIPE TOP & SANITIZE SURFACE]' },
-  { id: 2, emoji: '💧', title: '[2. WATER REFILL]', desc: '[REPLACE FRESH WATER BOTTLE & CLEAN GLASSES]' },
-  { id: 3, emoji: '🍴', title: '[3. CUTLERY REPLACEMENT]', desc: '[ARRANGE FRESH SPOONS, FORKS & KNIVES]' },
-  { id: 4, emoji: '🧻', title: '[4. TISSUE BOX REFILL]', desc: '[CHECK AND REFILL TABLE NAPKIN DISPENSER]' },
-  { id: 5, emoji: '🪑', title: '[5. CHAIRS ALIGNED]', desc: '[STRAIGHTEN CHAIRS AND CLEAN SEAT CUSHIONS]' },
-  { id: 6, emoji: '🌿', title: '[6. CONDIMENT REFILL]', desc: '[REFILL SALT, PEPPER, LEMON & CHUTNEY]' },
+  { id: 1, emoji: '🧽', title: '1. Clean Table', desc: 'Clear dishes, wipe top & sanitize surface' },
+  { id: 2, emoji: '💧', title: '2. Water Refill', desc: 'Replace fresh water bottle & clean glasses' },
+  { id: 3, emoji: '🍴', title: '3. Cutlery Replacement', desc: 'Arrange fresh spoons, forks & knives' },
+  { id: 4, emoji: '🧻', title: '4. Tissue Box Refill', desc: 'Check and refill table napkin dispenser' },
+  { id: 5, emoji: '🪑', title: '5. Chairs Aligned', desc: 'Straighten chairs and clean seat cushions' },
+  { id: 6, emoji: '🌿', title: '6. Condiment Refill', desc: 'Refill salt, pepper, lemon & chutney' },
 ];
 
 export const TabletScreen9Vacate: React.FC = () => {
@@ -41,7 +41,7 @@ export const TabletScreen9Vacate: React.FC = () => {
   return (
     <WaiterTabletLandscapeHousing
       screenNumber={9}
-      screenTitle="TABLE VACATE &amp; TURNAROUND CHECKLIST"
+      screenTitle="TABLE VACATE & STATION RESET"
     >
       <div className="flex flex-col flex-1 min-h-[700px] p-5 font-mono select-none">
         {/* TOP HEADER */}
@@ -51,13 +51,13 @@ export const TabletScreen9Vacate: React.FC = () => {
             className="bg-slate-900 hover:bg-black text-white px-3 py-1.5 rounded font-bold transition flex items-center gap-1.5 text-xs shadow-2xs"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            <span>[⬅ BACK TO ALL TABLES]</span>
+            <span>Back to All Tables</span>
           </button>
           <h3 className="font-black text-slate-950 text-sm">
-            [SCREEN 9: TABLE VACATE &amp; TURNAROUND CHECKLIST]
+            Table Vacate & Station Reset Checklist
           </h3>
           <span className="border border-slate-400 bg-slate-100 px-3 py-1 rounded font-bold text-xs text-slate-700">
-            [{selectedTableNumber || 'TABLE A-04'} VACATE PROCESS]
+            Table {selectedTableNumber || 'A-04'} Vacate
           </span>
         </div>
 
@@ -65,22 +65,22 @@ export const TabletScreen9Vacate: React.FC = () => {
         {tableReleased && (
           <div className="mb-3 p-3 bg-emerald-700 text-white rounded-xl font-black text-xs text-center flex items-center justify-center gap-2">
             <CheckCircle2 className="h-4 w-4 fill-white" />
-            ✓ TABLE {selectedTableNumber || 'A-04'} IS NOW VACANT — REDIRECTING TO FLOOR PLAN...
+            ✓ Table {selectedTableNumber || 'A-04'} is now vacant — redirecting to floor plan...
           </div>
         )}
 
         {/* PROTOCOL DESCRIPTION */}
         <div className="border-2 border-slate-800 rounded-xl p-4 mb-4 bg-white shadow-xs shrink-0">
           <strong className="text-xs font-black text-slate-950">
-            [TABLE RESET &amp; SANITIZATION PROTOCOL]:
+            Table Reset & Sanitization Protocol:
           </strong>
           <p className="text-[11px] font-bold text-slate-600 mt-1">
-            [CLICK EACH TURNAROUND STEP BELOW TO MARK COMPLETE BEFORE DECLARING TABLE AVAILABLE]
+            Click each turnaround step below to mark complete before declaring table available
           </p>
           <div className="mt-2 text-xs font-bold text-slate-500">
-            PROGRESS: {completed.length} / {CHECKLIST.length} TASKS COMPLETED
+            Progress: {completed.length} / {CHECKLIST.length} tasks completed
             {allDone && (
-              <span className="ml-3 text-emerald-700 font-black">✓ ALL DONE — TABLE READY!</span>
+              <span className="ml-3 text-emerald-700 font-black">✓ All Done — Table Ready!</span>
             )}
           </div>
           {/* Progress Bar */}
@@ -121,7 +121,7 @@ export const TabletScreen9Vacate: React.FC = () => {
                     isDone ? 'border-slate-700 text-emerald-400' : 'border-slate-200 text-slate-500'
                   }`}
                 >
-                  {isDone ? '✓ [COMPLETED]' : '[CLICK TO MARK DONE]'}
+                  {isDone ? '✓ Completed' : 'Click to Mark Done'}
                 </span>
               </button>
             );
@@ -142,8 +142,8 @@ export const TabletScreen9Vacate: React.FC = () => {
             <span className="text-xl">✨</span>
             <span>
               {allDone
-                ? '[TABLE AVAILABLE BUTTON — REFLECTS AS TABLE AVAILABLE IN MANAGER]'
-                : `[COMPLETE ALL ${CHECKLIST.length - completed.length} REMAINING TASKS TO ENABLE]`}
+                ? 'Dispatch Busboy & Mark Vacant (Syncs with Manager)'
+                : `Complete all ${CHECKLIST.length - completed.length} remaining tasks to enable`}
             </span>
           </button>
         </div>

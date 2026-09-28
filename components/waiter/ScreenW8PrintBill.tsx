@@ -1,16 +1,23 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { useWaiterStore } from '../../store/useWaiterStore';
+import { useSharedBridge, getTableBillBreakdown } from '../../store/useSharedBridge';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
-import { ArrowLeft, Printer, Share2, CheckCircle2, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Printer, Share2, CheckCircle2, RotateCcw, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const ScreenW8PrintBill: React.FC = () => {
-  const { setCurrentScreen, selectedTableNumber } = useWaiterStore();
+  const { setCurrentScreen, selectedTableNumber, activeCaptain, settlementTip } = useWaiterStore();
+  const { tables, waiterVacatesTable } = useSharedBridge();
   const [printed, setPrinted] = useState(false);
   const [shared, setShared] = useState(false);
   const [phone, setPhone] = useState('+91 98450 12345');
+
+  const activeTable = tables.find((t) => t.number === selectedTableNumber) || tables[0];
+  const breakdown = getTableBillBreakdown(activeTable, settlementTip);
+  const captainName = activeTable.serverName || activeCaptain || 'Floor Captain';
+  const invoiceNum = `INV-2026-${activeTable.number}`;
 
   const handlePrint = () => {
     setPrinted(true);
@@ -23,19 +30,19 @@ export const ScreenW8PrintBill: React.FC = () => {
   };
 
   return (
-    <WaiterTabletHousing screenNumber={8} screenTitle="PRINT &amp; WHATSAPP DIGITAL BILL">
+    <WaiterTabletHousing screenNumber={8} screenTitle="TAX INVOICE & DIGITAL RECEIPT">
       <div className="flex-1 flex flex-col justify-between p-4 space-y-3 overflow-y-auto">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setCurrentScreen(3)}
-              className="flex items-center gap-1 text-xs font-black text-slate-700"
+              className="flex items-center gap-1 text-xs font-black text-slate-700 hover:text-slate-900 cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span>[BACK TO TABLE]</span>
+              <span>Back to Table</span>
             </button>
             <span className="font-mono text-xs font-black text-slate-900">
-              TABLE: [{selectedTableNumber}]
+              Table: {activeTable.number}
             </span>
           </div>
 
@@ -45,39 +52,50 @@ export const ScreenW8PrintBill: React.FC = () => {
               THOOGUDEEPA DONNE BIRYANI MANE
             </div>
             <div className="font-mono text-[10px] text-slate-400">
-              Tax Invoice #INV-2026-9140 • SAC 996331
+              Tax Invoice #{invoiceNum} • SAC 996331
             </div>
             <div className="font-mono text-[10.5px] font-bold text-slate-700 pb-2 border-b border-dashed border-slate-200">
-              Table: {selectedTableNumber} • Captain: Ramesh
+              Table: {activeTable.number} • Captain: {captainName}
             </div>
 
             <div className="space-y-1 text-left text-xs font-medium text-slate-800 py-1">
-              <div className="flex justify-between">
-                <span>Special Chicken Donne Biryani × 2</span>
-                <span className="font-mono font-bold">₹ 520</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Kshatriya Chicken Kebab × 1</span>
-                <span className="font-mono font-bold">₹ 220</span>
-              </div>
+              {breakdown.items.length > 0 ? (
+                breakdown.items.map((item, idx) => (
+                  <div key={idx} className="flex justify-between">
+                    <span>{item.name} × {item.quantity}</span>
+                    <span className="font-mono font-bold">₹ {item.lineTotal}.00</span>
+                  </div>
+                ))
+              ) : (
+                <div className="flex justify-between">
+                  <span>Dine-In Food &amp; Beverage Service</span>
+                  <span className="font-mono font-bold">₹ {breakdown.foodSubtotal}.00</span>
+                </div>
+              )}
             </div>
 
             <div className="pt-2 border-t border-dashed border-slate-200 font-mono text-xs text-left space-y-0.5">
               <div className="flex justify-between text-slate-500">
-                <span>Subtotal:</span>
-                <span>₹ 740</span>
+                <span>Subtotal (Net):</span>
+                <span>₹ {breakdown.foodSubtotal}.00</span>
               </div>
               <div className="flex justify-between text-slate-500">
-                <span>5% GST:</span>
-                <span>₹ 37</span>
+                <span>CGST @ 2.5%:</span>
+                <span>₹ {breakdown.cgst}.00</span>
               </div>
-              <div className="flex justify-between text-orange-600 font-bold">
-                <span>Staff Tip:</span>
-                <span>₹ 50</span>
+              <div className="flex justify-between text-slate-500">
+                <span>SGST @ 2.5%:</span>
+                <span>₹ {breakdown.sgst}.00</span>
               </div>
+              {breakdown.tip > 0 && (
+                <div className="flex justify-between text-orange-600 font-bold">
+                  <span>Staff Tip:</span>
+                  <span>₹ {breakdown.tip}.00</span>
+                </div>
+              )}
               <div className="flex justify-between text-slate-900 font-black pt-1 border-t border-slate-100 text-sm">
                 <span>Total Paid:</span>
-                <span>₹ 827</span>
+                <span>₹ {breakdown.grandTotal}.00</span>
               </div>
             </div>
           </div>
@@ -85,7 +103,7 @@ export const ScreenW8PrintBill: React.FC = () => {
           {/* WhatsApp Mobile Number Input */}
           <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-2xs">
             <label className="font-mono text-[10px] font-bold text-slate-500 uppercase">
-              [CUSTOMER WHATSAPP PHONE NUMBER]
+              Customer WhatsApp Mobile Number
             </label>
             <input
               type="text"
@@ -101,26 +119,39 @@ export const ScreenW8PrintBill: React.FC = () => {
           <motion.button
             whileTap={{ scale: 0.98 }}
             onClick={handlePrint}
-            className="w-full py-3 rounded-xl border border-slate-200 bg-white font-mono text-xs font-black text-slate-800 shadow-2xs hover:bg-stone-50 flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl border border-slate-200 bg-white font-mono text-xs font-black text-slate-800 shadow-2xs hover:bg-stone-50 flex items-center justify-center gap-2 cursor-pointer"
           >
             <Printer className="h-4 w-4 text-slate-700" />
-            <span>{printed ? '✓ THERMAL RECEIPT PRINTED!' : '[PRINT 80MM THERMAL BILL]'}</span>
+            <span>{printed ? '✓ Thermal Receipt Printed' : 'Print 80mm Thermal Bill'}</span>
           </motion.button>
 
           <motion.button
             whileTap={{ scale: 0.98 }}
             onClick={handleWhatsApp}
-            className="w-full py-3 rounded-xl bg-emerald-600 font-mono text-xs font-black text-white shadow-md shadow-emerald-600/30 hover:bg-emerald-700 flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl bg-emerald-600 font-mono text-xs font-black text-white shadow-md shadow-emerald-600/30 hover:bg-emerald-700 flex items-center justify-center gap-2 cursor-pointer"
           >
             <Share2 className="h-4 w-4" />
-            <span>{shared ? '✓ SENT VIA WHATSAPP!' : '[DISPATCH TO WHATSAPP]'}</span>
+            <span>{shared ? '✓ Sent via WhatsApp!' : 'Send Receipt via WhatsApp'}</span>
           </motion.button>
 
           <button
-            onClick={() => setCurrentScreen(9)}
-            className="w-full py-2.5 font-mono text-xs font-bold text-slate-500 hover:text-slate-800 text-center"
+            onClick={() => {
+              if (activeTable?.number) {
+                waiterVacatesTable(activeTable.number);
+              }
+              setCurrentScreen(2);
+            }}
+            className="w-full py-2.5 rounded-xl border border-dashed border-rose-300 bg-rose-50/60 hover:bg-rose-100 font-mono text-xs font-black text-rose-700 text-center cursor-pointer flex items-center justify-center gap-1.5 transition"
           >
-            Proceed to Vacate Table ➔
+            <Trash2 className="h-3.5 w-3.5" />
+            <span>Vacate &amp; Return to Tables (Screen 2) ➔</span>
+          </button>
+
+          <button
+            onClick={() => setCurrentScreen(3)}
+            className="w-full py-1.5 font-mono text-[11px] font-bold text-slate-500 hover:text-slate-800 text-center cursor-pointer"
+          >
+            Return to Table Management
           </button>
         </div>
       </div>

@@ -42,7 +42,7 @@ export const ScreenW1Login: React.FC = () => {
   };
 
   return (
-    <WaiterTabletHousing screenNumber={1} screenTitle="CAPTAIN AUTH &amp; SECTION LOGIN">
+    <WaiterTabletHousing screenNumber={1} screenTitle="CAPTAIN AUTH & SECTION LOGIN">
       <div className="flex-1 flex flex-col justify-between p-5">
         <div>
           {/* Establishment Logo Banner */}
@@ -55,14 +55,14 @@ export const ScreenW1Login: React.FC = () => {
           </div>
 
           <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 mb-1">
-            [FLOOR CAPTAIN LOGIN]
+            Floor Captain Login
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-xs mb-3">
             <div className="flex justify-between items-center mb-1">
-              <label className="text-[10px] font-bold text-slate-500 font-mono">
-                [CAPTAIN NAME]
+              <label className="text-[10px] font-bold text-slate-600 font-mono uppercase">
+                Captain Name
               </label>
-              <span className="text-[9px] font-mono text-slate-400">QUICK TAP</span>
+              <span className="text-[9px] font-mono text-slate-400">QUICK TAP PROFILE</span>
             </div>
             <div className="grid grid-cols-4 gap-1 mb-2">
               {presetWaiters.map((w) => {
@@ -75,9 +75,9 @@ export const ScreenW1Login: React.FC = () => {
                       setActiveCaptain(w.name);
                       setActiveSection(w.section);
                     }}
-                    className={`py-1 px-0.5 rounded-lg border text-[9.5px] font-mono font-bold transition text-center ${
+                    className={`py-1.5 px-0.5 rounded-lg border text-[10px] font-mono font-bold transition text-center cursor-pointer ${
                       isSelected
-                        ? 'border-orange-500 bg-orange-50 text-orange-950 font-black'
+                        ? 'border-orange-500 bg-orange-50 text-orange-950 font-black ring-1 ring-orange-500/20'
                         : 'border-slate-200 bg-white text-slate-700 hover:bg-stone-50'
                     }`}
                   >
@@ -91,19 +91,20 @@ export const ScreenW1Login: React.FC = () => {
               value={activeCaptain}
               onChange={(e) => setActiveCaptain(e.target.value)}
               className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-stone-50 text-xs font-black text-slate-900 focus:outline-none focus:border-orange-500"
-              placeholder="Or type custom name"
+              placeholder="Or type custom captain name"
             />
           </div>
 
           <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 mb-1">
-            [ASSIGNED FLOOR SECTION]
+            Assigned Floor Section
           </div>
           <div className="grid grid-cols-2 gap-1.5 mb-3">
             {sections.map((sec) => (
               <button
                 key={sec}
+                type="button"
                 onClick={() => setActiveSection(sec)}
-                className={`py-2 px-2.5 rounded-xl border text-[10.5px] font-mono font-black transition ${
+                className={`py-2 px-2.5 rounded-xl border text-[10.5px] font-mono font-black transition cursor-pointer ${
                   activeSection === sec
                     ? 'border-orange-500 bg-orange-50 text-orange-950 ring-1 ring-orange-500/20'
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-stone-50'
@@ -115,15 +116,15 @@ export const ScreenW1Login: React.FC = () => {
           </div>
 
           <div className="flex justify-between items-center text-[10px] font-bold font-mono mb-1">
-            <span className="uppercase tracking-wider text-slate-400">[PASSCODE PIN]:</span>
+            <span className="uppercase tracking-wider text-slate-400">Passcode PIN:</span>
             {errorMsg ? (
-              <span className="text-rose-600 animate-pulse">[{errorMsg}]</span>
+              <span className="text-rose-600 animate-pulse font-bold">{errorMsg}</span>
             ) : pin === '1234' ? (
-              <span className="text-emerald-600">[PIN VERIFIED]</span>
+              <span className="text-emerald-600 font-black">PIN Verified ✓</span>
             ) : pin.length === 4 ? (
-              <span className="text-rose-600">[INVALID PIN]</span>
+              <span className="text-rose-600 font-bold">Invalid PIN (Enter 1234)</span>
             ) : (
-              <span className="text-orange-500">[{4 - pin.length} DIGITS • PIN: 1234]</span>
+              <span className="text-orange-500">{4 - pin.length} digits left • PIN: 1234</span>
             )}
           </div>
           <div
@@ -155,27 +156,37 @@ export const ScreenW1Login: React.FC = () => {
             {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((n) => (
               <button
                 key={n}
+                type="button"
                 onClick={() => handleNum(n)}
-                className="h-10 rounded-xl border border-slate-200 bg-white text-sm font-bold font-mono text-slate-800 hover:bg-stone-100 transition active:scale-95 shadow-2xs"
+                className="h-10 rounded-xl border border-slate-200 bg-white text-sm font-bold font-mono text-slate-800 hover:bg-stone-100 transition active:scale-95 shadow-2xs cursor-pointer"
               >
                 {n}
               </button>
             ))}
             <button
-              onClick={() => setPin('')}
-              className="h-10 rounded-xl border border-slate-200 bg-stone-100 font-mono text-[10px] font-bold text-slate-600"
+              type="button"
+              onClick={() => {
+                setPin('');
+                setErrorMsg('');
+              }}
+              className="h-10 rounded-xl border border-slate-200 bg-stone-100 font-mono text-[10px] font-bold text-slate-600 hover:bg-stone-200 transition cursor-pointer active:scale-95"
             >
               CLR
             </button>
             <button
+              type="button"
               onClick={() => handleNum('0')}
-              className="h-10 rounded-xl border border-slate-200 bg-white font-mono text-sm font-bold text-slate-800 shadow-2xs"
+              className="h-10 rounded-xl border border-slate-200 bg-white font-mono text-sm font-bold text-slate-800 hover:bg-stone-100 transition active:scale-95 shadow-2xs cursor-pointer"
             >
               0
             </button>
             <button
-              onClick={() => setPin((p) => p.slice(0, -1))}
-              className="h-10 rounded-xl border border-slate-200 bg-stone-100 font-mono text-[10px] font-bold text-slate-600"
+              type="button"
+              onClick={() => {
+                setPin((p) => p.slice(0, -1));
+                setErrorMsg('');
+              }}
+              className="h-10 rounded-xl border border-slate-200 bg-stone-100 font-mono text-[10px] font-bold text-slate-600 hover:bg-stone-200 transition cursor-pointer active:scale-95"
             >
               DEL
             </button>
@@ -185,9 +196,9 @@ export const ScreenW1Login: React.FC = () => {
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={handleLogin}
-          className="w-full mt-3 flex items-center justify-center gap-2 rounded-2xl bg-orange-600 py-3.5 text-xs font-extrabold uppercase tracking-wider text-white shadow-lg shadow-orange-600/30 hover:bg-orange-700 transition"
+          className="w-full mt-3 flex items-center justify-center gap-2 rounded-2xl bg-orange-600 py-3.5 text-xs font-extrabold uppercase tracking-wider text-white shadow-lg shadow-orange-600/30 hover:bg-orange-700 transition cursor-pointer"
         >
-          <span>[LOGIN TO FLOOR CONSOLE]</span>
+          <span>Login to Floor Console</span>
           <ArrowRight className="h-4 w-4 stroke-[2.5]" />
         </motion.button>
       </div>

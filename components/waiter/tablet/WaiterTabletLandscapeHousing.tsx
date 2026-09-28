@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Wifi, Battery, UserCheck, Flame } from 'lucide-react';
+import { Wifi, Battery, UserCheck, Flame, ShoppingCart } from 'lucide-react';
 import { useWaiterStore } from '../../../store/useWaiterStore';
 
 interface WaiterTabletLandscapeHousingProps {
@@ -25,7 +25,11 @@ export const WaiterTabletLandscapeHousing: React.FC<WaiterTabletLandscapeHousing
     callKitchenStation,
     kitchenCallNotice,
     dismissKitchenCall,
+    orderCart,
+    setCurrentScreen,
   } = useWaiterStore();
+
+  const cartCount = orderCart.reduce((s, i) => s + i.quantity, 0);
 
   return (
     <div className="w-full max-w-[1260px] mx-auto flex flex-col items-center">
@@ -76,7 +80,7 @@ export const WaiterTabletLandscapeHousing: React.FC<WaiterTabletLandscapeHousing
             {showKitchenHotline && (
               <button
                 onClick={() => callKitchenStation('KITCHEN DISPATCH HOTLINE')}
-                className="flex items-center gap-1 rounded bg-orange-600 text-white px-2.5 py-1 text-[10.5px] font-bold hover:bg-orange-700 transition shadow-xs"
+                className="flex items-center gap-1 rounded bg-orange-600 text-white px-2.5 py-1 text-[10.5px] font-bold hover:bg-orange-700 transition shadow-xs cursor-pointer"
               >
                 <Flame className="h-3 w-3 fill-white" />
                 <span>KITCHEN HOTLINE</span>
@@ -99,7 +103,7 @@ export const WaiterTabletLandscapeHousing: React.FC<WaiterTabletLandscapeHousing
               onClick={dismissKitchenCall}
               className="text-xs text-slate-400 hover:text-white underline ml-3"
             >
-              [Dismiss]
+              Dismiss
             </button>
           </div>
         )}

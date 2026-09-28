@@ -9,75 +9,112 @@ import { motion } from 'framer-motion';
 
 export const ScreenW6MergeSplit: React.FC = () => {
   const { setCurrentScreen, selectedTableNumber } = useWaiterStore();
-  const { tables } = useSharedBridge();
-  const [sourceTable, setSourceTable] = useState('A-05');
+  const { tables, waiterMergeTables, waiterUnmergeTable } = useSharedBridge();
+
+  const currentTableNum = selectedTableNumber || 'A-04';
+  const activeTable = tables.find((t) => t.number === currentTableNum) || tables[0];
+  const isAlreadyMerged = Boolean(activeTable?.mergedWith);
+
+  const availableMergeCandidates = tables.filter((t) => t.number !== activeTable?.number);
+  const [sourceTable, setSourceTable] = useState(availableMergeCandidates[0]?.number || 'A-02');
   const [splitCount, setSplitCount] = useState(2);
-  const [mergedNotice, setMergedNotice] = useState(false);
+  const [mergedNotice, setMergedNotice] = useState<string | null>(null);
 
   const handleMerge = () => {
-    // mergeTables is not available on bridge yet — log intent locally
-    console.log(`[MERGE] Requesting merge of table ${sourceTable} into ${selectedTableNumber}`);
-    setMergedNotice(true);
-    setTimeout(() => setMergedNotice(false), 2000);
+    if (!activeTable?.number || !sourceTable) return;
+    waiterMergeTables(activeTable.number, sourceTable);
+    setMergedNotice(`Table ${activeTable.number} and Table ${sourceTable} are now merged!`);
+    setTimeout(() => setMergedNotice(null), 2500);
   };
 
+  const handleUnmerge = () => {
+    if (!activeTable?.number) return;
+    waiterUnmergeTable(activeTable.number);
+    setMergedNotice(`Table ${activeTable.number} has been separated into an individual table.`);
+    setTimeout(() => setMergedNotice(null), 2500);
+  };
+
+  const totalBill = activeTable?.currentBill || 0;
+
   return (
-    <WaiterTabletHousing screenNumber={6} screenTitle="MERGE / SPLIT TABLES">
+    <WaiterTabletHousing screenNumber={6} screenTitle="TABLE TRANSFER & MERGE MANAGEMENT">
       <div className="flex-1 flex flex-col justify-between p-4 space-y-3 overflow-y-auto">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setCurrentScreen(3)}
-              className="flex items-center gap-1 text-xs font-black text-slate-700"
+              className="flex items-center gap-1 text-xs font-black text-slate-700 hover:text-slate-900 cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span>[BACK TO TABLE]</span>
+              <span>Back to Table</span>
             </button>
             <span className="font-mono text-xs font-black text-slate-900">
-              TARGET: [{selectedTableNumber}]
+              Target: Table {activeTable?.number}
             </span>
           </div>
 
-          {/* Merge Tables Card */}
+          {mergedNotice && (
+            <div className="p-3 bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold rounded-xl flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+              <span>{mergedNotice}</span>
+            </div>
+          )}
+
+          {/* Merge / Unmerge Tables Card */}
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs space-y-3">
             <div className="flex items-center gap-2 font-mono text-[10.5px] font-black text-purple-700">
               <Link2 className="h-4 w-4" />
-              <span>[MERGE TABLES FOR LARGE PARTY]</span>
-            </div>
-            <p className="text-xs text-slate-500">
-              Combine running orders and bill of an adjacent table into [{selectedTableNumber}].
-            </p>
-
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-bold text-slate-700">Merge with:</span>
-              <select
-                value={sourceTable}
-                onChange={(e) => setSourceTable(e.target.value)}
-                className="px-3 py-1.5 rounded-lg border border-slate-200 bg-stone-50 font-mono text-xs font-black focus:outline-none"
-              >
-                {tables
-                  .filter((t) => t.number !== selectedTableNumber)
-                  .map((t) => (
-                    <option key={t.id} value={t.number}>
-                      Table {t.number} ({t.status})
-                    </option>
-                  ))}
-              </select>
+              <span>{isAlreadyMerged ? 'Manage Merged Table' : 'Merge Tables for Large Party'}</span>
             </div>
 
-            <button
-              onClick={handleMerge}
-              className="w-full py-2.5 rounded-xl bg-purple-600 text-white font-mono text-xs font-black hover:bg-purple-700 transition"
-            >
-              {mergedNotice ? '✓ TABLES MERGED SUCCESSFULLY!' : `[LINK ${sourceTable} TO ${selectedTableNumber}]`}
-            </button>
+            {isAlreadyMerged ? (
+              <div className="space-y-3">
+                <div className="p-2.5 rounded-xl bg-purple-50 border border-purple-200 text-purple-900 text-xs font-mono font-bold">
+                  🔗 Currently merged with <strong>Table {activeTable.mergedWith}</strong> (Unified Bill: ₹{totalBill})
+                </div>
+                <button
+                  onClick={handleUnmerge}
+                  className="w-full py-2.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white font-mono text-xs font-black transition cursor-pointer"
+                >
+                  Unmerge / Separate Tables
+                </button>
+              </div>
+            ) : (
+              <>
+                <p className="text-xs text-slate-500">
+                  Combine running orders and bill of an adjacent table into Table {activeTable?.number}.
+                </p>
+
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-bold text-slate-700">Merge with:</span>
+                  <select
+                    value={sourceTable}
+                    onChange={(e) => setSourceTable(e.target.value)}
+                    className="px-3 py-1.5 rounded-lg border border-slate-200 bg-stone-50 font-mono text-xs font-black focus:outline-none"
+                  >
+                    {availableMergeCandidates.map((t) => (
+                      <option key={t.id} value={t.number}>
+                        Table {t.number} ({t.status} • ₹{t.currentBill})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <button
+                  onClick={handleMerge}
+                  className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-mono text-xs font-black transition cursor-pointer"
+                >
+                  Merge Table {sourceTable} into Table {activeTable?.number}
+                </button>
+              </>
+            )}
           </div>
 
           {/* Split Bill Card */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs space-y-3">
+          {/* <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs space-y-3">
             <div className="flex items-center gap-2 font-mono text-[10.5px] font-black text-indigo-700">
               <Scissors className="h-4 w-4" />
-              <span>[SPLIT BILL BY GUESTS / PERSONS]</span>
+              <span>Split Bill by Guests / Seats</span>
             </div>
             <p className="text-xs text-slate-500">
               Evenly divide total table amount across multiple payment receipts.
@@ -90,7 +127,7 @@ export const ScreenW6MergeSplit: React.FC = () => {
                   <button
                     key={cnt}
                     onClick={() => setSplitCount(cnt)}
-                    className={`h-7 w-7 rounded-lg font-mono text-xs font-black transition ${
+                    className={`h-7 w-7 rounded-lg font-mono text-xs font-black transition cursor-pointer ${
                       splitCount === cnt
                         ? 'bg-slate-900 text-white'
                         : 'bg-white border border-slate-200 text-slate-700'
@@ -103,17 +140,25 @@ export const ScreenW6MergeSplit: React.FC = () => {
             </div>
 
             <div className="text-center font-mono text-xs font-black text-slate-800 py-1">
-              ₹ {Math.round(740 / splitCount)} per person (Total: ₹740)
+              ₹ {totalBill > 0 ? Math.round(totalBill / splitCount) : 0} per person (Total: ₹{totalBill})
             </div>
-          </div>
+          </div>  */}
         </div>
 
-        <button
-          onClick={() => setCurrentScreen(7)}
-          className="w-full py-3 rounded-xl bg-slate-900 text-white font-mono text-xs font-black hover:bg-slate-800 transition"
-        >
-          [PROCEED TO PAYMENT] ➔
-        </button>
+        <div className="space-y-2 pt-2">
+          <button
+            onClick={() => setCurrentScreen(4)}
+            className="w-full py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-stone-50 text-slate-800 font-mono text-xs font-black transition cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
+          >
+            <span>Punch Order for Table {activeTable?.number} ➔</span>
+          </button>
+          <button
+            onClick={() => setCurrentScreen(7)}
+            className="w-full py-3 rounded-xl bg-slate-900 hover:bg-black text-white font-mono text-xs font-black transition cursor-pointer shadow-md flex items-center justify-center gap-1.5"
+          >
+            <span>Proceed to Payment ➔</span>
+          </button>
+        </div>
       </div>
     </WaiterTabletHousing>
   );

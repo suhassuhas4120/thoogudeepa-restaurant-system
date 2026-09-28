@@ -2,24 +2,23 @@
 
 import React, { useState } from 'react';
 import { useWaiterStore } from '../../../store/useWaiterStore';
-import { useSharedBridge } from '../../../store/useSharedBridge';
+import { useSharedBridge, getTableBillBreakdown } from '../../../store/useSharedBridge';
 import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
+import { INITIAL_MENU_ITEMS } from '../../../data/menuItems';
 import { ArrowLeft, Printer, MessageCircle, CheckCircle2, Trash2 } from 'lucide-react';
 
 export const TabletScreen8PrintBill: React.FC = () => {
-  const { setCurrentScreen, selectedTableNumber, orderCart } = useWaiterStore();
+  const { setCurrentScreen, selectedTableNumber, orderCart, activeCaptain, settlementTip } = useWaiterStore();
   const { tables, waiterVacatesTable } = useSharedBridge();
   const [printSent, setPrintSent] = useState(false);
   const [whatsappSent, setWhatsappSent] = useState(false);
   const [tableVacated, setTableVacated] = useState(false);
 
   const activeTable = tables.find((t) => t.number === (selectedTableNumber || 'A-04')) || tables[0];
-  const subtotal = (activeTable.currentBill || 1430);
-  const cgst = Math.round(subtotal * 0.025);
-  const sgst = Math.round(subtotal * 0.025);
-  const netTotal = subtotal;
-  const invoiceNum = 'INV-2026-104';
-  const txnId = 'TXN_9876543210';
+  const breakdown = getTableBillBreakdown(activeTable, settlementTip);
+
+  const invoiceNum = `INV-2026-${activeTable.number.replace(/\D/g, '') || '104'}`;
+  const txnId = `TXN_${(activeTable.number.replace(/\D/g, '') || '104').padStart(4, '0')}7892`;
   const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
   const handlePrint = () => {
@@ -35,7 +34,7 @@ export const TabletScreen8PrintBill: React.FC = () => {
   return (
     <WaiterTabletLandscapeHousing
       screenNumber={8}
-      screenTitle="BILL GENERATION &amp; MANAGER PRINT DISPATCH"
+      screenTitle="TAX INVOICE & DIGITAL RECEIPT"
     >
       <div className="flex flex-col flex-1 min-h-[700px] p-5 font-mono select-none">
         {/* TOP HEADER */}
@@ -45,13 +44,13 @@ export const TabletScreen8PrintBill: React.FC = () => {
             className="bg-slate-900 hover:bg-black text-white px-3 py-1.5 rounded font-bold transition flex items-center gap-1.5 text-xs shadow-2xs"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            <span>[⬅ BACK TO ALL TABLES]</span>
+            <span>Back to All Tables</span>
           </button>
           <h3 className="font-black text-slate-950 text-sm">
-            [SCREEN 8: BILL GENERATION &amp; MANAGER PRINT DISPATCH]
+            Tax Invoice & Thermal Print Hub
           </h3>
           <span className="border border-slate-400 bg-slate-100 px-3 py-1 rounded font-bold text-xs text-slate-700">
-            [{invoiceNum}]
+            {invoiceNum}
           </span>
         </div>
 
@@ -61,15 +60,15 @@ export const TabletScreen8PrintBill: React.FC = () => {
             <CheckCircle2 className="h-6 w-6 text-emerald-600" />
             <div>
               <strong className="text-sm font-black text-slate-950 block">
-                [PAYMENT SUCCESSFUL — BILL SETTLED]
+                Payment Successful — Bill Settled
               </strong>
               <p className="text-[11px] font-bold text-slate-500">
-                [TRANSACTION ID: {txnId} • TIME: {now}]
+                Transaction ID: {txnId} • Time: {now}
               </p>
             </div>
           </div>
           <span className="border-2 border-slate-900 bg-white px-3 py-1 rounded font-black text-xs text-slate-900">
-            [STATUS: PAID ✓]
+            Status: Paid ✓
           </span>
         </div>
 
@@ -98,7 +97,7 @@ export const TabletScreen8PrintBill: React.FC = () => {
                   <span>Table:</span><span className="font-bold">{activeTable.number}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Captain:</span><span className="font-bold">Ramesh</span>
+                  <span>Captain:</span><span className="font-bold">{activeTable.serverName || activeCaptain || 'Staff'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Time:</span><span className="font-bold">{now}</span>
@@ -108,38 +107,49 @@ export const TabletScreen8PrintBill: React.FC = () => {
               {/* Itemized Bill */}
               <div className="border-b border-dashed border-slate-300 pb-2 mb-2">
                 <div className="flex justify-between font-bold text-[10px] border-b border-slate-200 pb-1 mb-1">
-                  <span>ITEM</span><span>QTY</span><span>AMT</span>
+                  <span>ITEM</span><span>QTY</span><span>RATE</span><span>AMT</span>
                 </div>
-                {[
-                  { name: 'Donne Mutton Biryani', qty: 1, price: 520 },
-                  { name: 'Donne Chicken Biryani', qty: 2, price: 820 },
-                  { name: 'Raita Special', qty: 1, price: 90 },
-                ].map((item, idx) => (
-                  <div key={idx} className="flex justify-between text-[10px] text-slate-700 py-0.5">
-                    <span className="flex-1 truncate pr-2">{item.name}</span>
-                    <span className="w-6 text-center">{item.qty}</span>
-                    <span className="w-14 text-right">₹{item.price}</span>
+                {breakdown.items.length > 0 ? (
+                  breakdown.items.map((item, idx) => (
+                    <div key={idx} className="flex justify-between text-[10px] text-slate-700 py-0.5">
+                      <span className="flex-1 truncate pr-1">{item.name}</span>
+                      <span className="w-5 text-center">{item.quantity}</span>
+                      <span className="w-10 text-right">₹{item.unitPrice}</span>
+                      <span className="w-12 text-right">₹{item.lineTotal}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex justify-between text-[10px] text-slate-700 py-0.5">
+                    <span className="flex-1 truncate pr-1">Dine-In F&B Service</span>
+                    <span className="w-5 text-center">1</span>
+                    <span className="w-10 text-right">₹{breakdown.foodSubtotal}</span>
+                    <span className="w-12 text-right">₹{breakdown.foodSubtotal}</span>
                   </div>
-                ))}
+                )}
               </div>
 
               {/* GST Breakdown */}
               <div className="text-[10px] text-slate-600 flex flex-col gap-0.5 border-b border-dashed border-slate-300 pb-2 mb-2">
                 <div className="flex justify-between">
-                  <span>Subtotal:</span><span>₹ {(subtotal - cgst - sgst).toLocaleString('en-IN')}</span>
+                  <span>Subtotal (Net):</span><span>₹ {breakdown.foodSubtotal.toLocaleString('en-IN')}.00</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>CGST @ 2.5%:</span><span>₹ {cgst}</span>
+                  <span>CGST @ 2.5%:</span><span>₹ {breakdown.cgst}.00</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>SGST @ 2.5%:</span><span>₹ {sgst}</span>
+                  <span>SGST @ 2.5%:</span><span>₹ {breakdown.sgst}.00</span>
                 </div>
+                {breakdown.tip > 0 && (
+                  <div className="flex justify-between text-orange-600 font-bold">
+                    <span>Staff Tip:</span><span>₹ {breakdown.tip}.00</span>
+                  </div>
+                )}
               </div>
 
               {/* Grand Total */}
               <div className="flex justify-between font-black text-sm text-slate-950 border-t-2 border-slate-800 pt-2 mb-3">
                 <span>NET TOTAL PAID:</span>
-                <span>₹ {netTotal.toLocaleString('en-IN')}</span>
+                <span>₹ {breakdown.grandTotal.toLocaleString('en-IN')}.00</span>
               </div>
 
               {/* Payment Mode */}
@@ -152,30 +162,41 @@ export const TabletScreen8PrintBill: React.FC = () => {
 
           {/* RIGHT: BILL ACTIONS */}
           <div className="flex-1 flex flex-col gap-4 justify-start">
-            <span className="font-black text-xs text-slate-900 uppercase">[BILL DISPATCH OPTIONS]:</span>
+            <span className="font-black text-xs text-slate-900 uppercase">BILL DISPATCH OPTIONS:</span>
 
             {/* ITEMIZED INVOICE SUMMARY */}
             <div className="border border-slate-300 bg-white rounded-xl p-4 flex flex-col gap-2">
-              <strong className="text-xs font-black text-slate-900">[TAX INVOICE DETAILS]:</strong>
+              <strong className="text-xs font-black text-slate-900">Tax Invoice Details:</strong>
               <div className="flex flex-col gap-1 font-mono text-xs">
-                {[
-                  { name: '1x Donne Mutton Biryani', amt: 520 },
-                  { name: '2x Donne Chicken Biryani', amt: 820 },
-                  { name: '1x Raita Special', amt: 90 },
-                ].map((row, i) => (
-                  <div key={i} className="flex justify-between text-slate-700">
-                    <span>{row.name}</span>
-                    <span>₹ {row.amt}.00</span>
+                {breakdown.items.length > 0 ? (
+                  breakdown.items.map((row, i) => (
+                    <div key={i} className="flex justify-between text-slate-700">
+                      <span>{row.quantity}x {row.name}</span>
+                      <span>₹ {row.lineTotal}.00</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex justify-between text-slate-700">
+                    <span>1x Dine-In F&amp; Beverage Service</span>
+                    <span>₹ {breakdown.foodSubtotal}.00</span>
                   </div>
-                ))}
+                )}
                 <div className="border-t border-dashed border-slate-300 mt-1 pt-1 flex justify-between text-[10px] text-slate-500">
-                  <span>[CGST 2.5%]:</span><span>₹ {cgst}.00</span>
+                  <span>Subtotal (Net):</span><span>₹ {breakdown.foodSubtotal}.00</span>
                 </div>
                 <div className="flex justify-between text-[10px] text-slate-500">
-                  <span>[SGST 2.5%]:</span><span>₹ {sgst}.00</span>
+                  <span>CGST 2.5%:</span><span>₹ {breakdown.cgst}.00</span>
                 </div>
+                <div className="flex justify-between text-[10px] text-slate-500">
+                  <span>SGST 2.5%:</span><span>₹ {breakdown.sgst}.00</span>
+                </div>
+                {breakdown.tip > 0 && (
+                  <div className="flex justify-between text-[10px] text-orange-600 font-bold">
+                    <span>Staff Tip:</span><span>₹ {breakdown.tip}.00</span>
+                  </div>
+                )}
                 <div className="border-t-2 border-slate-900 mt-1 pt-1 flex justify-between font-black text-sm text-slate-950">
-                  <span>[NET TOTAL PAID]:</span><span>₹ {netTotal.toLocaleString('en-IN')}.00</span>
+                  <span>Net Total Paid:</span><span>₹ {breakdown.grandTotal}.00</span>
                 </div>
               </div>
             </div>
@@ -183,13 +204,13 @@ export const TabletScreen8PrintBill: React.FC = () => {
             {/* Print Confirmation */}
             {printSent && (
               <div className="p-3 bg-slate-900 text-white rounded-xl text-xs font-bold text-center font-mono">
-                [PRINT COMMAND SENT DIRECTLY TO MANAGER POS PRINTER — PRINT JOB ID: #PRN-884]
+                Print command sent directly to manager POS printer — Job #PRN-884
               </div>
             )}
 
             {whatsappSent && (
               <div className="p-3 bg-emerald-700 text-white rounded-xl text-xs font-bold text-center font-mono">
-                [SUCCESS: DIGITAL BILL SHARED VIA WHATSAPP TO CUSTOMER]
+                Digital invoice shared with customer via WhatsApp
               </div>
             )}
 
@@ -200,14 +221,14 @@ export const TabletScreen8PrintBill: React.FC = () => {
                 className="flex-1 py-4 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-black text-xs transition shadow-sm flex items-center justify-center gap-2"
               >
                 <MessageCircle className="h-4 w-4" />
-                <span>💬 [SHARE BILL VIA WHATSAPP]</span>
+                <span>Send WhatsApp Receipt</span>
               </button>
               <button
                 onClick={handlePrint}
                 className="flex-1 py-4 bg-slate-900 hover:bg-black text-white rounded-xl font-black text-xs transition shadow-sm flex items-center justify-center gap-2"
               >
                 <Printer className="h-4 w-4" />
-                <span>🖨️ [PRINT PHYSICAL BILL (SENDS TO MANAGER)]</span>
+                <span>Print 80mm Receipt</span>
               </button>
             </div>
 
@@ -233,10 +254,11 @@ export const TabletScreen8PrintBill: React.FC = () => {
                   }`}
                 >
                   <Trash2 className="h-4 w-4" />
-                  <span>🧹 {isPaymentDone ? '[VACATE & RESET TABLE FOR NEXT GUEST]' : '[VACATE DISABLED: PAYMENT PENDING]'}</span>
+                  <span>🧹 {isPaymentDone ? 'Vacate & Reset Table for Next Guest' : 'Vacate Disabled (Payment Pending)'}</span>
                 </button>
               );
             })()}
+
           </div>
         </div>
       </div>
