@@ -21,15 +21,15 @@ export const TabletScreen1Login: React.FC = () => {
     'ALL',
     'SECTION A',
     'SECTION B',
-    'TERRACE',
-    'FAMILY DINING',
+    'SECTION C',
+    'SECTION D',
   ];
 
   const presetWaiters = [
     { name: 'Captain Ramesh', section: 'SECTION A' },
     { name: 'Captain Suresh', section: 'SECTION B' },
-    { name: 'Captain Vijay', section: 'TERRACE' },
-    { name: 'Captain Kiran', section: 'FAMILY DINING' },
+    { name: 'Captain Vijay', section: 'SECTION C' },
+    { name: 'Captain Kiran', section: 'SECTION D' },
   ];
 
   const handleNum = (num: string) => {
@@ -93,9 +93,9 @@ export const TabletScreen1Login: React.FC = () => {
                 BIRIYANI MANE
               </h1>
 
-              <p className="font-mono text-[11px] font-extrabold text-orange-600 mt-2 uppercase tracking-wider">
+              {/* <p className="font-mono text-[11px] font-extrabold text-orange-600 mt-2 uppercase tracking-wider">
                 Floor Captain / Waiter Service Console
-              </p>
+              </p> */}
             </div>
 
           </div>
@@ -106,13 +106,11 @@ export const TabletScreen1Login: React.FC = () => {
             <div className="w-full bg-white rounded-2xl p-5 shadow-sm">
 
               <div className="mb-4">
-                <span className="font-mono text-[9px] font-bold text-slate-400 uppercase tracking-[0.15em]">
-                  Floor Assignment
-                </span>
 
                 <h2 className="font-mono text-[15px] font-black text-slate-950 uppercase mt-1">
                   Assigned Floor Section
                 </h2>
+
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
@@ -136,17 +134,6 @@ export const TabletScreen1Login: React.FC = () => {
 
             </div>
 
-          </div>
-
-          {/* LEFT FOOTER */}
-          <div className="flex items-center justify-between px-1">
-            <span className="font-mono text-[9px] text-slate-400 font-bold">
-              FLOOR CAPTAIN CONSOLE
-            </span>
-
-            <span className="font-mono text-[9px] text-slate-400 font-bold">
-              Tablet Client v2.4
-            </span>
           </div>
 
         </div>
@@ -237,9 +224,9 @@ export const TabletScreen1Login: React.FC = () => {
 
               <div className="flex justify-between items-center mb-2">
 
-                <label className="font-mono text-[10px] font-black text-slate-600 uppercase">
+                {/* <label className="font-mono text-[10px] font-black text-slate-600 uppercase">
                   Security PIN / Passcode
-                </label>
+                </label> */}
 
                 {errorMsg ? (
                   <span className="font-mono text-[9px] font-black text-rose-600 animate-pulse">
@@ -253,11 +240,7 @@ export const TabletScreen1Login: React.FC = () => {
                   <span className="font-mono text-[9px] font-black text-rose-600">
                     INVALID PIN
                   </span>
-                ) : (
-                  <span className="font-mono text-[9px] font-bold text-orange-600">
-                    {4 - pin.length} DIGITS REQUIRED
-                  </span>
-                )}
+                ) : null }
 
               </div>
 
@@ -362,21 +345,19 @@ export const TabletScreen1Login: React.FC = () => {
   );
 };
 
-            {/* Active Shift Announcement
-            <div className="mt-6 border border-slate-300 bg-white rounded-xl p-4 flex flex-col gap-2 font-mono text-xs shadow-2xs">
-              <span className="font-bold text-slate-500 uppercase text-[10px]">
-                Active Shift Announcement
-              </span>
-              <div className="font-bold text-slate-900 text-sm">
-                Shift A: 08:00 AM – 04:00 PM
-              </div>
-              <div className="text-slate-600 text-[11px]">
-                Assigned Zone: Main Dining Hall • Section A &amp; B
-              </div>
-              <div className="text-slate-600 text-[11px]">
-                Tables Under Management: 16 Active Tables
-              </div>
-            </div> */}
-
-
-          
+/* Active Shift Announcement
+<div className="mt-6 border border-slate-300 bg-white rounded-xl p-4 flex flex-col gap-2 font-mono text-xs shadow-2xs">
+  <span className="font-bold text-slate-500 uppercase text-[10px]">
+    Active Shift Announcement
+  </span>
+  <div className="font-bold text-slate-900 text-sm">
+    Shift A: 08:00 AM – 04:00 PM
+  </div>
+  <div className="text-slate-600 text-[11px]">
+    Assigned Zone: Main Dining Hall • Section A &amp; B
+  </div>
+  <div className="text-slate-600 text-[11px]">
+    Tables Under Management: 16 Active Tables
+  </div>
+</div>
+*/

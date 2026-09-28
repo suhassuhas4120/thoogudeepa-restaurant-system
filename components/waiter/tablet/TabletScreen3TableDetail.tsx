@@ -307,7 +307,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     KOT #{activeTable.kotCount || 104} • Seated {activeTable.seatedTime || '12:52 PM'}
                   </strong>
                   <div className="text-[11px] text-slate-500 font-bold mt-0.5">
-                    Guest Count: {activeTable.guestCount || 3} Guests • Server: {activeCaptain || activeTable.serverName}
+                     Server: {activeCaptain || activeTable.serverName}
                   </div>
                   {activeTable.mergedWith && (
                     <div className="text-[10.5px] text-purple-700 font-black mt-0.5">
@@ -361,7 +361,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
               </div>
 
               {/* Dynamic Service Briefing */}
-              <div className="bg-white border border-slate-300 rounded-xl p-3.5 flex flex-col gap-1 text-[11px] shadow-2xs">
+              {/* <div className="bg-white border border-slate-300 rounded-xl p-3.5 flex flex-col gap-1 text-[11px] shadow-2xs">
                 <span className="font-black text-slate-500 uppercase text-[10px]">
                   Table Service Briefing
                 </span>
@@ -376,7 +376,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     • Consolidated with Table {activeTable.mergedWith} (Unified Orders &amp; Billing)
                   </div>
                 )}
-              </div>
+              </div> */}
             </div>
 
             {/* ACTION BUTTONS (DYNAMIC EXPANSION INTO RIGHT PANE WITHOUT FULL PAGE REDIRECT) */}
@@ -392,11 +392,11 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 }`}
               >
                 <Utensils className="h-4 w-4" />
-                <span>Take Orders {draftItemCount > 0 ? `(${draftItemCount})` : ''}</span>
+                <span>Take order {draftItemCount > 0 ? `(${draftItemCount})` : ''}</span>
               </button>
 
               {/* 2. Payment Button */}
-              <button
+              {/* <button
                 type="button"
                 onClick={() => setRightPane(rightPane === 'payment' ? 'bill_summary' : 'payment')}
                 className={`py-3 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
@@ -407,7 +407,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
               >
                 <CreditCard className="h-4 w-4" />
                 <span>Collect Payment</span>
-              </button>
+              </button> */}
 
               {/* 3. Merge Tables Button */}
               <button
@@ -454,7 +454,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
               </button> */}
 
               {/* 6. Table Vacate Button (ENABLED ONLY WHEN PAYMENT IS DONE) */}
-              <button
+              {/* <button
                 type="button"
                 disabled={!canVacate}
                 onClick={handleDirectVacate}
@@ -467,7 +467,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
               >
                 <Trash2 className="h-3.5 w-3.5" />
                 <span>{canVacate ? 'Vacate Table' : 'Vacate (Locked)'}</span>
-              </button>
+              </button> */}
             </div>
           </div>
 
@@ -508,14 +508,14 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col gap-2 mt-auto">
-                  <button
+                  {/* <button
                     type="button"
                     onClick={() => setRightPane('take_order')}
                     className="w-full py-3 bg-orange-50 text-orange-950 border border-orange-300 hover:bg-orange-600 hover:text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
                   >
                     <Utensils className="h-4 w-4" />
                     <span>Open Menu Order Entry</span>
-                  </button>
+                  </button> */}
                   <button
                     type="button"
                     onClick={() => setRightPane('payment')}
@@ -536,21 +536,21 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     Table {activeTable.number}: Menu Order Entry
                   </span>
                   <div className="flex items-center gap-1.5">
-                    <button
+                    {/* <button
                       onClick={() => setCurrentScreen(4)}
                       className="text-[10px] font-bold text-slate-700 hover:text-slate-900 border border-slate-300 rounded px-2.5 py-1 flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
                       title="Open full dedicated Menu Screen 4"
                     >
                       <ExternalLink className="h-3 w-3" />
                       <span>Full Screen Menu</span>
-                    </button>
-                    <button
+                    </button> */}
+                    {/* <button
                       onClick={() => setRightPane('bill_summary')}
                       className="p-1 hover:bg-slate-100 rounded text-slate-600 cursor-pointer"
                       title="Close"
                     >
                       <X className="h-4 w-4" />
-                    </button>
+                    </button> */}
                   </div>
                 </div>
 
@@ -733,7 +733,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                                 }`}
                               >
                                 <Plus className="h-3 w-3" />
-                                <span>+ Add</span>
+                                <span>Add</span>
                               </button>
                             ) : (
                               <div className="flex items-center gap-1 rounded border border-slate-300 bg-white p-0.5 shadow-2xs">
@@ -785,7 +785,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     }`}
                   >
                     <Flame className="h-3.5 w-3.5 fill-white" />
-                    <span>Fire KOT to Kitchen ➔</span>
+                    <span>Kitchen ➔</span>
                   </button>
                 </div>
               </div>
@@ -904,7 +904,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-black text-xs transition shadow-2xs mt-auto flex items-center justify-center gap-2"
                 >
                   <Flame className="h-4 w-4 fill-white" />
-                  <span>Fire KOT to Kitchen ➔</span>
+                  <span>Kitchen ➔</span>
                 </button>
               </div>
             )}
@@ -920,7 +920,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <button
+                    {/* <button
                       onClick={() => setCurrentScreen(6)}
                       className="text-[10px] font-bold text-slate-700 hover:text-slate-900 border border-slate-300 rounded px-2.5 py-1 flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
                       title="Open full dedicated Merge Screen 6"
@@ -934,7 +934,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                       title="Close"
                     >
                       <X className="h-4 w-4" />
-                    </button>
+                    </button> */}
                   </div>
                 </div>
 
@@ -954,11 +954,11 @@ export const TabletScreen3TableDetail: React.FC = () => {
                       </div>
                       <div className="flex justify-between">
                         <span>Combined Party:</span>
-                        <span className="font-black">{activeTable.guestCount || 4} Guests</span>
+                        {/* <span className="font-black">{activeTable.guestCount || 4} Guests</span> */}
                       </div>
-                      <div className="text-[10px] text-purple-700 mt-1">
+                      {/* <div className="text-[10px] text-purple-700 mt-1">
                         • Kitchen KOTs and billing unified under one consolidated account.
-                      </div>
+                      </div> */}
                     </div>
 
                     <button
@@ -1016,10 +1016,10 @@ export const TabletScreen3TableDetail: React.FC = () => {
                         <span>Consolidated Bill:</span>
                         <span>₹{(runningTotal + (targetMergeTableObj?.currentBill || 0)).toFixed(2)}</span>
                       </div>
-                      <div className="flex justify-between text-[11px] text-purple-700">
+                      {/* <div className="flex justify-between text-[11px] text-purple-700">
                         <span>Total Guests:</span>
                         <span>{(activeTable.guestCount || 2) + (targetMergeTableObj?.guestCount || 2)} Guests</span>
-                      </div>
+                      </div> */}
                     </div>
 
                     <button
