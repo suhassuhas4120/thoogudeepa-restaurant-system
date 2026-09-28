@@ -1428,6 +1428,16 @@ if (typeof window !== 'undefined') {
 
         useSharedBridge.setState({
           ...parsed,
+          shiftStats: {
+            tablesServed: parsed.shiftStats?.tablesServed || 0,
+            totalRevenue: parsed.shiftStats?.totalRevenue || 0,
+            cashRevenue: parsed.shiftStats?.cashRevenue || 0,
+            discounts: parsed.shiftStats?.discounts || 0,
+            taxCollected: parsed.shiftStats?.taxCollected || 0,
+            cashExpenses: parsed.shiftStats?.cashExpenses || 0,
+            tipsEarned: parsed.shiftStats?.tipsEarned || 0,
+            avgTurnaroundMinutes: parsed.shiftStats?.avgTurnaroundMinutes || 38,
+          },
           kdsTickets: sanitizedKdsTickets,
           settlementRecords:
             Array.isArray(parsed.settlementRecords) && parsed.settlementRecords.length > 0

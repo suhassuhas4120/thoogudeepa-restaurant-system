@@ -9,15 +9,17 @@ export function ScreenM11DayCloseZReport() {
   const { shiftStats, tables, kdsTickets } = useSharedBridge();
   const { openingFloat, pettyExpenses, activeManager } = useManagerStore();
 
-  const totalPetty = shiftStats.cashExpenses;
-  const grossSales = shiftStats.totalRevenue - shiftStats.taxCollected + shiftStats.discounts;
-  const discountTotal = shiftStats.discounts;
-  const taxable = shiftStats.totalRevenue - shiftStats.taxCollected;
-  const taxTotal = shiftStats.taxCollected;
+  const totalPetty = shiftStats?.cashExpenses || 0;
+  const totalRevenue = shiftStats?.totalRevenue || 0;
+  const taxCollected = shiftStats?.taxCollected || 0;
+  const discountTotal = shiftStats?.discounts || 0;
+  const grossSales = totalRevenue - taxCollected + discountTotal;
+  const taxable = totalRevenue - taxCollected;
+  const taxTotal = taxCollected;
   const netRevenue = taxable;
 
   // Expected cash
-  const cashSales = shiftStats.cashRevenue;
+  const cashSales = shiftStats?.cashRevenue || 0;
   const expectedCashInTill = openingFloat ? openingFloat.amount + cashSales - totalPetty : null;
 
   const [shiftLocked, setShiftLocked] = useState(false);
