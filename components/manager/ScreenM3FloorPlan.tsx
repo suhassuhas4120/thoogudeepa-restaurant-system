@@ -16,7 +16,7 @@ export function ScreenM3FloorPlan() {
   const selectedTable = tables.find((t) => t.number === selectedTableNumber) || tables[0];
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4 grid grid-cols-1 md:grid-cols-12 gap-5">
+    <div className="w-full max-w-[1280px] mx-auto p-4 grid grid-cols-1 md:grid-cols-12 gap-5">
       {/* Left Main Tables Canvas */}
       <div className="md:col-span-8 flex flex-col gap-4">
         {/* Section Tabs */}

@@ -33,7 +33,7 @@ export function ScreenM6WaiterCash() {
   };
 
   return (
-    <div className="w-full min-h-[calc(100vh-2rem)] p-4 grid grid-cols-1 gap-5 font-mono">
+    <div className="w-full max-w-[1280px] min-h-[calc(100vh-2rem)] mx-auto p-4 grid grid-cols-1 gap-5 font-mono">
       {/* Left Captain Cash Balance */}
       <div className="w-full bg-white border-2 border-slate-900 rounded-xl p-5 shadow-[4px_4px_0px_#0f172a] flex flex-col justify-between">
         <div>
@@ -91,7 +91,7 @@ export function ScreenM6WaiterCash() {
                           onClick={() => handleSaveCash(st.id, st.name)}
                           className="w-full bg-slate-900 text-white py-2 rounded text-[10px] font-bold hover:bg-emerald-600 transition text-center"
                         >
-                          SAVE CASH RECONCILIATION
+                          SAVE
                         </button>
                       </div>
                     </div>

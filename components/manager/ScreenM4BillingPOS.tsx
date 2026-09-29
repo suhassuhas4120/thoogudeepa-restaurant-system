@@ -158,7 +158,7 @@ export function ScreenM4BillingPOS() {
   };
 
   return (
-    <div className="w-full max-w-[1520px] mx-auto p-4 space-y-4">
+    <div className="w-full max-w-[1280px] mx-auto p-4 space-y-4">
       {/* Top POS Action Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-white border-2 border-slate-900 rounded-xl px-4 py-2.5 shadow-[3px_3px_0px_#0f172a]">
         <div className="flex items-center gap-3">

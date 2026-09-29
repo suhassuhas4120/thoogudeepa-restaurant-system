@@ -19,7 +19,7 @@ export function ScreenM2LiveOverview() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4 space-y-5">
+    <div className="w-full max-w-[1280px] mx-auto p-4 space-y-5">
       {/* Top 4 KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white border-2 border-slate-900 rounded-xl p-4 shadow-[3px_3px_0px_#0f172a]">

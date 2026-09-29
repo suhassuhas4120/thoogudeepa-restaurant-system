@@ -8,7 +8,7 @@ export function ScreenM5StaffRoster() {
   const { staffRoster, updateStaffStatus } = useManagerStore();
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4 space-y-5 font-mono">
+    <div className="w-full max-w-[1280px] mx-auto p-4 space-y-5 font-mono">
       {/* Top Banner */}
       <div className="bg-white border-2 border-slate-900 rounded-xl p-5 shadow-[4px_4px_0px_#0f172a] flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -26,7 +26,6 @@ export function ScreenM5StaffRoster() {
               <div className="flex justify-between items-start">
                 <div>
                   <h4 className="font-black text-sm text-slate-900">{st.name}</h4>
-                  <span className="text-xs text-orange-600 font-bold">{st.role}</span>
                 </div>
                 <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${
                   st.status === 'ACTIVE'

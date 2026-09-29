@@ -58,7 +58,7 @@ export function ScreenM1Login() {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 p-4">
+    <div className="w-full max-w-[1280px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 p-4">
       {/* Left Control Column */}
       <div className="md:col-span-5 flex flex-col gap-4">
         {/* Terminal Header */}
