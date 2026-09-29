@@ -78,13 +78,21 @@ export default function ManagerPortalPage() {
 
   const renderActiveScreen = () => {
     const s = screens.find((item) => item.id === currentScreen);
-    return s ? s.comp : <ScreenM1Login />;
+    const activeComp = s ? s.comp : <ScreenM1Login />;
+
+    return (
+      <div className="w-full max-w-[1280px] border-2 border-slate-900 rounded-[20px] bg-white shadow-[8px_8px_0px_#0f172a] overflow-hidden">
+        {activeComp}
+      </div>
+    );
   };
 
   if (!isAuthenticated) {
     return (
-      <main className="min-h-screen bg-stone-100 flex items-center justify-center">
-        <ScreenM1Login />
+      <main className="min-h-screen bg-stone-100 flex items-center justify-center p-4">
+        <div className="w-full max-w-[1280px] border-2 border-slate-900 rounded-[20px] bg-white shadow-[8px_8px_0px_#0f172a] overflow-hidden">
+          <ScreenM1Login />
+        </div>
       </main>
     );
   }
