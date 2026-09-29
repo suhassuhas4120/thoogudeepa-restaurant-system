@@ -30,7 +30,7 @@ export const ScreenW10ShiftStats: React.FC = () => {
               className="flex items-center gap-1 text-xs font-black text-slate-700"
             >
               <ArrowLeft className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span>[BACK TO FLOOR]</span>
+              <span>BACK</span>
             </button>
             <span className="font-mono text-xs font-black text-slate-900">
               {activeCaptain.toUpperCase()}
@@ -96,7 +96,7 @@ export const ScreenW10ShiftStats: React.FC = () => {
           className="w-full py-3.5 rounded-2xl bg-slate-900 text-white font-mono text-xs font-black uppercase tracking-wider shadow-lg hover:bg-slate-800 flex items-center justify-center gap-2"
         >
           <LogOut className="h-4 w-4" />
-          <span>[END SHIFT &amp; CLOCK OUT]</span>
+          <span>END SHIFT </span>
         </motion.button>
       </div>
     </WaiterTabletHousing>

@@ -83,7 +83,7 @@ export const ScreenW7Payment: React.FC = () => {
               className="flex items-center gap-1 text-xs font-black text-slate-700 hover:text-slate-900 cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span>Back to Table</span>
+              <span>Back </span>
             </button>
             <div className="flex items-center gap-2">
               <span className="font-mono text-xs font-black text-slate-900 bg-stone-100 px-2 py-0.5 rounded border border-slate-200">
@@ -146,11 +146,7 @@ export const ScreenW7Payment: React.FC = () => {
                     </div>
                   </div>
                 ))
-              ) : (
-                <div className="text-center py-2 font-mono text-[11px] text-slate-400 italic">
-                  Dine-In Food &amp; Beverage Service (₹{breakdown.foodSubtotal})
-                </div>
-              )}
+              ) : null }
             </div>
 
             {/* Micro Math Ledger */}
@@ -334,7 +330,7 @@ export const ScreenW7Payment: React.FC = () => {
                       )}
                     </div>
 
-                    {/* Simulate Payment Confirmation */}
+                    {/* Simulate Payment Confirmation
                     {!upiVerified && (
                       <button
                         type="button"
@@ -344,7 +340,7 @@ export const ScreenW7Payment: React.FC = () => {
                         <Zap className="h-3 w-3 text-amber-600" />
                         <span>Simulate Guest Scanned &amp; Paid</span>
                       </button>
-                    )}
+                    )} */}
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center text-center space-y-2 py-2">
@@ -555,13 +551,13 @@ export const ScreenW7Payment: React.FC = () => {
             {success ? (
               <span>✓ Payment Recorded!</span>
             ) : method === 'UPI' ? (
-              <span>Confirm &amp; Record ₹{breakdown.grandTotal} Cash ➔</span>
+              <span>Confirm &amp; Record  ➔</span>
               
             ) : method === 'CARD' ? (
-              <span>Confirm &amp; Record ₹{breakdown.grandTotal} via UPI ➔</span>
+              <span>Confirm &amp; Record  ➔</span>
               
             ) : (
-              <span>Confirm &amp; Record ₹{breakdown.grandTotal} via Card POS ➔</span>
+              <span>Confirm &amp; Record  ➔</span>
               
               
             )}

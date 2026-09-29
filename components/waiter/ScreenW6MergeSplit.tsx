@@ -46,10 +46,10 @@ export const ScreenW6MergeSplit: React.FC = () => {
               className="flex items-center gap-1 text-xs font-black text-slate-700 hover:text-slate-900 cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span>Back to Table</span>
+              <span>Back </span>
             </button>
             <span className="font-mono text-xs font-black text-slate-900">
-              Target: Table {activeTable?.number}
+              Table {activeTable?.number}
             </span>
           </div>
 
@@ -62,10 +62,10 @@ export const ScreenW6MergeSplit: React.FC = () => {
 
           {/* Merge / Unmerge Tables Card */}
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs space-y-3">
-            <div className="flex items-center gap-2 font-mono text-[10.5px] font-black text-purple-700">
+            {/* <div className="flex items-center gap-2 font-mono text-[10.5px] font-black text-purple-700">
               <Link2 className="h-4 w-4" />
               <span>{isAlreadyMerged ? 'Manage Merged Table' : 'Merge Tables for Large Party'}</span>
-            </div>
+            </div> */}
 
             {isAlreadyMerged ? (
               <div className="space-y-3">

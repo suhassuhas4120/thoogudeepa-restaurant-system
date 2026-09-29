@@ -196,7 +196,7 @@ export const ScreenW1Login: React.FC = () => {
           onClick={handleLogin}
           className="w-full mt-3 flex items-center justify-center gap-2 rounded-2xl bg-orange-600 py-3.5 text-xs font-extrabold uppercase tracking-wider text-white shadow-lg shadow-orange-600/30 hover:bg-orange-700 transition cursor-pointer"
         >
-          <span>Login to Floor Console</span>
+          <span>Login </span>
           <ArrowRight className="h-4 w-4 stroke-[2.5]" />
         </motion.button>
       </div>
