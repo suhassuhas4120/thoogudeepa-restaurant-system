@@ -169,9 +169,6 @@ export function ScreenM4BillingPOS() {
             <span className="font-mono text-xs font-black text-slate-900 uppercase">
               BILLING &amp; DIRECT COUNTER POS TERMINAL
             </span>
-            <span className="text-slate-400 text-[11px] ml-2 hidden sm:inline">
-              Walk-in counter ordering + tableside invoice settlement
-            </span>
           </div>
         </div>
 
@@ -503,7 +500,6 @@ export function ScreenM4BillingPOS() {
                 <div className="text-[11px] font-bold text-slate-800 mt-2">
                   UPI ID: thoogudeepabiryani@icici
                 </div>
-                <p className="text-[9.5px] text-slate-500">Auto-verifies on soundbox announcement</p>
               </div>
             )}
           </div>

@@ -65,18 +65,6 @@ export function ScreenM8OffersRules() {
         ))}
       </div>
 
-      {/* Audit Log */}
-      <div className="bg-white border-2 border-slate-900 rounded-xl p-4 shadow-[3px_3px_0px_#0f172a] text-xs">
-        <h4 className="font-black text-slate-900 uppercase mb-2">Override Log</h4>
-        <div className="space-y-1.5 text-slate-600">
-          <div className="flex justify-between p-2 bg-stone-50 rounded border border-slate-200">
-            <span className="font-bold text-slate-900">Auth by GM Manjunath</span>
-          </div>
-          <div className="flex justify-between p-2 bg-stone-50 rounded border border-slate-200">
-            <span className="font-bold text-slate-900">Auth by Floor Lead Raghav</span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

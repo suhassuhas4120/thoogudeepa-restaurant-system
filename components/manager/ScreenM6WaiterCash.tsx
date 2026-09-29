@@ -57,42 +57,44 @@ export function ScreenM6WaiterCash() {
                   <div key={st.id} className="p-3 bg-stone-50 rounded-xl border border-slate-300 text-xs">
                     <div className="flex justify-between items-center">
                       <span className="font-black text-slate-900">{st.name}</span>
-                      <span className="text-slate-500">{st.assignedSection}</span>
+                      <span className="text-slate-500">{st.assignedSection.replace(/ \((Ground AC|Family AC|Terrace VIP)\)/g, '')}</span>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-200">
-                      <div>
-                        <div className="text-[10px] text-slate-400">COLLECTED</div>
-                        <div className="font-bold text-slate-800 mt-1">₹ {st.cashCollected}</div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] text-slate-400">HANDED OVER</div>
-                        <div className="flex items-center gap-1 mt-1">
-                          <span className="text-slate-600">₹</span>
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            inputMode="decimal"
-                            value={handedOverInput}
-                            onChange={(e) => handleCashInput(st.id, e.target.value)}
-                            className="w-full min-w-0 h-10 border-2 border-slate-900 rounded p-2 text-base font-bold text-emerald-700"
-                            aria-label={`${st.name} cash handed over`}
-                          />
+                    <div className="mt-2 pt-2 border-t border-slate-200">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 items-end">
+                        <div>
+                          <div className="text-[10px] text-slate-400">COLLECTED</div>
+                          <div className="font-bold text-slate-800 mt-1">₹ {st.cashCollected}</div>
                         </div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] text-slate-400">DIFF / DUE</div>
-                        <div className={`font-black ${diff === 0 ? 'text-slate-500' : 'text-rose-600'}`}>
-                          ₹ {diff}
+                        <div>
+                          <div className="text-[10px] text-slate-400">HANDED OVER</div>
+                          <div className="flex items-center gap-1 mt-1">
+                            <span className="text-slate-600">₹</span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              inputMode="decimal"
+                              value={handedOverInput}
+                              onChange={(e) => handleCashInput(st.id, e.target.value)}
+                              className="w-full min-w-0 h-10 border-2 border-slate-900 rounded p-2 text-base font-bold text-emerald-700"
+                              aria-label={`${st.name} cash handed over`}
+                            />
+                          </div>
                         </div>
+                        <div>
+                          <div className="text-[10px] text-slate-400">DIFF / DUE</div>
+                          <div className={`font-black ${diff === 0 ? 'text-slate-500' : 'text-rose-600'}`}>
+                            ₹ {diff}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleSaveCash(st.id, st.name)}
+                          className="w-full bg-slate-900 text-white py-2 rounded text-[10px] font-bold hover:bg-emerald-600 transition text-center"
+                        >
+                          SAVE CASH RECONCILIATION
+                        </button>
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleSaveCash(st.id, st.name)}
-                      className="w-full mt-2 bg-slate-900 text-white py-1 rounded text-xs font-bold hover:bg-emerald-600 transition text-center"
-                    >
-                      SAVE CASH RECONCILIATION
-                    </button>
                   </div>
                 );
               })}
@@ -101,9 +103,6 @@ export function ScreenM6WaiterCash() {
 
         {inputError && <p className="mt-3 text-xs font-bold text-slate-600">{inputError}</p>}
 
-        <div className="mt-4 p-3 bg-stone-100 rounded-lg border border-slate-300 text-xs text-slate-600">
-          All table-side cash collections must be deposited into till before shift handover.
-        </div>
       </div>
 
     </div>

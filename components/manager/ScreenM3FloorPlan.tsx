@@ -24,7 +24,6 @@ export function ScreenM3FloorPlan() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-black font-mono text-slate-900">FLOOR SECTIONS &amp; TABLES</h3>
-              <p className="text-xs text-slate-500 font-mono">Select table to view running orders or settle bill</p>
             </div>
             <div className="flex gap-1.5">
               {sections.map((sec) => (
@@ -77,9 +76,6 @@ export function ScreenM3FloorPlan() {
                 <div className="mt-3 text-sm font-black">
                   {isOcc || isBill ? `₹ ${tbl.currentBill}` : 'VACANT'}
                 </div>
-                <div className={`text-[11px] mt-1 truncate ${isOcc ? 'text-slate-300' : 'text-slate-500'}`}>
-                  {tbl.serverName}
-                </div>
                 {tbl.kotCount > 0 && (
                   <div className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-400">
                     <Utensils className="h-2.5 w-2.5" />
@@ -114,10 +110,6 @@ export function ScreenM3FloorPlan() {
           </div>
 
           <div className="space-y-2 mt-4 text-xs font-mono">
-            <div className="flex justify-between text-slate-600">
-              <span>Captain / Server:</span>
-              <span className="font-bold text-slate-900">{selectedTable?.serverName}</span>
-            </div>
             <div className="flex justify-between text-slate-600">
               <span>Seated Guests:</span>
               <span className="font-bold text-slate-900">{selectedTable?.guestCount} Guests</span>
