@@ -95,7 +95,7 @@ export const ScreenW3TableDetail: React.FC = () => {
                 <span>•</span> */}
 
                 <span>
-                  Captain: {table.serverName || 'Staff Captain'}
+                 {table.serverName || 'Staff Captain'}
                 </span>
               </div>
 
