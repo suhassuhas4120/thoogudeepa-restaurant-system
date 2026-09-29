@@ -81,12 +81,12 @@ export const ScreenW6MergeSplit: React.FC = () => {
               </div>
             ) : (
               <>
-                <p className="text-xs text-slate-500">
+                {/* <p className="text-xs text-slate-500">
                   Combine running orders and bill of an adjacent table into Table {activeTable?.number}.
-                </p>
+                </p> */}
 
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-bold text-slate-700">Merge with:</span>
+                  <span className="font-mono text-xs font-bold text-slate-700">Merge:</span>
                   <select
                     value={sourceTable}
                     onChange={(e) => setSourceTable(e.target.value)}
@@ -104,7 +104,7 @@ export const ScreenW6MergeSplit: React.FC = () => {
                   onClick={handleMerge}
                   className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-mono text-xs font-black transition cursor-pointer"
                 >
-                  Merge Table {sourceTable} into Table {activeTable?.number}
+                  Merge Table {sourceTable}  + Table {activeTable?.number}
                 </button>
               </>
             )}

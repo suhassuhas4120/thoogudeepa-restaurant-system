@@ -72,21 +72,28 @@ export const TabletScreen2TablesFeed: React.FC = () => {
     switch (sec) {
       case 'ALL':
         return 'All Tables';
+
       case 'SECTION A':
         return 'Section A';
+
       case 'SECTION B':
         return 'Section B';
+
       case 'SECTION C':
         return 'SECTION C';
+
       case 'SECTION D':
         return 'SECTION D';
+
       default:
         return sec;
     }
   };
 
   const filteredTables = tables.filter((table: SharedTable) => {
-    if (selectedSection === 'ALL') return true;
+    if (selectedSection === 'ALL') {
+      return true;
+    }
 
     const tableSec = (table.section || '').trim().toUpperCase();
     const filterSec = selectedSection.trim().toUpperCase();
@@ -94,8 +101,7 @@ export const TabletScreen2TablesFeed: React.FC = () => {
     if (filterSec === 'SECTION C') {
       return (
         tableSec === 'SECTION C' ||
-        tableSec.includes('SECTION C') ||
-        tableSec === 'SECTION C'
+        tableSec.includes('SECTION C')
       );
     }
 
@@ -206,8 +212,12 @@ export const TabletScreen2TablesFeed: React.FC = () => {
       <div className="flex flex-col flex-1 min-h-[700px] bg-slate-100">
 
         {/* TOP SUMMARY */}
+
         <div className="bg-white px-5 py-3 border-b border-slate-300 shrink-0">
+
           <div className="flex items-center justify-between gap-5">
+
+            {/* LEFT SUMMARY */}
 
             <div className="flex items-center gap-2 flex-wrap font-mono text-[10px]">
 
@@ -233,6 +243,8 @@ export const TabletScreen2TablesFeed: React.FC = () => {
 
             </div>
 
+            {/* RIGHT SUMMARY */}
+
             <div className="flex items-center gap-2 font-mono text-[10px] shrink-0">
 
               <span className="px-3 py-1.5 rounded-lg bg-slate-900 text-white font-black">
@@ -250,15 +262,28 @@ export const TabletScreen2TablesFeed: React.FC = () => {
             </div>
 
           </div>
+
         </div>
 
-        {/* MAIN */}
-        <div className="flex flex-1 min-h-0 gap-6 p-5">
+        {/* MAIN CONTENT */}
+        {/* TABLE FLOOR = 60% */}
+        {/* CUSTOMER + KITCHEN = 40% */}
 
-          {/* LEFT - TABLES */}
-          <div className="w-1/2 min-w-0 bg-white rounded-2xl border border-slate-200 p-5 overflow-y-auto flex flex-col gap-5">
+        <div
+          className="grid flex-1 min-h-0 p-5"
+          style={{
+            gridTemplateColumns:
+              'minmax(0, 6fr) minmax(0, 4fr)',
+            gap: '20px',
+          }}
+        >
+
+          {/* LEFT SIDE - TABLE FLOOR - 60% */}
+
+          <div className="min-w-0 bg-white rounded-2xl border border-slate-200 p-5 overflow-y-auto flex flex-col gap-5">
 
             {/* SECTION FILTER */}
+
             <div className="flex items-center justify-between gap-3 shrink-0">
 
               <div className="flex items-center gap-2 flex-wrap font-mono">
@@ -291,6 +316,7 @@ export const TabletScreen2TablesFeed: React.FC = () => {
             </div>
 
             {/* TABLE GRID */}
+
             <div className="grid grid-cols-3 gap-4">
 
               {filteredTables.map((table: SharedTable) => {
@@ -326,6 +352,7 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                   >
 
                     {/* TABLE HEADER */}
+
                     <div className="flex justify-between items-center pb-2 border-b border-slate-100 font-mono">
 
                       <div className="flex items-center gap-1.5 min-w-0">
@@ -348,7 +375,7 @@ export const TabletScreen2TablesFeed: React.FC = () => {
 
                       </div>
 
-                      {!(table.status === 'VACANT') && (
+                      {table.status !== 'VACANT' && (
                         <span
                           className={`text-[8px] font-black px-1.5 py-1 rounded-md uppercase shrink-0 ${
                             hasReadyItem
@@ -369,6 +396,7 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                     </div>
 
                     {/* TABLE ITEMS */}
+
                     <div className="flex-1 text-[10px] font-mono text-slate-700">
 
                       {table.activeItems &&
@@ -378,47 +406,55 @@ export const TabletScreen2TablesFeed: React.FC = () => {
 
                           {table.activeItems
                             .slice(0, 2)
-                            .map((item: any, idx: number) => {
+                            .map(
+                              (
+                                item: any,
+                                idx: number
+                              ) => {
 
-                              const statusName =
-                                getStatusName(item.status);
+                                const statusName =
+                                  getStatusName(item.status);
 
-                              return (
-                                <div
-                                  key={idx}
-                                  className="flex justify-between items-center gap-1"
-                                >
-
-                                  <span className="truncate">
-                                    {item.quantity}x {item.name}
-                                  </span>
-
-                                  <span
-                                    className={`text-[8px] font-bold px-1 py-0.5 rounded shrink-0 ${
-                                      statusName === 'Served'
-                                        ? 'bg-slate-100 text-slate-500'
-                                        : statusName === 'Ready'
-                                        ? 'bg-emerald-100 text-emerald-800'
-                                        : statusName === 'Preparing'
-                                        ? 'bg-orange-100 text-orange-800'
-                                        : 'bg-blue-100 text-blue-800'
-                                    }`}
+                                return (
+                                  <div
+                                    key={idx}
+                                    className="flex justify-between items-center gap-1"
                                   >
-                                    {statusName}
-                                  </span>
 
-                                </div>
-                              );
-                            })}
+                                    <span className="truncate">
+                                      {item.quantity}x{' '}
+                                      {item.name}
+                                    </span>
+
+                                    <span
+                                      className={`text-[8px] font-bold px-1 py-0.5 rounded shrink-0 ${
+                                        statusName === 'Served'
+                                          ? 'bg-slate-100 text-slate-500'
+                                          : statusName === 'Ready'
+                                          ? 'bg-emerald-100 text-emerald-800'
+                                          : statusName === 'Preparing'
+                                          ? 'bg-orange-100 text-orange-800'
+                                          : 'bg-blue-100 text-blue-800'
+                                      }`}
+                                    >
+                                      {statusName}
+                                    </span>
+
+                                  </div>
+                                );
+                              }
+                            )}
 
                         </div>
 
                       ) : (
 
                         <div className="h-full flex items-center justify-center text-center text-slate-400 italic text-[9px] px-2">
+
                           {table.mergedWith
                             ? `Shared with Table ${table.mergedWith}`
                             : 'No active orders'}
+
                         </div>
 
                       )}
@@ -426,6 +462,7 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                     </div>
 
                     {/* BILL */}
+
                     <div className="flex justify-end items-center pt-2 border-t border-slate-100 font-mono text-[9px]">
 
                       <span className="font-black text-slate-900">
@@ -437,6 +474,7 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                     </div>
 
                     {/* SERVE / VACATE */}
+
                     <div className="pt-1 font-mono">
 
                       {isBilling ? (
@@ -460,12 +498,16 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                           type="button"
                           disabled={!hasReadyItem}
                           onClick={(e) => {
-                            if (!hasReadyItem) return;
+
+                            if (!hasReadyItem) {
+                              return;
+                            }
 
                             handleServeReadyTable(
                               e,
                               table.number
                             );
+
                           }}
                           className={`w-full h-8 rounded-lg text-[9px] font-black transition flex items-center justify-center gap-1 border ${
                             hasReadyItem
@@ -473,8 +515,11 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                               : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-70'
                           }`}
                         >
+
                           <CheckCircle2 className="h-3 w-3" />
+
                           Serve Food
+
                         </button>
 
                       )}
@@ -486,23 +531,31 @@ export const TabletScreen2TablesFeed: React.FC = () => {
               })}
 
             </div>
+
           </div>
 
-          {/* RIGHT */}
-          <div className="w-1/2 min-w-0 bg-white rounded-2xl border border-slate-200 flex flex-col overflow-hidden">
+          {/* RIGHT SIDE - CUSTOMER + KITCHEN - 40% */}
+
+          <div className="min-w-0 bg-white rounded-2xl border border-slate-200 flex flex-col overflow-hidden">
 
             {/* CUSTOMER CALLS */}
+
             <div className="flex-1 min-h-0 p-5 overflow-y-auto flex flex-col gap-3 border-b border-slate-200">
 
               <div className="flex justify-between items-center pb-2 border-b border-slate-100 shrink-0 font-mono">
 
                 <span className="font-black text-[11px] text-slate-950 flex items-center gap-1.5">
+
                   <Bell className="h-3.5 w-3.5 text-orange-600" />
+
                   Customer Calls
+
                 </span>
 
                 <span className="text-[9px] font-black bg-orange-50 text-orange-800 border border-orange-200 px-2 py-1 rounded-md">
+
                   Live {pings.length}
+
                 </span>
 
               </div>
@@ -519,7 +572,8 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                     <div className="flex-1 min-w-0">
 
                       <strong className="text-[10px] font-black text-slate-900 block truncate">
-                        Table {ping.tableNumber}: {ping.type}
+                        Table {ping.tableNumber}:{' '}
+                        {ping.type}
                       </strong>
 
                       <span className="text-[9px] text-slate-500 font-bold block mt-1 truncate">
@@ -565,17 +619,23 @@ export const TabletScreen2TablesFeed: React.FC = () => {
             </div>
 
             {/* KITCHEN ORDERS */}
+
             <div className="flex-1 min-h-0 p-5 overflow-y-auto flex flex-col gap-3">
 
               <div className="flex justify-between items-center pb-2 border-b border-slate-100 shrink-0 font-mono">
 
                 <span className="font-black text-[11px] text-slate-950 flex items-center gap-1.5">
+
                   <Utensils className="h-3.5 w-3.5 text-slate-700" />
+
                   Kitchen Orders
+
                 </span>
 
                 <span className="text-[9px] font-black bg-slate-100 border border-slate-200 px-2 py-1 rounded-md text-slate-700">
+
                   Active {activeKdsTickets.length}
+
                 </span>
 
               </div>
@@ -585,15 +645,23 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                 activeKdsTickets.map(
                   (item: SharedKDSTicket) => {
 
-                    const totalQty = item.items.reduce(
-                      (s: number, it: any) =>
-                        s + it.quantity,
-                      0
-                    );
+                    const totalQty =
+                      item.items.reduce(
+                        (
+                          s: number,
+                          it: any
+                        ) =>
+                          s + it.quantity,
+                        0
+                      );
 
-                    const dishTitle = item.items
-                      .map((it: any) => it.name)
-                      .join(', ');
+                    const dishTitle =
+                      item.items
+                        .map(
+                          (it: any) =>
+                            it.name
+                        )
+                        .join(', ');
 
                     const statusName =
                       getStatusName(item.status);
@@ -618,8 +686,13 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                         <div className="flex-1 min-w-0">
 
                           <strong className="text-[10px] font-black text-slate-900 block truncate">
-                            Table {item.tableNumber}: {totalQty}x{' '}
+
+                            Table {item.tableNumber}:{' '}
+
+                            {totalQty}x{' '}
+
                             {dishTitle}
+
                           </strong>
 
                           <span className="text-[9px] text-slate-500 font-bold block mt-1 truncate">
@@ -628,7 +701,6 @@ export const TabletScreen2TablesFeed: React.FC = () => {
 
                         </div>
 
-                        {/* ONE STATUS BUTTON */}
                         <div className="w-[110px] shrink-0">
 
                           {isReady ? (
@@ -642,16 +714,21 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                                 );
 
                                 if (item.tableNumber) {
+
                                   waiterMarkTableFoodServed(
                                     item.tableNumber
                                   );
+
                                 }
 
                               }}
                               className="w-full h-8 bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-700 text-[9px] font-black rounded-lg transition flex items-center justify-center gap-1 cursor-pointer"
                             >
+
                               <CheckCircle2 className="h-3 w-3" />
+
                               Ready
+
                             </button>
 
                           ) : (

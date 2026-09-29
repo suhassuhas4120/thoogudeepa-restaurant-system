@@ -173,13 +173,13 @@ export const ScreenW3TableDetail: React.FC = () => {
               {breakdown.foodSubtotal > 0 && (
                 <div className="pt-2.5 border-t border-dashed border-slate-200 flex justify-between items-center text-[11px] text-slate-600">
                   <div>
-                    <span>
+                    {/* <span>
                       Food: ₹{breakdown.foodSubtotal.toFixed(2)}
-                    </span>
+                    </span> */}
 
-                    <span className="text-[10px] text-slate-400 ml-1.5">
+                    {/* <span className="text-[10px] text-slate-400 ml-1.5">
                       (+5% GST: ₹{breakdown.totalTax.toFixed(2)})
-                    </span>
+                    </span> */}
                   </div>
 
                   <span className="font-black text-slate-950 text-xs bg-slate-100 px-2 py-0.5 rounded border border-slate-200">

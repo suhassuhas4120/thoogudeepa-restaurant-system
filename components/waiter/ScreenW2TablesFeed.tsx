@@ -109,10 +109,10 @@ export const ScreenW2TablesFeed: React.FC = () => {
         return 'All Tables';
 
       case 'SECTION A':
-        return 'Section A';
+        return 'SECTION A';
 
       case 'SECTION B':
-        return 'Section B';
+        return 'SECTION B';
 
       case 'SECTION C':
         return 'SECTION C';

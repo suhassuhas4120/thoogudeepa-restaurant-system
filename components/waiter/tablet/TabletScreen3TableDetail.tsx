@@ -266,7 +266,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
           <div className="flex items-center gap-3">
             {activeTable.mergedWith && (
               <span className="bg-purple-100 border border-purple-300 text-purple-900 px-2.5 py-0.5 rounded-md text-[10.5px] font-black">
-                🔗 Merged Table ({activeTable.guestCount} Guests)
+                🔗 Merged Table 
               </span>
             )}
             {/* <span className="text-slate-600 font-bold text-[11px] bg-slate-100 px-2.5 py-0.5 rounded border border-slate-200">
@@ -945,7 +945,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                       <span>Table Consolidation Active</span>
                     </div> */}
                     <div className="text-xs text-purple-950 font-bold">
-                      Table {activeTable.number} is currently consolidated with Table {activeTable.mergedWith}.
+                      Table {activeTable.number} is merged with  Table {activeTable.mergedWith}.
                     </div>
                     <div className="text-[11px] text-purple-900 space-y-1 bg-white/80 p-3 rounded-lg border border-purple-200">
                       <div className="flex justify-between">
@@ -953,7 +953,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                         <span className="font-black">₹{runningTotal.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Combined Party:</span>
+                        {/* <span>Combined Party:</span> */}
                         {/* <span className="font-black">{activeTable.guestCount || 4} Guests</span> */}
                       </div>
                       {/* <div className="text-[10px] text-purple-700 mt-1">
@@ -967,7 +967,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                       className="w-full py-3 bg-rose-50 text-rose-950 border border-rose-300 hover:bg-rose-700 hover:text-white rounded-lg font-black text-xs transition-all shadow-2xs mt-2 flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Users className="h-4 w-4" />
-                      <span>Unmerge / Separate Table</span>
+                      <span>Unmerge </span>
                     </button>
                   </div>
                 ) : (
@@ -1028,7 +1028,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                       className="w-full py-3 bg-purple-700 hover:bg-purple-800 text-white rounded-lg font-black text-xs transition shadow-2xs mt-auto flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Users className="h-4 w-4" />
-                      <span>Confirm Merge with Table {effectiveMergeChip}</span>
+                      <span>Confirm Merge </span>
                     </button>
                   </div>
                 )}
