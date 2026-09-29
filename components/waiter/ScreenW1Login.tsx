@@ -63,13 +63,15 @@ export const ScreenW1Login: React.FC = () => {
             />
           </div>
 
-          <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 mb-1">
-          </div>
+          {/* Establishment Name */}
+          <h1 className="text-[16px] font-black tracking-tight text-slate-950 font-mono leading-tight mb-3 text-center">
+            THOOGUDEEPA DONNE BIRIYANI MANE
+          </h1>
 
           {/* Captain Name */}
           <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-xs mb-3">
             <div className="flex justify-between items-center mb-1">
-              <label className="text-[10px] font-bold text-slate-600 font-mono uppercase">
+              <label className="text-[11px] font-extrabold text-slate-700 font-mono uppercase">
                 Captain Name
               </label>
             </div>
@@ -79,7 +81,7 @@ export const ScreenW1Login: React.FC = () => {
               value={activeCaptain}
               onChange={(e) => setActiveCaptain(e.target.value)}
               className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-stone-50 text-xs font-black text-slate-900 focus:outline-none focus:border-orange-500"
-              placeholder=" captain name"
+              placeholder=" e.g captain name"
             />
           </div>
 
