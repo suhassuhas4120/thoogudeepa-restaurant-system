@@ -11,7 +11,6 @@ export function ScreenM8OffersRules() {
     <div className="w-full max-w-6xl mx-auto p-4 space-y-5 font-mono">
       <div className="bg-white border-2 border-slate-900 rounded-xl p-5 shadow-[4px_4px_0px_#0f172a] flex justify-between items-center">
         <div>
-          <span className="text-xs font-bold text-slate-500">[DISCOUNTS &amp; PROMOS]</span>
           <h3 className="text-base font-black text-slate-900 mt-0.5">
             ACTIVE PROMOTIONAL CAMPAIGNS &amp; MANAGER OVERRIDES
           </h3>

@@ -36,7 +36,6 @@ export function ScreenM7SalesReport() {
       {/* Top Total */}
       <div className="bg-white border-2 border-slate-900 rounded-xl p-5 shadow-[4px_4px_0px_#0f172a] flex flex-wrap items-center justify-between gap-3">
         <div>
-          <span className="text-xs font-bold text-slate-500">[ANALYTICS DESK]</span>
           <h3 className="text-base font-black text-slate-900 mt-0.5">
             TODAY SHIFT SALES &amp; REVENUE REPORT
           </h3>

@@ -35,7 +35,6 @@ export function ScreenM9PettyExpenses() {
         <div>
           <div className="flex justify-between items-center pb-3 border-b border-slate-200">
             <div>
-              <span className="text-xs font-bold text-slate-500">[PETTY CASH DESK]</span>
               <h3 className="text-sm font-black text-slate-900 mt-0.5">
                 DAILY TILL OUTFLOW VOUCHERS
               </h3>

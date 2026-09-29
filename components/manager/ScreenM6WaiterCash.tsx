@@ -33,21 +33,20 @@ export function ScreenM6WaiterCash() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4 grid grid-cols-1 md:grid-cols-12 gap-5 font-mono">
+    <div className="w-full min-h-[calc(100vh-2rem)] p-4 grid grid-cols-1 gap-5 font-mono">
       {/* Left Captain Cash Balance */}
-      <div className="md:col-span-12 bg-white border-2 border-slate-900 rounded-xl p-5 shadow-[4px_4px_0px_#0f172a] flex flex-col justify-between">
+      <div className="w-full bg-white border-2 border-slate-900 rounded-xl p-5 shadow-[4px_4px_0px_#0f172a] flex flex-col justify-between">
         <div>
-          <div className="flex justify-between items-center pb-3 border-b border-slate-200">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-3 border-b border-slate-200">
             <div>
-              <span className="text-xs font-bold text-slate-500">[CASH SETTLEMENT DESK]</span>
-              <h3 className="text-sm font-black text-slate-900 mt-0.5">
+              <h3 className="text-sm font-black text-slate-900">
                 CAPTAIN TABLE-SIDE CASH RECONCILIATION
               </h3>
             </div>
             <Banknote className="h-5 w-5 text-emerald-600" />
           </div>
 
-          <div className="space-y-3 mt-4">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-4">
             {staffRoster.map((st) => {
                 const handedOverInput = cashInputs[st.id] ?? String(st.cashHandedOver);
                 const enteredHandedOver = handedOverInput.trim() === '' ? null : Number(handedOverInput);
