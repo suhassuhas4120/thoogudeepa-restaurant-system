@@ -348,9 +348,7 @@ export const TabletScreen2TablesFeed: React.FC = () => {
 
                       </div>
 
-                      {!(
-                        table.status === 'VACANT'
-                      ) && (
+                      {!(table.status === 'VACANT') && (
                         <span
                           className={`text-[8px] font-black px-1.5 py-1 rounded-md uppercase shrink-0 ${
                             hasReadyItem
@@ -438,26 +436,10 @@ export const TabletScreen2TablesFeed: React.FC = () => {
 
                     </div>
 
-                    {/* ONLY SERVE / VACATE */}
+                    {/* SERVE / VACATE */}
                     <div className="pt-1 font-mono">
 
-                      {hasReadyItem ? (
-
-                        <button
-                          type="button"
-                          onClick={(e) =>
-                            handleServeReadyTable(
-                              e,
-                              table.number
-                            )
-                          }
-                          className="w-full h-8 bg-emerald-50 hover:bg-emerald-600 text-emerald-800 hover:text-white border border-emerald-300 hover:border-emerald-600 rounded-lg text-[9px] font-black transition flex items-center justify-center gap-1 cursor-pointer"
-                        >
-                          <CheckCircle2 className="h-3 w-3" />
-                          Serve Food
-                        </button>
-
-                      ) : isBilling ? (
+                      {isBilling ? (
 
                         <button
                           type="button"
@@ -472,7 +454,30 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                           Vacate
                         </button>
 
-                      ) : null}
+                      ) : (
+
+                        <button
+                          type="button"
+                          disabled={!hasReadyItem}
+                          onClick={(e) => {
+                            if (!hasReadyItem) return;
+
+                            handleServeReadyTable(
+                              e,
+                              table.number
+                            );
+                          }}
+                          className={`w-full h-8 rounded-lg text-[9px] font-black transition flex items-center justify-center gap-1 border ${
+                            hasReadyItem
+                              ? 'bg-emerald-50 hover:bg-emerald-600 text-emerald-800 hover:text-white border-emerald-300 hover:border-emerald-600 cursor-pointer'
+                              : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-70'
+                          }`}
+                        >
+                          <CheckCircle2 className="h-3 w-3" />
+                          Serve Food
+                        </button>
+
+                      )}
 
                     </div>
 

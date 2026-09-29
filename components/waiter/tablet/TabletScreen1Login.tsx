@@ -212,7 +212,7 @@ export const TabletScreen1Login: React.FC = () => {
                 value={activeCaptain}
                 onChange={(e) => setActiveCaptain(e.target.value)}
                 className="w-full h-11 border-2 border-slate-800 rounded-xl px-4 font-mono text-[12px] font-bold text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                placeholder="Or type custom name (e.g. Captain Ramesh)"
+                placeholder=" (e.g. Captain Ramesh)"
               />
 
             </div>

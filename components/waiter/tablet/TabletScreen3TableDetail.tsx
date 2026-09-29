@@ -1112,9 +1112,9 @@ export const TabletScreen3TableDetail: React.FC = () => {
                       <span className="text-xs font-black text-slate-900">
                         Collect Cash Tender: ₹{runningTotal.toFixed(2)}
                       </span>
-                      <span className="text-[10px] text-slate-500">
+                      {/* <span className="text-[10px] text-slate-500">
                         Confirm exact currency notes received from guest
-                      </span>
+                      </span> */}
                     </>
                   ) : (
                     <>
@@ -1135,7 +1135,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                   className="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-black text-xs transition shadow-2xs mt-auto flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <CheckCircle2 className="h-4 w-4" />
-                  <span>Confirm Payment &amp; Generate Tax Invoice ➔</span>
+                  <span>Confirm Payment  ➔</span>
                 </button>
               </div>
             )}

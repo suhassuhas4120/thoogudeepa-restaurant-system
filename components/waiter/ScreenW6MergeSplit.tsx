@@ -76,7 +76,7 @@ export const ScreenW6MergeSplit: React.FC = () => {
                   onClick={handleUnmerge}
                   className="w-full py-2.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white font-mono text-xs font-black transition cursor-pointer"
                 >
-                  Unmerge / Separate Tables
+                  Unmerge  Tables
                 </button>
               </div>
             ) : (
