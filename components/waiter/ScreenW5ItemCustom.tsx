@@ -106,9 +106,9 @@ export const ScreenW5ItemCustom: React.FC = () => {
 
           {/* Kitchen Dietary Notes */}
           <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-2xs">
-            <label className="text-[10px] font-bold font-mono uppercase text-slate-500">
+            {/* <label className="text-[10px] font-bold font-mono uppercase text-slate-500">
               Special Guest Dietary Instructions / Chef Notes
-            </label>
+            </label> */}
             <input
               type="text"
               value={dietaryNote}

@@ -3,22 +3,27 @@
 import React, { useState } from 'react';
 import { useWaiterStore } from '../../store/useWaiterStore';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
-import { UserCheck, ShieldCheck, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const ScreenW1Login: React.FC = () => {
-  const { setCurrentScreen, activeCaptain, setActiveCaptain, activeSection, setActiveSection } =
-    useWaiterStore();
+  const {
+    setCurrentScreen,
+    activeCaptain,
+    setActiveCaptain,
+    activeSection,
+    setActiveSection,
+  } = useWaiterStore();
+
   const [pin, setPin] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  const sections = ['ALL', 'SECTION A', 'SECTION B', 'SECTION C', 'SECTION D'];
-
-  const presetWaiters = [
-    { name: 'Captain Ramesh', section: 'SECTION A' },
-    { name: 'Captain Suresh', section: 'SECTION B' },
-    { name: 'Captain Vijay', section: 'SECTION C' },
-    { name: 'Captain Kiran', section: 'SECTION D' },
+  const sections = [
+    'ALL',
+    'SECTION A',
+    'SECTION B',
+    'SECTION C',
+    'SECTION D',
   ];
 
   const handleNum = (num: string) => {
@@ -26,6 +31,7 @@ export const ScreenW1Login: React.FC = () => {
       const nextPin = pin + num;
       setPin(nextPin);
       setErrorMsg('');
+
       if (nextPin.length === 4 && nextPin !== '1234') {
         setErrorMsg('INVALID PIN: ENTER 1234');
       }
@@ -42,7 +48,10 @@ export const ScreenW1Login: React.FC = () => {
   };
 
   return (
-    <WaiterTabletHousing screenNumber={1} screenTitle="CAPTAIN AUTH & SECTION LOGIN">
+    <WaiterTabletHousing
+      screenNumber={1}
+      screenTitle="CAPTAIN AUTH & SECTION LOGIN"
+    >
       <div className="flex-1 flex flex-col justify-between p-5">
         <div>
           {/* Establishment Logo Banner */}
@@ -55,37 +64,16 @@ export const ScreenW1Login: React.FC = () => {
           </div>
 
           <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 mb-1">
-            
           </div>
+
+          {/* Captain Name */}
           <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-xs mb-3">
             <div className="flex justify-between items-center mb-1">
               <label className="text-[10px] font-bold text-slate-600 font-mono uppercase">
                 Captain Name
               </label>
-              {/* <span className="text-[9px] font-mono text-slate-400">QUICK TAP PROFILE</span> */}
             </div>
-            <div className="grid grid-cols-4 gap-1 mb-2">
-              {presetWaiters.map((w) => {
-                const isSelected = activeCaptain === w.name;
-                return (
-                  <button
-                    key={w.name}
-                    type="button"
-                    onClick={() => {
-                      setActiveCaptain(w.name);
-                      setActiveSection(w.section);
-                    }}
-                    className={`py-1.5 px-0.5 rounded-lg border text-[10px] font-mono font-bold transition text-center cursor-pointer ${
-                      isSelected
-                        ? 'border-orange-500 bg-orange-50 text-orange-950 font-black ring-1 ring-orange-500/20'
-                        : 'border-slate-200 bg-white text-slate-700 hover:bg-stone-50'
-                    }`}
-                  >
-                    {w.name.replace('Captain ', '')}
-                  </button>
-                );
-              })}
-            </div>
+
             <input
               type="text"
               value={activeCaptain}
@@ -95,9 +83,7 @@ export const ScreenW1Login: React.FC = () => {
             />
           </div>
 
-          {/* <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400 mb-1">
-            Assigned Floor Section
-          </div> */}
+          {/* Assigned Floor Section */}
           <div className="grid grid-cols-2 gap-1.5 mb-3">
             {sections.map((sec) => (
               <button
@@ -115,16 +101,24 @@ export const ScreenW1Login: React.FC = () => {
             ))}
           </div>
 
+          {/* PIN Status */}
           <div className="flex justify-between items-center text-[10px] font-bold font-mono mb-1">
-            {/* <span className="uppercase tracking-wider text-slate-400">Passcode PIN:</span> */}
             {errorMsg ? (
-              <span className="text-rose-600 animate-pulse font-bold">{errorMsg}</span>
+              <span className="text-rose-600 animate-pulse font-bold">
+                {errorMsg}
+              </span>
             ) : pin === '1234' ? (
-              <span className="text-emerald-600 font-black">PIN Verified ✓</span>
+              <span className="text-emerald-600 font-black">
+                PIN Verified ✓
+              </span>
             ) : pin.length === 4 ? (
-              <span className="text-rose-600 font-bold">Invalid PIN (Enter 1234)</span>
-            ) : null }
+              <span className="text-rose-600 font-bold">
+                Invalid PIN (Enter 1234)
+              </span>
+            ) : null}
           </div>
+
+          {/* PIN Display */}
           <div
             className={`h-10 rounded-xl border flex items-center justify-center gap-3 mb-2 shadow-2xs transition-colors ${
               errorMsg || (pin.length === 4 && pin !== '1234')
@@ -150,6 +144,7 @@ export const ScreenW1Login: React.FC = () => {
             ))}
           </div>
 
+          {/* Number Pad */}
           <div className="grid grid-cols-3 gap-1.5">
             {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((n) => (
               <button
@@ -161,6 +156,8 @@ export const ScreenW1Login: React.FC = () => {
                 {n}
               </button>
             ))}
+
+            {/* Clear */}
             <button
               type="button"
               onClick={() => {
@@ -171,6 +168,8 @@ export const ScreenW1Login: React.FC = () => {
             >
               CLR
             </button>
+
+            {/* Zero */}
             <button
               type="button"
               onClick={() => handleNum('0')}
@@ -178,6 +177,8 @@ export const ScreenW1Login: React.FC = () => {
             >
               0
             </button>
+
+            {/* Delete */}
             <button
               type="button"
               onClick={() => {
@@ -191,12 +192,13 @@ export const ScreenW1Login: React.FC = () => {
           </div>
         </div>
 
+        {/* Login */}
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={handleLogin}
           className="w-full mt-3 flex items-center justify-center gap-2 rounded-2xl bg-orange-600 py-3.5 text-xs font-extrabold uppercase tracking-wider text-white shadow-lg shadow-orange-600/30 hover:bg-orange-700 transition cursor-pointer"
         >
-          <span>Login </span>
+          <span>Login</span>
           <ArrowRight className="h-4 w-4 stroke-[2.5]" />
         </motion.button>
       </div>
