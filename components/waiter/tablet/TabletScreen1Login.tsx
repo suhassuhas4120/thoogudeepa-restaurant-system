@@ -331,7 +331,7 @@ export const TabletScreen1Login: React.FC = () => {
                   : 'bg-slate-900 text-white hover:bg-black shadow-sm cursor-pointer'
               }`}
             >
-              <span>LOGIN TO FLOOR CONSOLE</span>
+              <span>LOGIN </span>
 
               <ArrowRight className="h-4 w-4" />
             </button>

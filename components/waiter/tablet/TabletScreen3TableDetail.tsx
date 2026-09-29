@@ -940,10 +940,10 @@ export const TabletScreen3TableDetail: React.FC = () => {
 
                 {isAlreadyMerged ? (
                   <div className="border-2 border-purple-300 bg-purple-50/70 rounded-xl p-4 flex flex-col gap-3 shadow-2xs">
-                    <div className="flex items-center gap-2 text-purple-950 font-black text-xs">
+                    {/* <div className="flex items-center gap-2 text-purple-950 font-black text-xs">
                       <Link2 className="h-4 w-4 text-purple-700" />
                       <span>Table Consolidation Active</span>
-                    </div>
+                    </div> */}
                     <div className="text-xs text-purple-950 font-bold">
                       Table {activeTable.number} is currently consolidated with Table {activeTable.mergedWith}.
                     </div>
@@ -967,7 +967,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                       className="w-full py-3 bg-rose-50 text-rose-950 border border-rose-300 hover:bg-rose-700 hover:text-white rounded-lg font-black text-xs transition-all shadow-2xs mt-2 flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Users className="h-4 w-4" />
-                      <span>Unmerge / Separate Table {activeTable.number} &amp; {activeTable.mergedWith}</span>
+                      <span>Unmerge / Separate Table</span>
                     </button>
                   </div>
                 ) : (

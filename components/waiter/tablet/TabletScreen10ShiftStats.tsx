@@ -113,7 +113,7 @@ export const TabletScreen10ShiftStats: React.FC = () => {
               className="flex items-center gap-2 bg-slate-900 hover:bg-black text-white px-4 py-2.5 rounded-lg font-black text-xs transition shadow-sm"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span>[BACK TO FLOOR]</span>
+              <span>BACK </span>
             </button>
 
             <div className="hidden sm:flex items-center gap-2">
@@ -248,9 +248,9 @@ export const TabletScreen10ShiftStats: React.FC = () => {
                 SHIFT PERFORMANCE
               </h3>
 
-              <p className="text-[9px] font-bold text-slate-400 mt-1">
+              {/* <p className="text-[9px] font-bold text-slate-400 mt-1">
                 TODAY'S WAITER TERMINAL ACTIVITY
-              </p>
+              </p> */}
             </div>
 
             <div className="border border-slate-300 bg-white rounded-lg px-3 py-1.5 text-[9px] font-black text-slate-500">
@@ -400,14 +400,14 @@ export const TabletScreen10ShiftStats: React.FC = () => {
             <LogOut className="h-4 w-4" />
 
             <span>
-              [CLOSE SHIFT & LOG OUT OF CAPTAIN TERMINAL → SCREEN 1]
+              CLOSE SHIFT & LOG OUT 
             </span>
           </button>
 
           <div className="text-center pb-2">
-            <span className="text-[8px] font-bold text-slate-400">
+            {/* <span className="text-[8px] font-bold text-slate-400">
               WAITER TERMINAL • SHIFT PERFORMANCE CONSOLE
-            </span>
+            </span> */}
           </div>
         </div>
       </div>
