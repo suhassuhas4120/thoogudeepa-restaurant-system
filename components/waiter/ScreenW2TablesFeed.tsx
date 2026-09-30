@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useWaiterStore } from '../../store/useWaiterStore';
+import { useWaiterStore, formatCaptainName } from '../../store/useWaiterStore';
 import {
   useSharedBridge,
   SharedTable,
@@ -166,6 +166,7 @@ export const ScreenW2TablesFeed: React.FC = () => {
       badge: 'SOLD OUT',
       title: `${item.name} is Sold Out`,
       detail: `Kitchen stock finished. Do not take new orders for this dish.`,
+      timestamp: 'Just Now',
     }))
     .filter((n) => !dismissedNoticeIds.includes(n.id));
 
@@ -239,24 +240,25 @@ export const ScreenW2TablesFeed: React.FC = () => {
             - Sound ON/OFF is ICON ONLY (no extra text)
         ====================================================== */}
         <div className="bg-white border-b border-slate-200 px-4 py-2.5 shrink-0 shadow-2xs select-none">
-          {/* Header Row: Captain Name + Controls */}
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-mono text-xs font-black text-slate-900 uppercase tracking-wide">
-                {activeCaptain || 'Captain'}
+          {/* Header Row: Captain Name + Section + Controls (Strictly One Line) */}
+          <div className="flex items-center justify-between gap-2 mb-2 flex-nowrap min-w-0 w-full">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1 whitespace-nowrap overflow-hidden">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span className="font-mono text-xs font-black text-slate-900 uppercase tracking-tight truncate shrink-0">
+                {formatCaptainName(activeCaptain)}
               </span>
-              <span className="text-[10px] font-mono text-slate-500 font-bold">
-                • {selectedSection === 'ALL' ? 'All Sections' : selectedSection}
+              <span className="text-slate-300 font-bold shrink-0">•</span>
+              <span className="text-[10.5px] font-mono text-slate-600 font-bold truncate shrink-0">
+                {selectedSection === 'ALL' ? 'All Sections' : selectedSection}
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 shrink-0">
               {/* Sound Notification Toggle: ICON ONLY */}
               <button
                 type="button"
                 onClick={toggleSoundAlerts}
-                className={`h-8 w-8 rounded-xl transition cursor-pointer border shadow-2xs active:scale-95 flex items-center justify-center ${
+                className={`h-7 w-7 rounded-lg transition cursor-pointer border shadow-2xs active:scale-95 flex items-center justify-center shrink-0 ${
                   soundAlertsEnabled
                     ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
                     : 'bg-slate-100 text-slate-400 border-slate-300 hover:bg-slate-200'
@@ -264,9 +266,9 @@ export const ScreenW2TablesFeed: React.FC = () => {
                 title={soundAlertsEnabled ? 'Sound alerts active (tap to mute)' : 'Sound alerts muted (tap to unmute)'}
               >
                 {soundAlertsEnabled ? (
-                  <Volume2 className="h-4 w-4 text-emerald-600 animate-pulse" />
+                  <Volume2 className="h-3.5 w-3.5 text-emerald-600 animate-pulse" />
                 ) : (
-                  <VolumeX className="h-4 w-4 text-slate-400" />
+                  <VolumeX className="h-3.5 w-3.5 text-slate-400" />
                 )}
               </button>
 
@@ -274,7 +276,7 @@ export const ScreenW2TablesFeed: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowTables(!showTables)}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-mono text-[11px] font-black transition cursor-pointer shadow-xs active:scale-95"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-mono text-[10.5px] font-black transition cursor-pointer shadow-xs active:scale-95 shrink-0 whitespace-nowrap"
               >
                 <span>{showTables ? 'Hide Tables ▲' : `Tables (${filteredTables.length}) ▼`}</span>
               </button>
@@ -484,51 +486,51 @@ export const ScreenW2TablesFeed: React.FC = () => {
                         </div>
 
                         {/* End Row: Bill on Left, Action Button on Right (Clean & Uncrowded) */}
-                        <div className="flex items-center justify-between gap-3 pt-1 border-t border-slate-100 min-w-0">
+                        <div className="flex items-center justify-between gap-2.5 pt-1.5 border-t border-slate-100 min-w-0">
                           {/* Bill at the End */}
-                          <div className="font-mono text-xs font-black shrink-0">
+                          <div className="font-mono text-xs font-black min-w-0 flex-1">
                             {isBilling ? (
-                              <span className="text-purple-950 bg-purple-100 px-2.5 py-1 rounded-lg border border-purple-300 shadow-2xs">
-                                Bill: <span className="font-black">₹{t.currentBill}</span> <span className="text-[10px] text-purple-600 font-normal">• Paid</span>
+                              <span className="inline-flex items-center gap-1 text-purple-950 bg-purple-100 px-2 py-1 rounded-lg border border-purple-300 shadow-2xs max-w-full truncate">
+                                <span>Bill:</span>
+                                <span className="font-black">₹{t.currentBill}</span>
+                                <span className="text-[10px] text-purple-600 font-normal shrink-0">• Paid</span>
                               </span>
                             ) : (
-                              <span className="text-emerald-900 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-300 shadow-2xs">
-                                Bill: <span className="text-emerald-700 font-black">₹{t.currentBill}</span> <span className="text-[10px] text-slate-500 font-normal">• ⏱ {t.seatedTime}</span>
+                              <span className="inline-flex items-center gap-1 text-emerald-900 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-300 shadow-2xs max-w-full truncate">
+                                <span>Bill:</span>
+                                <span className="text-emerald-700 font-black">₹{t.currentBill}</span>
+                                <span className="text-[10px] text-slate-500 font-normal shrink-0 truncate">• ⏱ {t.seatedTime}</span>
                               </span>
                             )}
                           </div>
 
-                          {/* Action Button at the End */}
-                          {isOccupied && (
-                            hasReadyFood ? (
-                              <button
-                                type="button"
-                                onClick={(e) => handleServeReadyTable(e, t.number)}
-                                className="h-9 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-mono font-black text-xs transition duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-md active:scale-95 animate-pulse shrink-0 whitespace-nowrap"
-                              >
-                                <Utensils className="h-3.5 w-3.5" />
-                                <span>Serve Food</span>
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                disabled
-                                className="h-9 px-3.5 rounded-xl bg-slate-100 text-slate-400 border border-slate-300 font-mono font-bold text-[11px] flex items-center justify-center gap-1 cursor-not-allowed opacity-80 shrink-0 whitespace-nowrap"
-                              >
-                                <Clock className="h-3.5 w-3.5 text-slate-400" />
-                                <span>Preparing...</span>
-                              </button>
-                            )
-                          )}
-
-                          {isBilling && (
+                          {/* Action Button: Serve Food (Always Present - Enabled when food is ready, Disabled when not/no orders) */}
+                          {isBilling ? (
                             <button
                               type="button"
                               onClick={(e) => handleVacateTable(e, t.number)}
-                              className="h-9 px-4 rounded-xl bg-purple-100 hover:bg-purple-600 text-purple-950 hover:text-white border-2 border-purple-400 font-mono font-black text-xs transition duration-150 flex items-center justify-center gap-1 cursor-pointer shadow-xs active:scale-95 shrink-0 whitespace-nowrap"
+                              className="h-9 px-3.5 rounded-xl bg-purple-100 hover:bg-purple-600 text-purple-950 hover:text-white border-2 border-purple-400 font-mono font-black text-xs transition duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95 shrink-0 whitespace-nowrap"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                               <span>Vacate</span>
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              disabled={!hasReadyFood}
+                              onClick={(e) => {
+                                if (hasReadyFood) {
+                                  handleServeReadyTable(e, t.number);
+                                }
+                              }}
+                              className={`h-9 px-3.5 rounded-xl font-mono text-xs flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap transition duration-150 ${
+                                hasReadyFood
+                                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white font-black cursor-pointer shadow-md active:scale-95 animate-pulse'
+                                  : 'bg-slate-100 text-slate-400 border border-slate-200 font-bold cursor-not-allowed opacity-70'
+                              }`}
+                            >
+                              <Utensils className="h-3.5 w-3.5" />
+                              <span>Serve Food</span>
                             </button>
                           )}
                         </div>
@@ -740,42 +742,44 @@ export const ScreenW2TablesFeed: React.FC = () => {
 
               {/* ──────────────────────────────────────────────
                   PRIORITY 3: MANAGER ALERTS (THIRD)
-                  - Single Badge on Left, Clean Stock Tag on Right
+                  - Structured exactly like Guest Calls: Badge + Time header, Message + Understood button detail row
               ─────────────────────────────────────────────── */}
               {(activeAlertFilter === 'ALL' || activeAlertFilter === 'MANAGER') &&
                 managerNotices.map((n) => (
                   <div
                     key={n.id}
-                    className="p-3.5 rounded-2xl border-2 border-rose-300 bg-rose-50 text-xs shadow-xs space-y-2 overflow-hidden"
+                    className="p-3.5 rounded-2xl bg-purple-50 border-2 border-purple-300 text-xs shadow-xs space-y-2.5 overflow-hidden"
                   >
-                    {/* Header Row: Badge on Left, Clean Tag on Right */}
+                    {/* Header Row: Badges on Left, Clean Time Text on Right */}
                     <div className="flex items-center justify-between gap-2 min-w-0">
-                      <span className="px-3 py-1 rounded-full text-[10px] font-mono font-black uppercase shrink-0 bg-rose-600 text-white shadow-2xs">
-                        ⚠️ {n.badge}
-                      </span>
-                      <span className="text-[11px] font-mono text-rose-800 font-bold shrink-0">
-                        Stock Notice
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="px-3 py-1 rounded-full bg-slate-900 text-white font-mono text-xs font-black shrink-0 shadow-2xs">
+                          MANAGER
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md text-[9.5px] font-mono font-black uppercase shrink-0 bg-purple-700 text-white">
+                          ⚠️ {n.badge}
+                        </span>
+                      </div>
+
+                      {/* Clean Time Display */}
+                      <span className="text-[11px] font-mono text-slate-500 font-bold shrink-0">
+                        ⏱ {n.timestamp || 'Just Now'}
                       </span>
                     </div>
 
-                    {/* Title & Description: Clean text wrapping strictly within card boundaries */}
-                    <div className="space-y-1 min-w-0">
-                      <div className="font-black text-slate-950 text-xs font-mono break-words leading-snug">
-                        {n.title}
+                    {/* Detail Row: Message on Left + Understood Button on Right (Matches Guest Calls) */}
+                    <div className="flex items-center justify-between gap-3 pt-0.5 min-w-0">
+                      <div className="text-xs text-slate-900 font-mono font-bold truncate flex-1 min-w-0">
+                        {n.title}: <span className="font-medium text-slate-600">{n.detail}</span>
                       </div>
-                      <div className="text-[11px] text-slate-700 font-mono font-medium break-words leading-relaxed">
-                        {n.detail}
-                      </div>
-                    </div>
 
-                    {/* Action Button on Right */}
-                    <div className="flex justify-end pt-1.5 border-t border-rose-200/70">
                       <button
                         type="button"
                         onClick={() => setDismissedNoticeIds((prev) => [...prev, n.id])}
-                        className="h-8 px-4 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-mono font-bold text-[10.5px] transition cursor-pointer shrink-0 active:scale-95 shadow-xs"
+                        className="h-9 px-4 rounded-full bg-purple-700 hover:bg-purple-800 text-white text-xs font-mono font-black transition cursor-pointer shadow-xs shrink-0 flex items-center gap-1.5 active:scale-95 whitespace-nowrap"
                       >
-                        Understood
+                        <CheckCircle2 className="h-4 w-4" />
+                        <span>Understood</span>
                       </button>
                     </div>
                   </div>

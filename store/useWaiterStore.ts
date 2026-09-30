@@ -22,6 +22,14 @@ export interface WaiterToastNotification {
   noticeId?: string;
 }
 
+/** Standardized Captain Name formatter across all waiter screens */
+export const formatCaptainName = (rawName?: string | null): string => {
+  const trimmed = (rawName || '').trim();
+  if (!trimmed) return 'Captain';
+  const cleaned = trimmed.replace(/^captain\s*[:\-]?\s*/i, '').trim();
+  return cleaned ? `Captain ${cleaned}` : 'Captain';
+};
+
 interface WaiterStoreState {
   currentScreen: WaiterScreenId;
   previousScreen: WaiterScreenId;
@@ -64,8 +72,8 @@ export const useWaiterStore = create<WaiterStoreState>((set, get) => ({
   currentScreen: 1,
   previousScreen: 1,
   viewMode: 'single',
-  activeCaptain: '',     // empty — waiter must log in
-  activeSection: 'ALL',
+  activeCaptain: 'Captain Ramesh',
+  activeSection: 'SECTION A',
   selectedTableNumber: 'A-04',
   orderCart: [],
   kitchenCallNotice: null,

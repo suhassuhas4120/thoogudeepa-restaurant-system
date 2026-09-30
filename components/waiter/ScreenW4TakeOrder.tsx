@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useWaiterStore } from '../../store/useWaiterStore';
+import { useWaiterStore, formatCaptainName } from '../../store/useWaiterStore';
 import { useSharedBridge } from '../../store/useSharedBridge';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
 import { INITIAL_MENU_ITEMS } from '../../data/menuItems';
@@ -152,7 +152,7 @@ export const ScreenW4TakeOrder: React.FC = () => {
   const handleFireKOTNow = () => {
     if (orderCart.length === 0) return;
 
-    const captain = activeCaptain || 'Captain';
+    const captain = formatCaptainName(activeCaptain);
     const itemsToFire = orderCart.map((ci) => ({
       item: ci.menuItem,
       selectedOption: ci.selectedOption,

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useWaiterStore } from '../../store/useWaiterStore';
+import { useWaiterStore, formatCaptainName } from '../../store/useWaiterStore';
 import { useSharedBridge } from '../../store/useSharedBridge';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
 import {
@@ -32,7 +32,7 @@ export const ScreenW6ShiftStats: React.FC = () => {
               <span>Tables</span>
             </button>
             <span className="font-mono text-xs font-black text-slate-900 bg-white px-2.5 py-1 rounded-xl border border-slate-200 shadow-2xs">
-              {activeCaptain ? activeCaptain.toUpperCase() : 'CAPTAIN'}
+              {formatCaptainName(activeCaptain).toUpperCase()}
             </span>
           </div>
 
