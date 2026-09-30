@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useWaiterStore } from '../../store/useWaiterStore';
+import { useWaiterStore, formatCaptainName } from '../../store/useWaiterStore';
 import {
   useSharedBridge,
   SharedTable,
@@ -11,1211 +11,798 @@ import { WaiterTabletHousing } from './WaiterTabletHousing';
 import {
   CheckCircle2,
   Utensils,
+  Clock,
+  Bell,
+  Trash2,
+  Volume2,
+  VolumeX,
+  Link2,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Types
+type TableView = SharedTable & {
+  mergedWith?: string;
+  guestCount?: number;
+  activeItems?: { name: string; quantity: number; status?: string; price?: number }[];
+};
+
+type KdsView = SharedKDSTicket & {
+  elapsedMinutes?: number;
+};
+
+export interface WaiterToastNotification {
+  id: string;
+  source: 'KITCHEN' | 'CUSTOMER' | 'MANAGER';
+  title: string;
+  detail: string;
+  timestamp: string;
+  tableNumber?: string;
+  ticketId?: string;
+  pingId?: string;
+  noticeId?: string;
+}
 
 export const ScreenW2TablesFeed: React.FC = () => {
-  // =========================================================
-  // WAITER STORE
-  // =========================================================
-
   const {
     setCurrentScreen,
     selectTable,
-    activeCaptain,
+    selectedTableNumber,
     activeSection,
+    setActiveSection,
+    activeCaptain,
+    activeAlertFilter,
+    setActiveAlertFilter,
+    soundAlertsEnabled,
+    toggleSoundAlerts,
+    showFloorTables,
+    setShowFloorTables,
   } = useWaiterStore();
 
-  // =========================================================
-  // SHARED BRIDGE
-  // =========================================================
-
   const {
-    tables,
+    tables: sharedTables,
     pings,
-    kdsTickets,
+    kdsTickets: sharedKdsTickets,
+    inventory86,
     waiterResolvePing,
     waiterMarkKitchenItemServed,
     waiterMarkTableFoodServed,
     waiterVacatesTable,
-    waiterSeatsTable,
   } = useSharedBridge();
 
-  // =========================================================
-  // FLOOR OVERVIEW
-  //
-  // false = tables hidden
-  // true  = tables visible
-  // =========================================================
+  const tables = sharedTables as TableView[];
+  const kdsTickets = sharedKdsTickets as KdsView[];
 
-  const [showFloor, setShowFloor] =
-    useState(false);
+  // Floor Overview dropdown state: synced to useWaiterStore so navigating back preserves open state
+  const showTables = showFloorTables;
+  const setShowTables = setShowFloorTables;
 
-  // =========================================================
-  // SECTION
-  // =========================================================
+  // Section filter for tables: synced to useWaiterStore
+  const selectedSection = activeSection || 'ALL';
+  const setSelectedSection = (sec: string) => setActiveSection(sec);
 
-  const [selectedSection, setSelectedSection] =
-    useState<string>(
-      activeSection || 'ALL'
-    );
+  // Dismissed Manager notices state
+  const [dismissedNoticeIds, setDismissedNoticeIds] = useState<string[]>([]);
 
-  // =========================================================
-  // KITCHEN / CUSTOMER TAB
-  // =========================================================
+  // Floor Metrics (Matched with Tablet View: Occupied, Vacant, Orders)
+  const activeOrdersCount = kdsTickets.filter(
+    (tk: KdsView) => tk.status !== 'COMPLETED'
+  ).length;
 
-  const [activeFeedTab, setActiveFeedTab] =
-    useState<'KITCHEN' | 'CUSTOMER'>(
-      'KITCHEN'
-    );
+  const occupiedCount = tables.filter(
+    (t: TableView) => t.status === 'OCCUPIED' || t.status === 'BILLING'
+  ).length;
 
-  // =========================================================
-  // DYNAMIC FLOOR METRICS
-  // =========================================================
+  const vacantCount = tables.filter(
+    (t: TableView) => t.status === 'VACANT'
+  ).length;
 
-  const activeOrdersCount =
-    kdsTickets.filter(
-      (tk) =>
-        tk.status !== 'COMPLETED'
-    ).length;
-
-  const occupiedCount =
-    tables.filter(
-      (t: SharedTable) =>
-        t.status === 'OCCUPIED' ||
-        t.status === 'BILLING'
-    ).length;
-
-  const vacantCount =
-    tables.filter(
-      (t: SharedTable) =>
-        t.status === 'VACANT'
-    ).length;
-
-  const totalGuests =
-    tables.reduce(
-      (
-        acc: number,
-        t: SharedTable
-      ) =>
-        acc +
-        (
-          t.status === 'OCCUPIED' ||
-          t.status === 'BILLING'
-            ? t.guestCount || 0
-            : 0
-        ),
-      0
-    );
-
-  // =========================================================
-  // SECTION FILTERS
-  //
-  // CAPTAIN-ALL IS NOT DISPLAYED
-  // =========================================================
-
+  // Section filter options: Standard Section Names A, B, C, D
   const filterSections = [
     'ALL',
     'SECTION A',
     'SECTION B',
-    'TERRACE',
-    'FAMILY DINING',
+    'SECTION C',
+    'SECTION D',
   ];
 
-  // =========================================================
-  // SECTION DISPLAY NAME
-  // =========================================================
+  // Helper to map tables to standard section names (Section A, B, C, D)
+  const getTableSection = (table: TableView): string => {
+    const num = (table.number || '').trim().toUpperCase();
+    const sec = (table.section || '').trim().toUpperCase();
 
-  const getSectionDisplayName = (
-    sec: string
-  ) => {
-    switch (sec) {
-      case 'ALL':
-        return 'All Tables';
-
-      case 'SECTION A':
-        return 'Section A';
-
-      case 'SECTION B':
-        return 'Section B';
-
-      case 'TERRACE':
-        return 'Terrace';
-
-      case 'FAMILY DINING':
-        return 'Family Dining';
-
-      default:
-        return sec;
+    if (num.startsWith('A') || sec.includes('SECTION A') || sec === 'A') {
+      return 'SECTION A';
     }
+    if (num.startsWith('B') || sec.includes('SECTION B') || sec === 'B') {
+      return 'SECTION B';
+    }
+    if (num === 'C-01' || sec.includes('TERRACE') || sec.includes('SECTION C')) {
+      return 'SECTION C';
+    }
+    if (
+      num === 'C-02' ||
+      num === 'C-03' ||
+      sec.includes('FAMILY') ||
+      sec.includes('SECTION D') ||
+      num.startsWith('D')
+    ) {
+      return 'SECTION D';
+    }
+    return 'SECTION C';
   };
 
-  // =========================================================
-  // FILTER TABLES
-  // =========================================================
+  // Filter tables by section
+  const filteredTables = tables.filter((table: TableView) => {
+    if (selectedSection === 'ALL') return true;
+    return getTableSection(table) === selectedSection;
+  });
 
-  const filteredTables =
-    tables.filter(
-      (table: SharedTable) => {
-        if (
-          selectedSection === 'ALL'
-        ) {
-          return true;
-        }
+  // Sort tables: A-01, A-02, B-01, C-01, etc.
+  const sortedTables = [...filteredTables].sort((a, b) =>
+    a.number.localeCompare(b.number, undefined, { numeric: true, sensitivity: 'base' })
+  );
 
-        const tableSec =
-          (table.section || '')
-            .trim()
-            .toUpperCase();
+  // 1. KITCHEN TICKETS (Priority 1: Most important, ready food at top)
+  const activeKdsTickets = [...kdsTickets]
+    .filter((tk: KdsView) => tk.status !== 'COMPLETED')
+    .sort((a: KdsView, b: KdsView) => {
+      const order: Record<string, number> = {
+        READY: 0,
+        PREP: 1,
+        NEW: 2,
+      };
+      return (order[a.status] ?? 3) - (order[b.status] ?? 3);
+    });
 
-        const filterSec =
-          selectedSection
-            .trim()
-            .toUpperCase();
+  // 2. CUSTOMER CALLS (Priority 2)
+  const pendingPings = pings.filter((p) => p.status === 'PENDING');
 
-        // TERRACE
-        if (
-          filterSec === 'TERRACE'
-        ) {
-          return (
-            tableSec === 'TERRACE' ||
-            tableSec.includes(
-              'TERRACE'
-            ) ||
-            tableSec === 'SECTION C'
-          );
-        }
+  // 3. MANAGER NOTICES (Priority 3)
+  const soldOutItems = (inventory86 || []).filter((it) => it.is86);
+  const managerNotices = soldOutItems
+    .map((item) => ({
+      id: `mgr-86-${item.id}`,
+      badge: 'SOLD OUT',
+      title: `${item.name} is Sold Out`,
+      detail: `Kitchen stock finished. Do not take new orders for this dish.`,
+      timestamp: 'Just Now',
+    }))
+    .filter((n) => !dismissedNoticeIds.includes(n.id));
 
-        // FAMILY DINING
-        if (
-          filterSec ===
-          'FAMILY DINING'
-        ) {
-          return (
-            tableSec ===
-              'FAMILY DINING' ||
-            tableSec.includes(
-              'DINING'
-            )
-          );
-        }
+  const totalAlertsCount = activeKdsTickets.length + pendingPings.length + managerNotices.length;
 
-        return (
-          tableSec === filterSec
-        );
-      }
-    );
 
-  // =========================================================
-  // ACTIVE KITCHEN TICKETS
-  //
-  // READY -> PREP -> NEW
-  // =========================================================
 
-  const activeKdsTickets =
-    kdsTickets
-      .filter(
-        (tk) =>
-          tk.status !==
-          'COMPLETED'
-      )
-      .sort((a, b) => {
-        const order: Record<
-          string,
-          number
-        > = {
-          READY: 0,
-          PREP: 1,
-          NEW: 2,
-        };
-
-        return (
-          (order[a.status] ?? 3) -
-          (order[b.status] ?? 3)
-        );
-      });
-
-  // =========================================================
-  // READY PICKUP COUNT
-  // =========================================================
-
-  const readyPickupCount =
-    kdsTickets.filter(
-      (tk) =>
-        tk.status === 'READY'
-    ).length;
-
-  // =========================================================
-  // TABLE CLICK
-  // =========================================================
-
-  const handleTableClick = (
-    tableNumber: string
-  ) => {
+  /* ─────────────────────────────────────────────────────────────
+     INTERACTIVE ACTIONS
+  ────────────────────────────────────────────────────────────── */
+  const handleTableClick = (tableNumber: string) => {
     selectTable(tableNumber);
+    setShowFloorTables(true);
     setCurrentScreen(3);
   };
 
-  // =========================================================
-  // SEAT TABLE
-  //
-  // Logic kept from original code.
-  // =========================================================
-
-  const handleSeatTable = (
-    e: React.MouseEvent,
-    tableNumber: string
-  ) => {
+  const handleVacateTable = (e: React.MouseEvent, tableNumber: string) => {
     e.stopPropagation();
-
-    waiterSeatsTable(
-      tableNumber
-    );
-
-    selectTable(
-      tableNumber
-    );
-
-    setCurrentScreen(3);
+    waiterVacatesTable(tableNumber);
   };
 
-  // =========================================================
-  // VACATE TABLE
-  //
-  // Logic kept from original code.
-  // =========================================================
+  const handleServeReadyTable = (e: React.MouseEvent | null, tableNumber: string) => {
+    if (e) e.stopPropagation();
+    waiterMarkTableFoodServed(tableNumber);
 
-  const handleVacateTable = (
-    e: React.MouseEvent,
-    tableNumber: string
-  ) => {
-    e.stopPropagation();
-
-    waiterVacatesTable(
-      tableNumber
-    );
-  };
-
-  // =========================================================
-  // SERVE READY TABLE
-  //
-  // Logic kept from original code.
-  // =========================================================
-
-  const handleServeReadyTable = (
-    e: React.MouseEvent,
-    tableNumber: string
-  ) => {
-    e.stopPropagation();
-
-    // 1. Mark table food as served
-    waiterMarkTableFoodServed(
-      tableNumber
-    );
-
-    // 2. Also mark matching KDS tickets
-    const cleanNum =
-      tableNumber.replace(
-        /\D/g,
-        ''
-      );
-
+    const cleanNum = tableNumber.replace(/\D/g, '');
     kdsTickets
-      .filter((tk) => {
-        const tkNum =
-          (
-            tk.tableNumber || ''
-          ).replace(
-            /\D/g,
-            ''
-          );
-
-        return (
-          tk.tableNumber ===
-            tableNumber ||
-          (
-            cleanNum &&
-            tkNum === cleanNum
-          )
-        );
+      .filter((tk: KdsView) => {
+        const tkNum = (tk.tableNumber || '').replace(/\D/g, '');
+        return tk.tableNumber === tableNumber || (cleanNum && tkNum === cleanNum);
       })
-      .forEach((tk) => {
-        waiterMarkKitchenItemServed(
-          tk.id
-        );
+      .forEach((tk: KdsView) => {
+        waiterMarkKitchenItemServed(tk.id);
       });
   };
 
-  // =========================================================
-  // TABLE STATUS BADGE
-  // =========================================================
-
-  const getStatusBadge = (
-    status: string
-  ) => {
-    switch (status) {
-      case 'OCCUPIED':
-        return 'bg-amber-100 text-amber-900 border-amber-300';
-
-      case 'BILLING':
-        return 'bg-purple-100 text-purple-900 border-purple-300';
-
-      case 'CLEANING':
-        return 'bg-blue-100 text-blue-900 border-blue-300';
-
-      case 'VACANT':
-        return 'bg-emerald-100 text-emerald-900 border-emerald-300';
-
-      default:
-        return 'bg-slate-100 text-slate-700 border-slate-300';
+  const handleServeTicket = (ticketId: string, tableNumber?: string) => {
+    waiterMarkKitchenItemServed(ticketId);
+    if (tableNumber) {
+      waiterMarkTableFoodServed(tableNumber);
     }
   };
 
-  // =========================================================
-  // RETURN
-  // =========================================================
+  // Helper: Check if table has ready food from KDS or active items
+  const checkTableHasReadyFood = (table: TableView) => {
+    const cleanNum = table.number.replace(/\D/g, '');
+    const hasReadyKds = kdsTickets.some((tk: KdsView) => {
+      const tkNum = (tk.tableNumber || '').replace(/\D/g, '');
+      return (
+        (tk.tableNumber === table.number || (cleanNum && tkNum === cleanNum)) &&
+        tk.status === 'READY'
+      );
+    });
+
+    const hasReadyItem = table.activeItems?.some(
+      (it) => String(it.status || '').toUpperCase() === 'READY'
+    ) ?? false;
+
+    return hasReadyKds || hasReadyItem;
+  };
 
   return (
     <WaiterTabletHousing
       screenNumber={2}
-      screenTitle="TABLES MATRIX & DUAL FEEDS"
+      screenTitle="FLOOR TABLES & NOTIFICATIONS"
     >
-
-      <div className="flex-1 flex flex-col p-2 sm:p-2.5 gap-2 overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-0 bg-stone-50/70 overflow-hidden relative">
 
         {/* =====================================================
-            FLOOR OVERVIEW
+            TOP BAR: MINIMAL FLOOR SUMMARY & TABLES TOGGLE
+            - Sound ON/OFF is ICON ONLY (no extra text)
         ====================================================== */}
-
-        <div className="rounded-xl border border-slate-200 bg-white shadow-2xs shrink-0 overflow-hidden">
-
-          {/* ===================================================
-              FLOOR OVERVIEW HEADER
-          ==================================================== */}
-
-          <button
-            type="button"
-            onClick={() =>
-              setShowFloor(
-                (prev) => !prev
-              )
-            }
-            className="w-full text-left p-2.5 cursor-pointer"
-          >
-
-            {/* HEADER */}
-
-            <div className="flex items-center justify-between mb-1.5 pb-1 border-b border-slate-100">
-
-              <div className="flex items-center gap-1.5">
-
-                <span className="text-[9px] text-slate-500">
-
-                  {showFloor
-                    ? '▲'
-                    : '▼'}
-
-                </span>
-
-                <span className="uppercase text-[10px] font-mono text-slate-900 font-extrabold">
-
-                  Floor Overview
-
-                </span>
-
-              </div>
-
-              <span className="text-[9px] font-mono text-slate-400 font-bold">
-
-                LIVE
-
+        <div className="bg-white border-b border-slate-200 px-4 py-2.5 shrink-0 shadow-2xs select-none">
+          {/* Header Row: Captain Name + Section + Controls (Strictly One Line) */}
+          <div className="flex items-center justify-between gap-2 mb-2 flex-nowrap min-w-0 w-full">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1 whitespace-nowrap overflow-hidden">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span className="font-mono text-xs font-black text-slate-900 uppercase tracking-tight truncate shrink-0">
+                {formatCaptainName(activeCaptain)}
               </span>
-
+              <span className="text-slate-300 font-bold shrink-0">•</span>
+              <span className="text-[10.5px] font-mono text-slate-600 font-bold truncate shrink-0">
+                {selectedSection === 'ALL' ? 'All Sections' : selectedSection}
+              </span>
             </div>
 
-
-            {/* =================================================
-                FLOOR METRICS
-            ================================================== */}
-
-            <div className="grid grid-cols-4 gap-1.5 text-center font-mono text-[9px]">
-
-              {/* OCCUPIED */}
-
-              <div className="bg-slate-900 text-white rounded-lg p-1.5">
-
-                <div className="text-[8px] opacity-80 uppercase">
-
-                  Occupied
-
-                </div>
-
-                <div className="text-sm font-black">
-
-                  {occupiedCount}
-
-                </div>
-
-              </div>
-
-
-              {/* VACANT */}
-
-              <div className="bg-slate-100 text-slate-800 rounded-lg p-1.5 border border-slate-200">
-
-                <div className="text-[8px] text-slate-500 uppercase">
-
-                  Vacant
-
-                </div>
-
-                <div className="text-sm font-black">
-
-                  {vacantCount}
-
-                </div>
-
-              </div>
-
-
-              {/* ORDERS */}
-
-              <div className="bg-amber-50 text-amber-900 rounded-lg p-1.5 border border-amber-200">
-
-                <div className="text-[8px] text-amber-700 uppercase">
-
-                  Orders
-
-                </div>
-
-                <div className="text-sm font-black">
-
-                  {activeOrdersCount}
-
-                </div>
-
-              </div>
-
-
-              {/* SEATED */}
-
-              <div className="bg-emerald-50 text-emerald-900 rounded-lg p-1.5 border border-emerald-200">
-
-                <div className="text-[8px] text-emerald-700 uppercase">
-
-                  Seated
-
-                </div>
-
-                <div className="text-sm font-black">
-
-                  {totalGuests}
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </button>
-
-
-          {/* ===================================================
-              TABLES
-              
-              HIDDEN BY DEFAULT.
-              CLICK FLOOR OVERVIEW TO SHOW.
-          ==================================================== */}
-
-          {showFloor && (
-
-            <div className="border-t border-slate-200 p-2.5">
-
-              {/* ===============================================
-                  SECTION FILTER
-              ================================================ */}
-
-              <div className="flex items-center justify-between gap-1 mb-2">
-
-                <div className="flex gap-1 overflow-x-auto pb-0.5 scrollbar-none">
-
-                  {filterSections.map(
-                    (sec) => (
-
-                      <button
-                        key={sec}
-                        type="button"
-                        onClick={() =>
-                          setSelectedSection(
-                            sec
-                          )
-                        }
-                        className={`px-2.5 py-1.5 rounded-lg text-[9px] sm:text-[10px] font-mono font-bold shrink-0 transition duration-150 cursor-pointer ${
-                          selectedSection ===
-                          sec
-                            ? 'bg-slate-900 text-white border border-slate-900 shadow-xs'
-                            : 'bg-stone-50 border border-slate-300 text-slate-700 hover:bg-stone-200 hover:text-slate-950'
-                        }`}
-                      >
-
-                        {
-                          getSectionDisplayName(
-                            sec
-                          )
-                        }
-
-                      </button>
-
-                    )
-                  )}
-
-                </div>
-
-                <span className="font-mono text-[9px] text-slate-400 font-bold shrink-0">
-
-                  {
-                    filteredTables.length
-                  }{' '}
-                  Tables
-
-                </span>
-
-              </div>
-
-
-              {/* ===============================================
-                  TABLE GRID
-                  
-                  2 TABLES PER ROW
-              ================================================ */}
-
-              <div className="grid grid-cols-2 gap-2 max-h-[42vh] overflow-y-auto pr-0.5">
-
-                {filteredTables.length >
-                0 ? (
-
-                  filteredTables.map(
-                    (
-                      t: SharedTable
-                    ) => {
-
-                      const isOccupied =
-                        t.status ===
-                        'OCCUPIED';
-
-                      const isBilling =
-                        t.status ===
-                        'BILLING';
-
-                      const isVacant =
-                        t.status ===
-                        'VACANT';
-
-                      const isCleaning =
-                        t.status ===
-                        'CLEANING';
-
-                      const hasReadyItem =
-                        t.activeItems?.some(
-                          (
-                            it: {
-                              status?: string;
-                            }
-                          ) =>
-                            it.status ===
-                              'Ready' ||
-                            it.status ===
-                              'READY'
-                        );
-
-                      return (
-
-                        <motion.div
-                          key={t.id}
-                          whileTap={{
-                            scale: 0.97,
-                          }}
-                          onClick={() =>
-                            handleTableClick(
-                              t.number
-                            )
-                          }
-                          className={`rounded-xl border p-2.5 text-center cursor-pointer transition shadow-2xs flex flex-col justify-between min-h-[114px] ${
-                            hasReadyItem
-                              ? 'border-emerald-500 bg-emerald-50/60 hover:bg-emerald-50 ring-1 ring-emerald-500/30'
-                              : isBilling
-                              ? 'border-purple-300 bg-purple-50/50 hover:bg-purple-50/80 ring-1 ring-purple-400/20'
-                              : isOccupied
-                              ? 'border-slate-300 bg-white hover:border-slate-400'
-                              : isCleaning
-                              ? 'border-blue-300 bg-blue-50/50 hover:bg-blue-50'
-                              : isVacant
-                              ? 'border-slate-200 bg-stone-50/70 hover:bg-white'
-                              : 'border-slate-200 bg-stone-50/70 hover:bg-white'
-                          }`}
-                        >
-
-                          {/* TABLE NAME */}
-
-                          <div className="flex items-center justify-between font-mono gap-1">
-
-                            <span className="text-xs font-black text-slate-900 truncate">
-
-                              {t.mergedWith
-                                ? `${t.number} + ${t.mergedWith}`
-                                : t.number}
-
-                            </span>
-
-                            <span className="text-[8px] font-bold text-slate-400 truncate">
-
-                              {t.section}
-
-                            </span>
-
-                          </div>
-
-
-                          {/* STATUS */}
-
-                          <div className="flex items-center justify-center gap-1 mt-1">
-
-                            {t.mergedWith ? (
-
-                              <span className="px-1.5 py-0.5 rounded text-[8.5px] font-mono font-black border bg-purple-100 text-purple-900 border-purple-300">
-
-                                Merged
-
-                              </span>
-
-                            ) : (
-
-                              <span
-                                className={`px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold border uppercase ${getStatusBadge(
-                                  t.status
-                                )}`}
-                              >
-
-                                {t.status}
-
-                              </span>
-
-                            )}
-
-                          </div>
-
-
-                          {/* BILL / TIME */}
-
-                          <div className="text-[9.5px] font-mono text-slate-600 mt-1 leading-tight">
-
-                            {isOccupied ||
-                            isBilling ? (
-
-                              <div className="flex justify-between items-center px-1">
-
-                                <span className="font-extrabold text-slate-900">
-
-                                  ₹
-                                  {
-                                    t.currentBill
-                                  }
-
-                                </span>
-
-                                <span className="text-slate-500">
-
-                                  ⏱{' '}
-                                  {
-                                    t.seatedTime
-                                  }
-
-                                </span>
-
-                              </div>
-
-                            ) : (
-
-                              <div className="text-slate-400">
-
-                                Capacity:{' '}
-                                {
-                                  t.capacity
-                                }{' '}
-                                guests
-
-                              </div>
-
-                            )}
-
-                          </div>
-
-
-                          {/* FOOD READY */}
-
-                          {hasReadyItem && (
-
-                            <div className="mt-1">
-
-                              <span className="inline-block px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300 text-[8px] font-mono font-black">
-
-                                FOOD READY
-
-                              </span>
-
-                            </div>
-
-                          )}
-
-                        </motion.div>
-
-                      );
-                    }
-                  )
-
+            <div className="flex items-center gap-1.5 shrink-0">
+              {/* Sound Notification Toggle: ICON ONLY */}
+              <button
+                type="button"
+                onClick={toggleSoundAlerts}
+                className={`h-7 w-7 rounded-lg transition cursor-pointer border shadow-2xs active:scale-95 flex items-center justify-center shrink-0 ${
+                  soundAlertsEnabled
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                    : 'bg-slate-100 text-slate-400 border-slate-300 hover:bg-slate-200'
+                }`}
+                title={soundAlertsEnabled ? 'Sound alerts active (tap to mute)' : 'Sound alerts muted (tap to unmute)'}
+              >
+                {soundAlertsEnabled ? (
+                  <Volume2 className="h-3.5 w-3.5 text-emerald-600 animate-pulse" />
                 ) : (
-
-                  <div className="col-span-2 text-center py-8 text-slate-400 font-mono text-[10px]">
-
-                    No tables found
-
-                  </div>
-
+                  <VolumeX className="h-3.5 w-3.5 text-slate-400" />
                 )}
+              </button>
 
-              </div>
-
+              {/* Simple, 1-Click Toggle for Tables */}
+              <button
+                type="button"
+                onClick={() => setShowTables(!showTables)}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-mono text-[10.5px] font-black transition cursor-pointer shadow-xs active:scale-95 shrink-0 whitespace-nowrap"
+              >
+                <span>{showTables ? 'Hide Tables ▲' : `Tables (${filteredTables.length}) ▼`}</span>
+              </button>
             </div>
-
-          )}
-
-        </div>
-
-
-        {/* =====================================================
-            KITCHEN ORDERS / GUEST CALLS
-        ====================================================== */}
-
-        <div className="flex-1 min-h-0 rounded-2xl border border-slate-200 bg-white p-2 shadow-xs flex flex-col overflow-hidden">
-
-          {/* ===================================================
-              TOP BUTTONS
-          ==================================================== */}
-
-          <div className="grid grid-cols-2 gap-1.5 shrink-0">
-
-            {/* =================================================
-                KITCHEN ORDERS BUTTON
-            ================================================== */}
-
-            <button
-              type="button"
-              onClick={() =>
-                setActiveFeedTab(
-                  'KITCHEN'
-                )
-              }
-              className={`min-h-[44px] rounded-lg px-2 py-1.5 font-mono text-[9px] font-bold transition cursor-pointer flex items-center justify-center gap-1 ${
-                activeFeedTab ===
-                'KITCHEN'
-                  ? 'bg-slate-900 text-white shadow-2xs font-black'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-stone-100'
-              }`}
-            >
-
-              <span className="text-[11px]">
-                🍳
-              </span>
-
-              <div className="flex flex-col items-start leading-tight">
-
-                <span>
-                  Kitchen
-                </span>
-
-                <span>
-                  Orders ({activeKdsTickets.length})
-                </span>
-
-              </div>
-
-              {readyPickupCount >
-                0 && (
-
-                <span
-                  className={`ml-1 px-1.5 py-1 rounded-full text-[7.5px] font-black leading-none ${
-                    activeFeedTab ===
-                    'KITCHEN'
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-emerald-100 text-emerald-800'
-                  }`}
-                >
-
-                  {readyPickupCount}
-
-                  <br />
-
-                  Ready
-
-                </span>
-
-              )}
-
-            </button>
-
-
-            {/* =================================================
-                GUEST CALLS BUTTON
-            ================================================== */}
-
-            <button
-              type="button"
-              onClick={() =>
-                setActiveFeedTab(
-                  'CUSTOMER'
-                )
-              }
-              className={`min-h-[44px] rounded-lg px-2 py-1.5 font-mono text-[9px] font-bold transition cursor-pointer flex items-center justify-center gap-1 ${
-                activeFeedTab ===
-                'CUSTOMER'
-                  ? 'bg-orange-600 text-white shadow-2xs font-black'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-stone-100'
-              }`}
-            >
-
-              <span className="text-[11px]">
-                🔔
-              </span>
-
-              <div className="flex flex-col items-start leading-tight">
-
-                <span>
-                  Guest
-                </span>
-
-                <span>
-                  Calls ({pings.length})
-                </span>
-
-              </div>
-
-            </button>
-
           </div>
 
+          {/* 3 Clean Stat Cards (Matches Tablet: Occupied, Vacant, Orders) */}
+          <div className="grid grid-cols-3 gap-2 text-center font-mono">
+            {/* Occupied */}
+            <div className="bg-slate-900 text-white rounded-xl py-1.5 px-1 shadow-2xs">
+              <div className="text-[8.5px] text-slate-300 font-bold uppercase tracking-wider">Occupied</div>
+              <div className="text-base font-black leading-tight mt-0.5">{occupiedCount}</div>
+            </div>
+
+            {/* Vacant */}
+            <div className="bg-emerald-50 text-emerald-950 rounded-xl py-1.5 px-1 border border-emerald-300">
+              <div className="text-[8.5px] text-emerald-700 font-bold uppercase tracking-wider">Vacant</div>
+              <div className="text-base font-black leading-tight mt-0.5">{vacantCount}</div>
+            </div>
+
+            {/* Orders */}
+            <div className="bg-amber-50 text-amber-950 rounded-xl py-1.5 px-1 border border-amber-300">
+              <div className="text-[8.5px] text-amber-700 font-bold uppercase tracking-wider">Orders</div>
+              <div className="text-base font-black leading-tight mt-0.5">{activeOrdersCount}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* =====================================================
+            SECTION PILLS (SHOWN ONLY WHEN TABLES ARE VISIBLE)
+        ====================================================== */}
+        {showTables && (
+          <div className="bg-white/95 border-b border-slate-200 px-3.5 py-2 flex items-center gap-1.5 overflow-x-auto scrollbar-none shrink-0 shadow-2xs">
+            {filterSections.map((sec) => (
+              <button
+                key={sec}
+                type="button"
+                onClick={() => setSelectedSection(sec)}
+                className={`px-3 py-1.5 rounded-full text-[10.5px] font-mono font-bold shrink-0 transition duration-150 cursor-pointer ${
+                  selectedSection === sec
+                    ? 'bg-slate-900 text-white shadow-xs font-black'
+                    : 'bg-stone-100 border border-slate-200 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                {sec === 'ALL' ? 'All Sections' : sec.replace('SECTION ', 'Sec ')}
+              </button>
+            ))}
+            <span className="font-mono text-[10px] text-slate-400 font-bold shrink-0 ml-auto pl-1">
+              {filteredTables.length} Tables
+            </span>
+          </div>
+        )}
+
+        {/* =====================================================
+            UNIFIED SCROLL CONTAINER
+        ====================================================== */}
+        <div className="flex-1 overflow-y-auto px-3.5 py-3 space-y-3.5 scrollbar-thin">
 
           {/* ===================================================
-              FEED CONTENT
+              FLOOR TABLES (SHOWN WHEN TOGGLED OPEN)
+              - Vacant tables: "No active orders yet" (Zero seat numbers)
+              - Occupied/Billing tables: Top row header/bill, Bottom row items + button
           ==================================================== */}
+          <AnimatePresence>
+            {showTables && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-3"
+              >
+                {/* Table Cards List */}
+                <div className="grid grid-cols-1 gap-3.5">
+                  {sortedTables.map((t: TableView) => {
+                    const isOccupied = t.status === 'OCCUPIED';
+                    const isBilling = t.status === 'BILLING';
+                    const isVacant = t.status === 'VACANT';
+                    const hasReadyFood = checkTableHasReadyFood(t);
+                    const tableSection = getTableSection(t);
+                    const isSelected = selectedTableNumber === t.number;
 
-          <div className="flex-1 min-h-0 overflow-y-auto pt-2 space-y-2">
+                    // Formatted active items list
+                    const itemsSummary = (t.activeItems || [])
+                      .map((it) => `${it.name} (${it.quantity})`)
+                      .join(', ');
 
-            {/* =================================================
-                CUSTOMER / GUEST CALLS
-            ================================================== */}
+                    /* ── VACANT TABLE CARD: STATUS BADGE AT TOP, "No items yet ordered" AT CENTER, BILL AT END ── */
+                    if (isVacant) {
+                      return (
+                        <div
+                          key={t.id}
+                          onClick={() => handleTableClick(t.number)}
+                          className={`w-full rounded-2xl border-2 p-3.5 cursor-pointer transition duration-150 shadow-xs flex flex-col justify-between gap-2.5 bg-white ${
+                            isSelected
+                              ? 'border-orange-500 ring-2 ring-orange-500/40 bg-orange-50/20'
+                              : 'border-slate-200 hover:border-emerald-400'
+                          }`}
+                        >
+                          {/* Top Row: Table Name + Section Badge on Left, VACANT Badge on Right */}
+                          <div className="flex items-center justify-between min-w-0">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-base font-black font-mono text-slate-950 tracking-tight shrink-0">
+                                TABLE {t.mergedWith ? `${t.number}+${t.mergedWith}` : t.number}
+                              </span>
+                              {t.mergedWith && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-purple-600 text-white text-[8px] font-mono font-black uppercase tracking-wider shrink-0 flex items-center gap-0.5 shadow-2xs">
+                                  <Link2 className="h-2 w-2 stroke-[3]" />
+                                  <span>Merged</span>
+                                </span>
+                              )}
+                              <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[9px] font-mono font-bold uppercase shrink-0">
+                                {tableSection.replace('SECTION ', 'Sec ')}
+                              </span>
+                            </div>
 
-            {activeFeedTab ===
-            'CUSTOMER' ? (
+                            <span className="px-2.5 py-0.5 rounded-full text-[9px] font-mono font-black border uppercase tracking-wider shrink-0 bg-emerald-100 text-emerald-900 border-emerald-300">
+                              VACANT
+                            </span>
+                          </div>
 
-              pings.length > 0 ? (
+                          {/* Center: "No items yet ordered" Text */}
+                          <div className="py-2 flex items-center justify-center text-center border-t border-slate-100 min-w-0">
+                            <span className="font-mono text-xs font-semibold text-slate-400 tracking-wide">
+                              No items yet ordered
+                            </span>
+                          </div>
 
-                pings.map((p) => (
+                          {/* End Row: Bill at the end */}
+                          <div className="flex items-center justify-start pt-1 border-t border-slate-100 font-mono text-xs min-w-0">
+                            <span className="text-slate-500 font-bold bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200">
+                              Bill: ₹0
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    }
 
-                  <div
-                    key={p.id}
-                    className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-orange-50/70 border border-orange-200 shadow-2xs"
-                  >
-
-                    {/* CALL DETAILS */}
-
-                    <div className="min-w-0 flex-1">
-
-                      <div className="font-mono font-black text-slate-900 flex items-center gap-1 text-[11px]">
-
-                        <span>
-
-                          Table{' '}
-                          {
-                            p.tableNumber
-                          }
-
-                        </span>
-
-                        <span className="text-orange-700 font-bold">
-
-                          • {p.type}
-
-                        </span>
-
-                      </div>
-
-                      <div className="text-[9.5px] text-slate-500 font-mono mt-0.5">
-
-                        {
-                          p.guestName
-                        }
-
-                        {' • '}
-
-                        {
-                          p.timestamp
-                        }
-
-                      </div>
-
-                    </div>
-
-
-                    {/* RESOLVE */}
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        waiterResolvePing(
-                          p.id
-                        )
-                      }
-                      className="shrink-0 rounded-lg bg-orange-50 hover:bg-orange-600 text-orange-900 hover:text-white border border-orange-300 hover:border-orange-600 px-3 py-1.5 text-[9px] font-mono font-bold transition duration-150 cursor-pointer shadow-2xs"
-                    >
-
-                      Resolve
-
-                    </button>
-
-                  </div>
-
-                ))
-
-              ) : (
-
-                <div className="text-center py-8 text-slate-400 font-mono text-[10px] flex flex-col items-center justify-center gap-1">
-
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-
-                  <span>
-
-                    No pending customer assistance calls
-
-                  </span>
-
-                </div>
-
-              )
-
-            ) : (
-
-              /* =================================================
-                 KITCHEN ORDERS
-              ================================================== */
-
-              activeKdsTickets.length >
-              0 ? (
-
-                activeKdsTickets.map(
-                  (
-                    kr: SharedKDSTicket
-                  ) => {
-
-                    const isReady =
-                      kr.status ===
-                      'READY';
-
-                    const isCooking =
-                      kr.status ===
-                      'PREP';
-
-                    const isQueued =
-                      kr.status ===
-                      'NEW';
-
+                    /* ── OCCUPIED OR BILLING TABLE CARD ── */
                     return (
-
                       <div
-                        key={kr.id}
-                        className={`rounded-xl border p-2.5 shadow-2xs transition ${
-                          isReady
-                            ? 'bg-emerald-50/90 border-emerald-300'
-                            : isCooking
-                            ? 'bg-amber-50/70 border-amber-200'
-                            : 'bg-slate-50/80 border-slate-200'
+                        key={t.id}
+                        onClick={() => handleTableClick(t.number)}
+                        className={`w-full rounded-2xl border-2 p-3.5 cursor-pointer transition duration-150 shadow-xs flex flex-col justify-between gap-2.5 overflow-hidden ${
+                          isSelected ? 'ring-2 ring-orange-500/40 shadow-md ' : ''
+                        }${
+                          hasReadyFood
+                            ? 'bg-emerald-50/90 border-emerald-500 ring-2 ring-emerald-400/30'
+                            : isBilling
+                            ? 'bg-purple-50/80 border-purple-400'
+                            : isSelected
+                            ? 'bg-orange-50/20 border-orange-500'
+                            : 'bg-white border-slate-300 hover:border-slate-400'
                         }`}
                       >
-
-                        {/* =====================================
-                            ORDER CONTENT
-                        ====================================== */}
-
-                        <div className="flex items-start justify-between gap-2">
-
-                          {/* LEFT SIDE */}
-
-                          <div className="min-w-0 flex-1">
-
-                            {/* TABLE + STATUS */}
-
-                            <div className="flex items-center gap-1.5 flex-wrap font-mono">
-
-                              <span className="font-black text-slate-900 text-[11px]">
-
-                                Table{' '}
-                                {
-                                  kr.tableNumber
-                                }
-
+                        {/* Top Row: Table Name + Section Badge on Left, DINING / BILLING Badge on Right */}
+                        <div className="flex items-center justify-between min-w-0">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-base font-black font-mono text-slate-950 tracking-tight shrink-0">
+                              TABLE {t.mergedWith ? `${t.number}+${t.mergedWith}` : t.number}
+                            </span>
+                            {t.mergedWith && (
+                              <span className="px-1.5 py-0.5 rounded-md bg-purple-600 text-white text-[8px] font-mono font-black uppercase tracking-wider shrink-0 flex items-center gap-0.5 shadow-2xs">
+                                <Link2 className="h-2 w-2 stroke-[3]" />
+                                <span>Merged</span>
                               </span>
-
-
-                              {isReady ? (
-
-                                <span className="px-1.5 py-1 rounded-md text-[7.5px] font-mono font-black bg-emerald-500 text-white whitespace-nowrap">
-
-                                  Ready for Pickup
-
-                                </span>
-
-                              ) : isCooking ? (
-
-                                <span className="px-1.5 py-1 rounded-md text-[7.5px] font-mono font-bold bg-amber-200 text-amber-900 whitespace-nowrap">
-
-                                  Cooking
-
-                                </span>
-
-                              ) : (
-
-                                <span className="px-1.5 py-1 rounded-md text-[7.5px] font-mono font-bold bg-slate-200 text-slate-700 whitespace-nowrap">
-
-                                  Queued
-
-                                </span>
-
-                              )}
-
-                            </div>
-
-
-                            {/* FOOD ITEMS */}
-
-                            <div className="font-mono text-[9.5px] leading-tight text-slate-800 font-medium mt-1">
-
-                              {kr.items
-                                .map(
-                                  (
-                                    it
-                                  ) =>
-                                    `${it.name} × ${it.quantity}`
-                                )
-                                .join(
-                                  ', '
-                                )}
-
-                            </div>
-
-
-                            {/* TIME / STATUS */}
-
-                            <div className="text-[8.5px] leading-tight text-slate-500 font-mono mt-1">
-
-                              {isReady
-                                ? `Ready at ${kr.timestamp} • Hot on pass window`
-                                : isCooking
-                                ? `In preparation • Cook time: ${
-                                    kr.elapsedMinutes ||
-                                    8
-                                  }m`
-                                : `Order ticket received at ${kr.timestamp}`}
-
-                            </div>
-
-                          </div>
-
-
-                          {/* ===================================
-                              SERVE FOOD
-                          ==================================== */}
-
-                          <div className="shrink-0 pt-1">
-
-                            {isReady ? (
-
-                              <button
-                                type="button"
-                                onClick={() => {
-
-                                  // 1. Mark KDS item served
-                                  waiterMarkKitchenItemServed(
-                                    kr.id
-                                  );
-
-                                  // 2. Mark table food served
-                                  if (
-                                    kr.tableNumber
-                                  ) {
-                                    waiterMarkTableFoodServed(
-                                      kr.tableNumber
-                                    );
-                                  }
-
-                                }}
-                                className="rounded-lg bg-emerald-100 hover:bg-emerald-600 text-emerald-900 hover:text-white border border-emerald-400 hover:border-emerald-600 px-3 py-2 text-[9px] font-mono font-black transition duration-150 cursor-pointer shadow-2xs whitespace-nowrap"
-                              >
-
-                                Serve Food
-
-                              </button>
-
-                            ) : isCooking ? (
-
-                              <span className="inline-block px-2.5 py-2 rounded-md bg-amber-100 text-amber-800 text-[8px] font-mono font-bold border border-amber-200 whitespace-nowrap">
-
-                                Cooking...
-
-                              </span>
-
-                            ) : (
-
-                              <span className="inline-block px-2.5 py-2 rounded-md bg-slate-100 text-slate-600 text-[8px] font-mono font-bold border border-slate-200 whitespace-nowrap">
-
-                                Queued
-
-                              </span>
-
                             )}
-
+                            <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[9px] font-mono font-bold uppercase shrink-0">
+                              {tableSection.replace('SECTION ', 'Sec ')}
+                            </span>
                           </div>
 
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[9px] font-mono font-black border uppercase tracking-wider shrink-0 ${
+                              isBilling
+                                ? 'bg-purple-100 text-purple-950 border-purple-300'
+                                : 'bg-amber-100 text-amber-950 border-amber-300'
+                            }`}
+                          >
+                            {isBilling ? 'BILLING' : 'DINING'}
+                          </span>
+                        </div>
+
+                        {/* Center Row: Details of Ordered Items / Settlement Status */}
+                        <div className="pt-1 border-t border-slate-100 font-mono text-xs min-w-0">
+                          {isOccupied && (
+                            <>
+                              <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                                {hasReadyFood ? '🔥 Ready to Serve:' : '🍳 Preparing in Kitchen:'}
+                              </div>
+                              <div className="font-bold text-slate-900 truncate mt-0.5 min-w-0">
+                                {itemsSummary || 'Order taking in progress...'}
+                              </div>
+                            </>
+                          )}
+
+                          {isBilling && (
+                            <>
+                              <div className="text-[10px] text-purple-600 font-bold uppercase tracking-wider">
+                                Settlement Status:
+                              </div>
+                              <div className="font-black text-purple-950 mt-0.5 truncate min-w-0">
+                                Payment Completed • Table Ready to Clear
+                              </div>
+                            </>
+                          )}
+                        </div>
+
+                        {/* End Row: Bill on Left, Action Button on Right (Clean & Uncrowded) */}
+                        <div className="flex items-center justify-between gap-2.5 pt-1.5 border-t border-slate-100 min-w-0">
+                          {/* Bill at the End */}
+                          <div className="font-mono text-xs font-black min-w-0 flex-1">
+                            {isBilling ? (
+                              <span className="inline-flex items-center gap-1 text-purple-950 bg-purple-100 px-2 py-1 rounded-lg border border-purple-300 shadow-2xs max-w-full truncate">
+                                <span>Bill:</span>
+                                <span className="font-black">₹{t.currentBill}</span>
+                                <span className="text-[10px] text-purple-600 font-normal shrink-0">• Paid</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-emerald-900 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-300 shadow-2xs max-w-full truncate">
+                                <span>Bill:</span>
+                                <span className="text-emerald-700 font-black">₹{t.currentBill}</span>
+                                <span className="text-[10px] text-slate-500 font-normal shrink-0 truncate">• ⏱ {t.seatedTime}</span>
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Action Button: Serve Food (Always Present - Enabled when food is ready, Disabled when not/no orders) */}
+                          {isBilling ? (
+                            <button
+                              type="button"
+                              onClick={(e) => handleVacateTable(e, t.number)}
+                              className="h-9 px-3.5 rounded-xl bg-purple-100 hover:bg-purple-600 text-purple-950 hover:text-white border-2 border-purple-400 font-mono font-black text-xs transition duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95 shrink-0 whitespace-nowrap"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              <span>Vacate</span>
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              disabled={!hasReadyFood}
+                              onClick={(e) => {
+                                if (hasReadyFood) {
+                                  handleServeReadyTable(e, t.number);
+                                }
+                              }}
+                              className={`h-9 px-3.5 rounded-xl font-mono text-xs flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap transition duration-150 ${
+                                hasReadyFood
+                                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white font-black cursor-pointer shadow-md active:scale-95 animate-pulse'
+                                  : 'bg-slate-100 text-slate-400 border border-slate-200 font-bold cursor-not-allowed opacity-70'
+                              }`}
+                            >
+                              <Utensils className="h-3.5 w-3.5" />
+                              <span>Serve Food</span>
+                            </button>
+                          )}
                         </div>
 
                       </div>
-
                     );
-                  }
-                )
-
-              ) : (
-
-                <div className="text-center py-8 text-slate-400 font-mono text-[10px] flex flex-col items-center justify-center gap-1">
-
-                  <Utensils className="h-5 w-5 text-slate-300" />
-
-                  <span>
-
-                    No active kitchen orders
-
-                  </span>
-
+                  })}
                 </div>
 
-              )
-
+                {/* Subtle Divider to Alerts */}
+                <div className="relative py-2">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-slate-300" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-stone-50 px-3 font-mono text-[9.5px] font-black text-slate-400">
+                      Live Alerts Below ▼
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
             )}
+          </AnimatePresence>
 
+          {/* ===================================================
+              LIVE OPERATIONS ALERTS (DEFAULT PRIMARY VIEW)
+              - Interactive Filter Pills: All, Kitchen, Guest Calls, Manager
+              - Orders: Kitchen FIRST -> Customer SECOND -> Manager THIRD
+              - Header: Clean 1-Badge + 1-Time Display (No Badge Crowding)
+          ==================================================== */}
+          <div className="rounded-2xl border-2 border-slate-200 bg-white p-3.5 shadow-xs space-y-3">
+            {/* Header with Title & Active Count */}
+            <div className="flex items-center justify-between pb-1">
+              <div className="flex items-center gap-2">
+                <Bell className="h-4 w-4 text-orange-600" />
+                <span className="font-mono text-xs font-black text-slate-950 uppercase tracking-wide">
+                  Live Floor Alerts
+                </span>
+              </div>
+              <span className="font-mono text-[10px] px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-950 font-black">
+                {totalAlertsCount} Active
+              </span>
+            </div>
+
+            {/* Interactive Alert Filter Pills (Kitchen, Guest Calls, Manager) */}
+            <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+              <button
+                type="button"
+                onClick={() => setActiveAlertFilter('ALL')}
+                className={`px-3 py-1.5 rounded-full font-mono text-[10px] font-black transition cursor-pointer shrink-0 shadow-2xs ${
+                  activeAlertFilter === 'ALL'
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                All ({totalAlertsCount})
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveAlertFilter('KITCHEN')}
+                className={`px-3 py-1.5 rounded-full font-mono text-[10px] font-black transition cursor-pointer shrink-0 flex items-center gap-1 shadow-2xs ${
+                  activeAlertFilter === 'KITCHEN'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'bg-emerald-50 text-emerald-900 border border-emerald-300 hover:bg-emerald-100'
+                }`}
+              >
+                <span>🍳 Kitchen ({activeKdsTickets.length})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveAlertFilter('CUSTOMER')}
+                className={`px-3 py-1.5 rounded-full font-mono text-[10px] font-black transition cursor-pointer shrink-0 flex items-center gap-1 shadow-2xs ${
+                  activeAlertFilter === 'CUSTOMER'
+                    ? 'bg-orange-600 text-white shadow-xs'
+                    : 'bg-orange-50 text-orange-900 border border-orange-300 hover:bg-orange-100'
+                }`}
+              >
+                <span>🙋 Guest Calls ({pendingPings.length})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveAlertFilter('MANAGER')}
+                className={`px-3 py-1.5 rounded-full font-mono text-[10px] font-black transition cursor-pointer shrink-0 flex items-center gap-1 shadow-2xs ${
+                  activeAlertFilter === 'MANAGER'
+                    ? 'bg-purple-700 text-white shadow-xs'
+                    : 'bg-purple-50 text-purple-900 border border-purple-300 hover:bg-purple-100'
+                }`}
+              >
+                <span>📢 Manager ({managerNotices.length})</span>
+              </button>
+            </div>
+
+            {/* List of Alerts (Filtered by Active Pill) */}
+            <div className="space-y-3 pt-1">
+
+              {/* ──────────────────────────────────────────────
+                  PRIORITY 1: KITCHEN ALERTS (FIRST & MOST IMPORTANT)
+                  - Single Table Badge on Left, Clean Time Text on Right
+              ─────────────────────────────────────────────── */}
+              {(activeAlertFilter === 'ALL' || activeAlertFilter === 'KITCHEN') &&
+                activeKdsTickets.map((kr: KdsView) => {
+                  const isReady = kr.status === 'READY';
+                  const isPreparing = kr.status === 'PREP';
+
+                  return (
+                    <div
+                      key={kr.id}
+                      className={`p-3.5 rounded-2xl border-2 text-xs shadow-xs space-y-2.5 overflow-hidden ${
+                        isReady
+                          ? 'border-emerald-500 bg-emerald-50/90 ring-2 ring-emerald-400/30'
+                          : 'border-amber-300 bg-amber-50/80'
+                      }`}
+                    >
+                      {/* Header Row: 1 Badge on Left, Clean Time Text on Right (NO CROWDING) */}
+                      <div className="flex items-center justify-between gap-2 min-w-0">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="px-3 py-1 rounded-full bg-slate-900 text-white font-mono text-xs font-black shrink-0 shadow-2xs">
+                            TABLE {kr.tableNumber}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded-md text-[9px] font-mono font-black uppercase shrink-0 ${
+                              isReady
+                                ? 'bg-emerald-600 text-white animate-pulse'
+                                : isPreparing
+                                ? 'bg-amber-200 text-amber-950 border border-amber-400'
+                                : 'bg-slate-200 text-slate-800'
+                            }`}
+                          >
+                            {isReady ? 'Ready' : `Preparing (${kr.elapsedMinutes || 8}m)`}
+                          </span>
+                        </div>
+
+                        {/* Clean Time Display (Simple Text, No Heavy Pill) */}
+                        <span className="text-[11px] font-mono text-slate-500 font-bold shrink-0">
+                          ⏱ {kr.timestamp}
+                        </span>
+                      </div>
+
+                      {/* Detail Row: Food Items + Serve Button */}
+                      <div className="flex items-center justify-between gap-3 pt-0.5 min-w-0">
+                        <div className="font-mono text-xs text-slate-900 font-bold truncate flex-1 min-w-0">
+                          {kr.items
+                            .map((it: { name: string; quantity: number }) => `${it.name} (${it.quantity})`)
+                            .join(', ')}
+                        </div>
+
+                        {isReady && (
+                          <button
+                            type="button"
+                            onClick={() => handleServeTicket(kr.id, kr.tableNumber)}
+                            className="h-9 px-4 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-mono font-black transition cursor-pointer shadow-sm active:scale-95 flex items-center gap-1.5 shrink-0 whitespace-nowrap"
+                          >
+                            <Utensils className="h-3.5 w-3.5" />
+                            <span>SERVE</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+              {/* ──────────────────────────────────────────────
+                  PRIORITY 2: CUSTOMER CALLS (SECOND)
+                  - Single Table Badge on Left, Clean Time Text on Right
+              ─────────────────────────────────────────────── */}
+              {(activeAlertFilter === 'ALL' || activeAlertFilter === 'CUSTOMER') &&
+                pendingPings.map((p: (typeof pings)[number]) => (
+                  <div
+                    key={p.id}
+                    className="p-3.5 rounded-2xl bg-orange-50 border-2 border-orange-300 text-xs shadow-xs space-y-2.5 overflow-hidden"
+                  >
+                    {/* Header Row: 1 Badge on Left, Clean Time Text on Right */}
+                    <div className="flex items-center justify-between gap-2 min-w-0">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="px-3 py-1 rounded-full bg-slate-900 text-white font-mono text-xs font-black shrink-0 shadow-2xs">
+                          TABLE {p.tableNumber}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md text-[9.5px] font-mono font-black uppercase shrink-0 bg-orange-600 text-white">
+                          🔔 {p.type}
+                        </span>
+                      </div>
+
+                      {/* Clean Time Display (Simple Text) */}
+                      <span className="text-[11px] font-mono text-slate-500 font-bold shrink-0">
+                        ⏱ {p.timestamp}
+                      </span>
+                    </div>
+
+                    {/* Detail Row: Message + Attended Button */}
+                    <div className="flex items-center justify-between gap-3 pt-0.5 min-w-0">
+                      <div className="text-xs text-slate-900 font-mono font-bold truncate flex-1 min-w-0">
+                        {p.guestName || 'Guest'}: {p.message ? `"${p.message}"` : 'Needs assistance at table'}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => waiterResolvePing(p.id)}
+                        className="h-9 px-4 rounded-full bg-orange-600 hover:bg-orange-700 text-white text-xs font-mono font-black transition cursor-pointer shadow-xs shrink-0 flex items-center gap-1.5 active:scale-95 whitespace-nowrap"
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                        <span>Attended</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+              {/* ──────────────────────────────────────────────
+                  PRIORITY 3: MANAGER ALERTS (THIRD)
+                  - Structured exactly like Guest Calls: Badge + Time header, Message + Understood button detail row
+              ─────────────────────────────────────────────── */}
+              {(activeAlertFilter === 'ALL' || activeAlertFilter === 'MANAGER') &&
+                managerNotices.map((n) => (
+                  <div
+                    key={n.id}
+                    className="p-3.5 rounded-2xl bg-purple-50 border-2 border-purple-300 text-xs shadow-xs space-y-2.5 overflow-hidden"
+                  >
+                    {/* Header Row: Badges on Left, Clean Time Text on Right */}
+                    <div className="flex items-center justify-between gap-2 min-w-0">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="px-3 py-1 rounded-full bg-slate-900 text-white font-mono text-xs font-black shrink-0 shadow-2xs">
+                          MANAGER
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md text-[9.5px] font-mono font-black uppercase shrink-0 bg-purple-700 text-white">
+                          ⚠️ {n.badge}
+                        </span>
+                      </div>
+
+                      {/* Clean Time Display */}
+                      <span className="text-[11px] font-mono text-slate-500 font-bold shrink-0">
+                        ⏱ {n.timestamp || 'Just Now'}
+                      </span>
+                    </div>
+
+                    {/* Detail Row: Message on Left + Understood Button on Right (Matches Guest Calls) */}
+                    <div className="flex items-center justify-between gap-3 pt-0.5 min-w-0">
+                      <div className="text-xs text-slate-900 font-mono font-bold truncate flex-1 min-w-0">
+                        {n.title}: <span className="font-medium text-slate-600">{n.detail}</span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setDismissedNoticeIds((prev) => [...prev, n.id])}
+                        className="h-9 px-4 rounded-full bg-purple-700 hover:bg-purple-800 text-white text-xs font-mono font-black transition cursor-pointer shadow-xs shrink-0 flex items-center gap-1.5 active:scale-95 whitespace-nowrap"
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                        <span>Understood</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+              {/* Empty State when no pending alerts in selected filter */}
+              {((activeAlertFilter === 'ALL' && totalAlertsCount === 0) ||
+                (activeAlertFilter === 'KITCHEN' && activeKdsTickets.length === 0) ||
+                (activeAlertFilter === 'CUSTOMER' && pendingPings.length === 0) ||
+                (activeAlertFilter === 'MANAGER' && managerNotices.length === 0)) && (
+                <div className="text-center py-8 text-slate-400 font-mono text-[11px] flex flex-col items-center justify-center gap-1.5">
+                  <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                  <span className="font-bold text-slate-700 text-xs">All Clear!</span>
+                  <span className="text-[10px]">No pending alerts in this category.</span>
+                </div>
+              )}
+
+            </div>
           </div>
 
         </div>
 
       </div>
-
     </WaiterTabletHousing>
   );
 };

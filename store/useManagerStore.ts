@@ -14,12 +14,12 @@ export const INITIAL_SHIFTS: ShiftInfo[] = [
 ];
 
 export const INITIAL_STAFF_ROSTER: StaffRosterMember[] = [
-  { id: 'st-1', name: 'Captain Ramesh', role: 'Floor Captain', assignedSection: 'SECTION A (Ground AC)', tablesCount: 4, status: 'ACTIVE', phone: '+91 98450 11223', cashCollected: 3850, cashHandedOver: 3850 },
-  { id: 'st-2', name: 'Captain Suresh', role: 'Floor Captain', assignedSection: 'SECTION B (Family AC)', tablesCount: 3, status: 'ACTIVE', phone: '+91 98450 22334', cashCollected: 2450, cashHandedOver: 2000 },
-  { id: 'st-3', name: 'Captain Vijay', role: 'Floor Captain', assignedSection: 'SECTION C (Terrace VIP)', tablesCount: 1, status: 'ACTIVE', phone: '+91 98450 33445', cashCollected: 5200, cashHandedOver: 5200 },
-  { id: 'st-4', name: 'Kiran K.', role: 'Senior Waiter', assignedSection: 'SECTION A', tablesCount: 2, status: 'ACTIVE', phone: '+91 98450 44556', cashCollected: 1200, cashHandedOver: 1200 },
-  { id: 'st-5', name: 'Anand R.', role: 'Waiter', assignedSection: 'SECTION B', tablesCount: 2, status: 'ON BREAK', phone: '+91 98450 55667', cashCollected: 850, cashHandedOver: 850 },
-  { id: 'st-6', name: 'Sunil G.', role: 'Busboy', assignedSection: 'ALL SECTIONS', tablesCount: 8, status: 'ACTIVE', phone: '+91 98450 66778', cashCollected: 0, cashHandedOver: 0 },
+  { id: 'st-1', name: 'Captain Ramesh', role: 'Floor Captain', assignedSection: 'SECTION A (Ground AC)', tablesCount: 4, status: 'ACTIVE', phone: '+91 98450 11223', cashCollected: 3850, cashHandedOver: 3850, tipReceived: 950 },
+  { id: 'st-2', name: 'Captain Suresh', role: 'Floor Captain', assignedSection: 'SECTION B (Family AC)', tablesCount: 3, status: 'ACTIVE', phone: '+91 98450 22334', cashCollected: 2450, cashHandedOver: 2000, tipReceived: 780 },
+  { id: 'st-3', name: 'Captain Vijay', role: 'Floor Captain', assignedSection: 'SECTION C (Terrace VIP)', tablesCount: 1, status: 'ACTIVE', phone: '+91 98450 33445', cashCollected: 5200, cashHandedOver: 5200, tipReceived: 820 },
+  { id: 'st-4', name: 'Kiran K.', role: 'Senior Waiter', assignedSection: 'SECTION A', tablesCount: 2, status: 'ACTIVE', phone: '+91 98450 44556', cashCollected: 1200, cashHandedOver: 1200, tipReceived: 300 },
+  { id: 'st-5', name: 'Anand R.', role: 'Waiter', assignedSection: 'SECTION B', tablesCount: 2, status: 'ON BREAK', phone: '+91 98450 55667', cashCollected: 850, cashHandedOver: 850, tipReceived: 0 },
+  { id: 'st-6', name: 'Sunil G.', role: 'Busboy', assignedSection: 'ALL SECTIONS', tablesCount: 8, status: 'ACTIVE', phone: '+91 98450 66778', cashCollected: 0, cashHandedOver: 0, tipReceived: 0 },
 ];
 
 export const INITIAL_HARDWARE: HardwareDevice[] = [

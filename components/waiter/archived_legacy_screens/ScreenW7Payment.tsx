@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useWaiterStore } from '../../store/useWaiterStore';
-import { useSharedBridge, getTableBillBreakdown } from '../../store/useSharedBridge';
-import { WaiterTabletHousing } from './WaiterTabletHousing';
+import { useWaiterStore } from '../../../store/useWaiterStore';
+import { useSharedBridge, getTableBillBreakdown } from '../../../store/useSharedBridge';
+import { WaiterTabletHousing } from '../WaiterTabletHousing';
 import {
   ArrowLeft,
   CreditCard,

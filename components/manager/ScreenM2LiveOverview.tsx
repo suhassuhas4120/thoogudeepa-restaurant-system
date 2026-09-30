@@ -19,7 +19,7 @@ export function ScreenM2LiveOverview() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4 space-y-5">
+    <div className="w-full max-w-[1280px] mx-auto p-4 space-y-5">
       {/* Top 4 KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white border-2 border-slate-900 rounded-xl p-4 shadow-[3px_3px_0px_#0f172a]">
@@ -63,9 +63,6 @@ export function ScreenM2LiveOverview() {
             <h3 className="text-sm font-black font-mono text-slate-900">
               RESTAURANT TABLES LIVE STATUS MATRIX
             </h3>
-            <p className="text-xs text-slate-500 font-mono">
-              Click any table card to inspect running orders, print KOT, or open billing POS
-            </p>
           </div>
           {/* Legend */}
           <div className="flex items-center gap-3 font-mono text-[11px] font-bold">

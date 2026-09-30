@@ -29,13 +29,12 @@ export function ScreenM9PettyExpenses() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4 grid grid-cols-1 md:grid-cols-12 gap-5 font-mono">
+    <div className="w-full max-w-[1280px] mx-auto p-4 grid grid-cols-1 md:grid-cols-12 gap-5 font-mono">
       {/* Left Expense Log */}
       <div className="md:col-span-7 bg-white border-2 border-slate-900 rounded-xl p-5 shadow-[4px_4px_0px_#0f172a] flex flex-col justify-between">
         <div>
           <div className="flex justify-between items-center pb-3 border-b border-slate-200">
             <div>
-              <span className="text-xs font-bold text-slate-500">[PETTY CASH DESK]</span>
               <h3 className="text-sm font-black text-slate-900 mt-0.5">
                 DAILY TILL OUTFLOW VOUCHERS
               </h3>

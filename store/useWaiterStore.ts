@@ -8,6 +8,28 @@ import { useSharedBridge, SharedTable, SharedPing, SharedKDSTicket } from './use
 /* ── Re-export shared types for backward compat ───────────────── */
 export type { SharedTable as FloorTable, SharedPing as WaiterCustomerPing };
 
+export type WaiterAlertFilterType = 'ALL' | 'KITCHEN' | 'CUSTOMER' | 'MANAGER';
+
+export interface WaiterToastNotification {
+  id: string;
+  source: 'KITCHEN' | 'CUSTOMER' | 'MANAGER';
+  title: string;
+  detail: string;
+  timestamp: string;
+  tableNumber?: string;
+  ticketId?: string;
+  pingId?: string;
+  noticeId?: string;
+}
+
+/** Standardized Captain Name formatter across all waiter screens */
+export const formatCaptainName = (rawName?: string | null): string => {
+  const trimmed = (rawName || '').trim();
+  if (!trimmed) return 'Captain';
+  const cleaned = trimmed.replace(/^captain\s*[:\-]?\s*/i, '').trim();
+  return cleaned ? `Captain ${cleaned}` : 'Captain';
+};
+
 interface WaiterStoreState {
   currentScreen: WaiterScreenId;
   previousScreen: WaiterScreenId;
@@ -18,6 +40,17 @@ interface WaiterStoreState {
   orderCart: CartItem[];
   kitchenCallNotice: string | null;
   settlementTip: number;
+
+  // Real-time notification & alert filter state
+  activeAlertFilter: WaiterAlertFilterType;
+  setActiveAlertFilter: (filter: WaiterAlertFilterType) => void;
+  activeToast: WaiterToastNotification | null;
+  setActiveToast: (toast: WaiterToastNotification | null) => void;
+  dismissToast: () => void;
+  soundAlertsEnabled: boolean;
+  toggleSoundAlerts: () => void;
+  showFloorTables: boolean;
+  setShowFloorTables: (show: boolean) => void;
 
   // Actions
   setCurrentScreen: (screen: WaiterScreenId) => void;
@@ -39,12 +72,21 @@ export const useWaiterStore = create<WaiterStoreState>((set, get) => ({
   currentScreen: 1,
   previousScreen: 1,
   viewMode: 'single',
-  activeCaptain: '',     // empty — waiter must log in
-  activeSection: 'ALL',
+  activeCaptain: 'Captain Ramesh',
+  activeSection: 'SECTION A',
   selectedTableNumber: 'A-04',
   orderCart: [],
   kitchenCallNotice: null,
   settlementTip: 0,
+  activeAlertFilter: 'ALL',
+  setActiveAlertFilter: (filter) => set({ activeAlertFilter: filter }),
+  activeToast: null,
+  setActiveToast: (toast) => set({ activeToast: toast }),
+  dismissToast: () => set({ activeToast: null }),
+  soundAlertsEnabled: true,
+  toggleSoundAlerts: () => set((state) => ({ soundAlertsEnabled: !state.soundAlertsEnabled })),
+  showFloorTables: false,
+  setShowFloorTables: (show) => set({ showFloorTables: show }),
 
   setCurrentScreen: (screen) =>
     set((state) => ({ previousScreen: state.currentScreen, currentScreen: screen })),

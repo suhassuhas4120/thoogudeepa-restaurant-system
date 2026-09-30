@@ -5,28 +5,18 @@ import Link from 'next/link';
 import { useWaiterStore } from '../../store/useWaiterStore';
 import { WaiterScreenId } from '../../types/waiter';
 
-// ── Mobile phone view screens (existing) ──────────────────────────
+// ── Mobile phone view screens (Streamlined 6-Screen Architecture) ──
 import { ScreenW1Login } from '../../components/waiter/ScreenW1Login';
 import { ScreenW2TablesFeed } from '../../components/waiter/ScreenW2TablesFeed';
 import { ScreenW3TableDetail } from '../../components/waiter/ScreenW3TableDetail';
 import { ScreenW4TakeOrder } from '../../components/waiter/ScreenW4TakeOrder';
-import { ScreenW5ItemCustom } from '../../components/waiter/ScreenW5ItemCustom';
-import { ScreenW6MergeSplit } from '../../components/waiter/ScreenW6MergeSplit';
-import { ScreenW7Payment } from '../../components/waiter/ScreenW7Payment';
-import { ScreenW8PrintBill } from '../../components/waiter/ScreenW8PrintBill';
-import { ScreenW9Vacate } from '../../components/waiter/ScreenW9Vacate';
-import { ScreenW10ShiftStats } from '../../components/waiter/ScreenW10ShiftStats';
+import { ScreenW5BillingSettlement } from '../../components/waiter/ScreenW5BillingSettlement';
+import { ScreenW6ShiftStats } from '../../components/waiter/ScreenW6ShiftStats';
 
-// ── 10" Landscape Tablet view screens (NEW matching wireframes) ────
+// ── 10" Landscape Tablet view screens (Screens 1 to 3 & Screen 10) ─
 import { TabletScreen1Login } from '../../components/waiter/tablet/TabletScreen1Login';
 import { TabletScreen2TablesFeed } from '../../components/waiter/tablet/TabletScreen2TablesFeed';
 import { TabletScreen3TableDetail } from '../../components/waiter/tablet/TabletScreen3TableDetail';
-import { TabletScreen4TakeOrder } from '../../components/waiter/tablet/TabletScreen4TakeOrder';
-import { TabletScreen5ItemCustom } from '../../components/waiter/tablet/TabletScreen5ItemCustom';
-import { TabletScreen6MergeSplit } from '../../components/waiter/tablet/TabletScreen6MergeSplit';
-import { TabletScreen7Payment } from '../../components/waiter/tablet/TabletScreen7Payment';
-import { TabletScreen8PrintBill } from '../../components/waiter/tablet/TabletScreen8PrintBill';
-import { TabletScreen9Vacate } from '../../components/waiter/tablet/TabletScreen9Vacate';
 import { TabletScreen10ShiftStats } from '../../components/waiter/tablet/TabletScreen10ShiftStats';
 
 import {
@@ -37,7 +27,6 @@ import {
   UtensilsCrossed,
   Receipt,
   CreditCard,
-  Trash2,
   TrendingUp,
   Flame,
   Utensils,
@@ -45,27 +34,95 @@ import {
   Briefcase,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useWaiterAlertMonitor } from '../../hooks/useWaiterAlertMonitor';
 
 export default function WaiterTabletPage() {
+  useWaiterAlertMonitor();
   const { currentScreen, setCurrentScreen, viewMode, setViewMode } = useWaiterStore();
 
-  const screens = [
-    { id: 1 as WaiterScreenId, name: '1. Waiter Login', icon: <UserCheck className="h-3.5 w-3.5 text-orange-500" />, mobile: <ScreenW1Login />, tablet: <TabletScreen1Login /> },
-    { id: 2 as WaiterScreenId, name: '2. All Tables & Feeds', icon: <Users className="h-3.5 w-3.5 text-purple-500" />, mobile: <ScreenW2TablesFeed />, tablet: <TabletScreen2TablesFeed /> },
-    { id: 3 as WaiterScreenId, name: '3. Table Detail', icon: <UtensilsCrossed className="h-3.5 w-3.5 text-indigo-500" />, mobile: <ScreenW3TableDetail />, tablet: <TabletScreen3TableDetail /> },
-    { id: 4 as WaiterScreenId, name: '4. Take Order Menu', icon: <Utensils className="h-3.5 w-3.5 text-blue-500" />, mobile: <ScreenW4TakeOrder />, tablet: <TabletScreen4TakeOrder /> },
-    { id: 5 as WaiterScreenId, name: '5. Item Custom / KOT', icon: <Flame className="h-3.5 w-3.5 text-amber-500" />, mobile: <ScreenW5ItemCustom />, tablet: <TabletScreen5ItemCustom /> },
-    { id: 6 as WaiterScreenId, name: '6. Merge/Split Tables', icon: <Users className="h-3.5 w-3.5 text-teal-500" />, mobile: <ScreenW6MergeSplit />, tablet: <TabletScreen6MergeSplit /> },
-    { id: 7 as WaiterScreenId, name: '7. Collect Payment', icon: <CreditCard className="h-3.5 w-3.5 text-emerald-500" />, mobile: <ScreenW7Payment />, tablet: <TabletScreen7Payment /> },
-    { id: 8 as WaiterScreenId, name: '8. Print & WhatsApp', icon: <Receipt className="h-3.5 w-3.5 text-cyan-600" />, mobile: <ScreenW8PrintBill />, tablet: <TabletScreen8PrintBill /> },
-    { id: 10 as WaiterScreenId, name: '10. Shift Performance', icon: <TrendingUp className="h-3.5 w-3.5 text-slate-700" />, mobile: <ScreenW10ShiftStats />, tablet: <TabletScreen10ShiftStats /> },
+  const mobileScreens = [
+    {
+      id: 1 as WaiterScreenId,
+      name: '1. Login',
+      icon: <UserCheck className="h-3.5 w-3.5 text-orange-500" />,
+      component: <ScreenW1Login />,
+    },
+    {
+      id: 2 as WaiterScreenId,
+      name: '2. Tables',
+      icon: <Users className="h-3.5 w-3.5 text-purple-500" />,
+      component: <ScreenW2TablesFeed />,
+    },
+    {
+      id: 3 as WaiterScreenId,
+      name: '3. Table Hub',
+      icon: <UtensilsCrossed className="h-3.5 w-3.5 text-indigo-500" />,
+      component: <ScreenW3TableDetail />,
+    },
+    {
+      id: 4 as WaiterScreenId,
+      name: '4. Order Pad',
+      icon: <Utensils className="h-3.5 w-3.5 text-blue-500" />,
+      component: <ScreenW4TakeOrder />,
+    },
+    {
+      id: 5 as WaiterScreenId,
+      name: '5. Payment',
+      icon: <CreditCard className="h-3.5 w-3.5 text-emerald-500" />,
+      component: <ScreenW5BillingSettlement />,
+    },
+    {
+      id: 6 as WaiterScreenId,
+      name: '6. Shift Stats',
+      icon: <TrendingUp className="h-3.5 w-3.5 text-slate-700" />,
+      component: <ScreenW6ShiftStats />,
+    },
   ];
 
-  const renderActiveScreen = () => {
-    const sc = screens.find((s) => s.id === currentScreen);
-    if (!sc) return <ScreenW1Login />;
-    return viewMode === 'tablet' ? sc.tablet : sc.mobile;
+  const tabletScreens = [
+    {
+      id: 1 as WaiterScreenId,
+      name: '1. Login',
+      icon: <UserCheck className="h-3.5 w-3.5 text-orange-500" />,
+      component: <TabletScreen1Login />,
+    },
+    {
+      id: 2 as WaiterScreenId,
+      name: '2. Tables & Alerts',
+      icon: <Users className="h-3.5 w-3.5 text-purple-500" />,
+      component: <TabletScreen2TablesFeed />,
+    },
+    {
+      id: 3 as WaiterScreenId,
+      name: '3. Table Console',
+      icon: <UtensilsCrossed className="h-3.5 w-3.5 text-indigo-500" />,
+      component: <TabletScreen3TableDetail />,
+    },
+    {
+      id: 10 as WaiterScreenId,
+      name: '10. Shift Stats',
+      icon: <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />,
+      component: <TabletScreen10ShiftStats />,
+    },
+  ];
+
+  // Resolve active screen with backward-compatible fallback
+  const resolveTabletScreen = (screenId: WaiterScreenId) => {
+    let effective = screenId;
+    if (screenId === 6 || screenId === 10) effective = 10 as WaiterScreenId;
+    else if (screenId === 4 || screenId === 5 || screenId === 7 || screenId === 8 || screenId === 9) effective = 3 as WaiterScreenId;
+    return tabletScreens.find((s) => s.id === effective) || tabletScreens[0];
   };
+
+  const resolveMobileScreen = (screenId: WaiterScreenId) => {
+    let effective = screenId;
+    if (screenId === 10) effective = 6 as WaiterScreenId;
+    else if (screenId === 7 || screenId === 8 || screenId === 9) effective = 5 as WaiterScreenId;
+    return mobileScreens.find((s) => s.id === effective) || mobileScreens[0];
+  };
+
+  const activeMobileConfig = resolveMobileScreen(currentScreen);
+  const activeTabletConfig = resolveTabletScreen(currentScreen);
 
   return (
     <main className={`min-h-screen flex flex-col ${viewMode === 'tablet' ? 'bg-[#0b0f19]' : 'bg-stone-100'}`}>
@@ -78,14 +135,14 @@ export default function WaiterTabletPage() {
           <div>
             <div className="flex items-center gap-2">
               <span className="font-mono text-[10px] font-black uppercase tracking-wider text-orange-600 bg-orange-50 border border-orange-200 rounded-md px-1.5 py-0.5">
-                WAITER / CAPTAIN TABLET FRAMEWORK • REACT 19 • NEXT.JS
+                {viewMode === 'tablet' ? 'WAITER TABLET SUITE' : 'WAITER MOBILE SUITE'}
               </span>
               <span className="font-mono text-[10px] font-bold text-slate-400">
-                THOOGUDEEPA DONNE BIRYANI MANE
+                THOOGUDEEPA
               </span>
             </div>
             <h1 className="text-sm font-black tracking-tight text-slate-900 mt-0.5">
-              FLOOR CAPTAIN CONSOLE (MULTI-PANE COMMAND HUB)
+              {viewMode === 'tablet' ? '10" INDUSTRIAL CONSOLE (SCREENS 1-3 & 10)' : 'FLOOR CAPTAIN CONSOLE (6 SCREENS)'}
             </h1>
           </div>
         </div>
@@ -98,67 +155,70 @@ export default function WaiterTabletPage() {
               className="flex items-center gap-1 rounded-xl px-3 py-1.5 text-slate-600 hover:text-slate-900 transition"
             >
               <Utensils className="h-3.5 w-3.5" />
-              <span>CUSTOMER (10)</span>
+              <span>CUSTOMER</span>
             </Link>
             <Link
               href="/kitchen"
               className="flex items-center gap-1 rounded-xl px-3 py-1.5 text-slate-600 hover:text-slate-900 transition"
             >
               <Flame className="h-3.5 w-3.5" />
-              <span>KITCHEN (3)</span>
+              <span>KITCHEN</span>
             </Link>
             <span className="rounded-xl bg-orange-600 text-white px-3 py-1.5 shadow-xs flex items-center gap-1">
               <UserCheck className="h-3.5 w-3.5" />
-              <span>WAITER PORTAL</span>
+              <span>WAITER</span>
             </span>
             <Link
               href="/manager"
               className="flex items-center gap-1 rounded-xl px-3 py-1.5 text-slate-600 hover:text-slate-900 transition"
             >
               <Briefcase className="h-3.5 w-3.5" />
-              <span>MANAGER (16)</span>
+              <span>MANAGER</span>
             </Link>
           </div>
 
-          {/* View Mode Switcher — 3 options now */}
-          <div className="flex items-center gap-1 rounded-2xl border border-slate-200 bg-stone-50 p-1 shadow-xs">
+          {/* View Mode Switcher */}
+          <div className="flex items-center gap-1 rounded-2xl border border-slate-200 bg-stone-50 p-1 shadow-xs font-mono text-xs">
             {/* 📱 Mobile Phone View */}
             <button
+              type="button"
               onClick={() => setViewMode('single')}
-              className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-bold transition ${
+              className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 font-bold transition cursor-pointer ${
                 viewMode === 'single'
                   ? 'bg-slate-900 text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <Tablet className="h-3.5 w-3.5" />
-              <span>SINGLE TABLET FLOW</span>
+              <span>Mobile Flow</span>
             </button>
 
-            {/* 📟 10" Industrial Tablet View (NEW) */}
+            {/* 📟 10" Industrial Tablet View */}
             <button
+              type="button"
               onClick={() => setViewMode('tablet')}
-              className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-bold transition ${
+              className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 font-bold transition cursor-pointer ${
                 viewMode === 'tablet'
                   ? 'bg-orange-600 text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <Monitor className="h-3.5 w-3.5" />
-              <span>📟 10&quot; TABLET VIEW</span>
+              <span>Tablet View (1-3 & 10)</span>
             </button>
 
             {/* 📊 Side-by-Side View */}
             <button
+              type="button"
               onClick={() => setViewMode('all')}
-              className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-bold transition ${
+              className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 font-bold transition cursor-pointer ${
                 viewMode === 'all'
                   ? 'bg-slate-900 text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <LayoutGrid className="h-3.5 w-3.5" />
-              <span>ALL 10 SCREENS SIDE-BY-SIDE</span>
+              <span>All 6 Screens</span>
             </button>
           </div>
         </div>
@@ -170,8 +230,10 @@ export default function WaiterTabletPage() {
           viewMode === 'tablet' ? 'bg-[#111827] border-b border-[#374151]' : ''
         }`}
       >
-        {screens.map((sc) => {
-          const isActive = viewMode !== 'all' && currentScreen === sc.id;
+        {(viewMode === 'tablet' ? tabletScreens : mobileScreens).map((sc) => {
+          const isActive = viewMode !== 'all' && (
+            viewMode === 'tablet' ? activeTabletConfig.id === sc.id : activeMobileConfig.id === sc.id
+          );
           return (
             <motion.button
               key={sc.id}
@@ -180,7 +242,7 @@ export default function WaiterTabletPage() {
                 setCurrentScreen(sc.id);
                 if (viewMode === 'all') setViewMode('single');
               }}
-              className={`flex items-center gap-2 whitespace-nowrap rounded-xl border px-3 py-1.5 text-xs font-bold transition shadow-2xs ${
+              className={`flex items-center gap-2 whitespace-nowrap rounded-xl border px-3.5 py-1.5 text-xs font-bold transition cursor-pointer shadow-2xs ${
                 isActive
                   ? viewMode === 'tablet'
                     ? 'border-orange-500 bg-orange-700 text-white ring-2 ring-orange-500/30'
@@ -200,12 +262,12 @@ export default function WaiterTabletPage() {
       {/* ── Main Container ─────────────────────────────────────────── */}
       <div className={`flex-1 py-4 ${viewMode === 'tablet' ? 'px-4 bg-[#0b0f19]' : 'px-4'}`}>
 
-        {/* ── SIDE-BY-SIDE (All 10 phone screens) ─────────────────── */}
+        {/* ── SIDE-BY-SIDE (All 6 master screens in 3 columns) ─────── */}
         {viewMode === 'all' && (
-          <div className="mx-auto w-full max-w-[1680px] px-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 justify-items-center pb-20">
-            {screens.map((sc) => (
+          <div className="mx-auto w-full max-w-[1680px] px-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 justify-items-center pb-20">
+            {mobileScreens.map((sc) => (
               <div key={sc.id} className="flex flex-col items-center w-[380px] shrink-0">
-                {sc.mobile}
+                {sc.component}
               </div>
             ))}
           </div>
@@ -216,31 +278,31 @@ export default function WaiterTabletPage() {
           <div className="flex justify-center pb-12">
             <AnimatePresence mode="wait">
               <motion.div
-                key={`phone-${currentScreen}`}
+                key={`phone-${activeMobileConfig.id}`}
                 initial={{ opacity: 0, scale: 0.98, y: 8 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.98, y: -8 }}
                 transition={{ duration: 0.2 }}
               >
-                {screens.find((s) => s.id === currentScreen)?.mobile ?? <ScreenW1Login />}
+                {activeMobileConfig.component}
               </motion.div>
             </AnimatePresence>
           </div>
         )}
 
-        {/* ── 10" INDUSTRIAL TABLET VIEW (NEW) ────────────────────── */}
+        {/* ── 10" INDUSTRIAL TABLET VIEW (Screens 1 to 3 & 10) ──────── */}
         {viewMode === 'tablet' && (
           <div className="w-full pb-12">
             <AnimatePresence mode="wait">
               <motion.div
-                key={`tablet-${currentScreen}`}
+                key={`tablet-${activeTabletConfig.id}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
                 className="w-full"
               >
-                {screens.find((s) => s.id === currentScreen)?.tablet ?? <TabletScreen1Login />}
+                {activeTabletConfig.component}
               </motion.div>
             </AnimatePresence>
           </div>

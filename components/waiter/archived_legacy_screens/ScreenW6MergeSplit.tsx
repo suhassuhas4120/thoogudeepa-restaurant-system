@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useWaiterStore } from '../../store/useWaiterStore';
-import { useSharedBridge } from '../../store/useSharedBridge';
-import { WaiterTabletHousing } from './WaiterTabletHousing';
+import { useWaiterStore } from '../../../store/useWaiterStore';
+import { useSharedBridge } from '../../../store/useSharedBridge';
+import { WaiterTabletHousing } from '../WaiterTabletHousing';
 import { ArrowLeft, Users, Scissors, Link2, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 

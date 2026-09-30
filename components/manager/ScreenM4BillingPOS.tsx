@@ -158,7 +158,7 @@ export function ScreenM4BillingPOS() {
   };
 
   return (
-    <div className="w-full max-w-[1520px] mx-auto p-4 space-y-4">
+    <div className="w-full max-w-[1280px] mx-auto p-4 space-y-4">
       {/* Top POS Action Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-white border-2 border-slate-900 rounded-xl px-4 py-2.5 shadow-[3px_3px_0px_#0f172a]">
         <div className="flex items-center gap-3">
@@ -168,9 +168,6 @@ export function ScreenM4BillingPOS() {
           <div>
             <span className="font-mono text-xs font-black text-slate-900 uppercase">
               BILLING &amp; DIRECT COUNTER POS TERMINAL
-            </span>
-            <span className="text-slate-400 text-[11px] ml-2 hidden sm:inline">
-              Walk-in counter ordering + tableside invoice settlement
             </span>
           </div>
         </div>
@@ -503,7 +500,6 @@ export function ScreenM4BillingPOS() {
                 <div className="text-[11px] font-bold text-slate-800 mt-2">
                   UPI ID: thoogudeepabiryani@icici
                 </div>
-                <p className="text-[9.5px] text-slate-500">Auto-verifies on soundbox announcement</p>
               </div>
             )}
           </div>

@@ -58,7 +58,7 @@ export function ScreenM1Login() {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 p-4">
+    <div className="w-full max-w-[1280px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 p-4">
       {/* Left Control Column */}
       <div className="md:col-span-5 flex flex-col gap-4">
         {/* Terminal Header */}
@@ -138,9 +138,6 @@ export function ScreenM1Login() {
             </div>
           )}
           {floatError && <p className="text-[11px] text-rose-600 font-bold mt-1">{floatError}</p>}
-          <p className="text-[11px] font-mono text-slate-500 mt-1">
-            {openingFloat ? 'Counted in Till Safe • Ready for change distribution' : 'Enter and verify the physical till count before trading'}
-          </p>
         </div>
 
       </div>
@@ -155,16 +152,10 @@ export function ScreenM1Login() {
             <h3 className="text-base font-black font-mono text-slate-900">
               MANAGER / CASHIER AUTHENTICATION
             </h3>
-            <p className="text-xs text-slate-500 font-mono mt-0.5">
-              Select your staff profile and enter your 4-digit security PIN
-            </p>
           </div>
 
           {/* Profile Select */}
           <div className="mt-4">
-            <label className="block text-xs font-mono font-bold text-slate-700 mb-1.5">
-              [ACTIVE PROFILE]:
-            </label>
             <select
               value={isCustomProfile ? 'custom' : activeManager.id}
               onChange={(e) => {
@@ -220,11 +211,7 @@ export function ScreenM1Login() {
               })}
             </div>
             <div className="font-mono text-xs font-bold text-slate-500">
-              {authError ? (
-                <span className="text-rose-600 font-black">INVALID PIN</span>
-              ) : (
-                <span>[{pinInput.length} OF 4 DIGITS ENTERED]</span>
-              )}
+              {authError && <span className="text-rose-600 font-black">INVALID PIN</span>}
             </div>
           </div>
 

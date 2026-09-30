@@ -9,17 +9,16 @@ export function ScreenM11DayCloseZReport() {
   const { shiftStats, tables, kdsTickets } = useSharedBridge();
   const { openingFloat, pettyExpenses, activeManager } = useManagerStore();
 
-  const totalPetty = shiftStats?.cashExpenses || 0;
-  const totalRevenue = shiftStats?.totalRevenue || 0;
-  const taxCollected = shiftStats?.taxCollected || 0;
-  const discountTotal = shiftStats?.discounts || 0;
-  const grossSales = totalRevenue - taxCollected + discountTotal;
-  const taxable = totalRevenue - taxCollected;
-  const taxTotal = taxCollected;
+  const totalPetty = shiftStats.cashExpenses || 0;
+  const discountTotal = shiftStats.discounts || 0;
+  const taxTotal = shiftStats.taxCollected || 0;
+  const totalRevenue = shiftStats.totalRevenue || 0;
+  const grossSales = totalRevenue - taxTotal + discountTotal;
+  const taxable = totalRevenue - taxTotal;
   const netRevenue = taxable;
 
   // Expected cash
-  const cashSales = shiftStats?.cashRevenue || 0;
+  const cashSales = shiftStats.cashRevenue;
   const expectedCashInTill = openingFloat ? openingFloat.amount + cashSales - totalPetty : null;
 
   const [shiftLocked, setShiftLocked] = useState(false);
@@ -43,12 +42,9 @@ export function ScreenM11DayCloseZReport() {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto p-4 space-y-5 font-mono">
+    <div className="w-full max-w-[1280px] mx-auto p-4 space-y-5 font-mono">
       <div className="bg-white border-2 border-slate-900 rounded-xl p-5 shadow-[4px_4px_0px_#0f172a] flex flex-wrap items-center justify-between gap-3">
         <div>
-          <span className="bg-slate-900 text-white text-xs font-bold px-2 py-0.5 rounded">
-            [DAY CLOSE NIGHT Z-REPORT]
-          </span>
           <h3 className="text-base font-black text-slate-900 mt-1">
             END-OF-DAY FINANCIAL AUDIT &amp; DRAWER RECONCILIATION
           </h3>
