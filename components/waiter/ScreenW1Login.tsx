@@ -121,7 +121,7 @@ export const ScreenW1Login: React.FC = () => {
               </span>
             ) : pin.length === 4 ? (
               <span className="text-rose-600 font-bold">
-                Invalid PIN (Enter 1234)
+                INVALID PIN: ENTER 1234
               </span>
             ) : null}
           </div>
