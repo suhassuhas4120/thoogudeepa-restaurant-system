@@ -353,8 +353,16 @@ export const TabletScreen3TableDetail: React.FC = () => {
                       </div>
                     ))
                   ) : (
-                    <div className="bg-white border border-slate-300 rounded-lg p-3 text-slate-400 italic text-xs">
-                      No active items placed yet. Click Take Orders below to add dishes.
+                    <div className="py-12 px-4 flex flex-col items-center justify-center text-center">
+                      <div className="w-14 h-14 rounded-full bg-slate-200/80 flex items-center justify-center text-slate-400 mb-2.5 shadow-inner">
+                        <UtensilsCrossed className="h-7 w-7 stroke-[1.5]" />
+                      </div>
+                      <div className="text-xs font-black text-slate-700 uppercase tracking-wider font-mono">
+                        No Items Ordered Yet
+                      </div>
+                      <p className="text-[11px] text-slate-500 max-w-[280px] mt-0.5 font-sans">
+                        This table has no active items. Click &ldquo;Take order&rdquo; below to add dishes.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -395,35 +403,30 @@ export const TabletScreen3TableDetail: React.FC = () => {
                 <span>Take order {draftItemCount > 0 ? `(${draftItemCount})` : ''}</span>
               </button>
 
-              {/* 2. Payment Button */}
-              {/* <button
-                type="button"
-                onClick={() => setRightPane(rightPane === 'payment' ? 'bill_summary' : 'payment')}
-                className={`py-3 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
-                  rightPane === 'payment'
-                    ? 'bg-emerald-600 text-white ring-2 ring-emerald-400'
-                    : 'bg-emerald-50 text-emerald-950 border border-emerald-300 hover:bg-emerald-600 hover:text-white'
-                }`}
-              >
-                <CreditCard className="h-4 w-4" />
-                <span>Collect Payment</span>
-              </button> */}
-
-              {/* 3. Merge Tables Button */}
-              <button
-                type="button"
-                onClick={() => setRightPane(rightPane === 'merge' ? 'bill_summary' : 'merge')}
-                className={`py-3 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
-                  rightPane === 'merge'
-                    ? 'bg-purple-700 text-white ring-2 ring-purple-400'
-                    : isAlreadyMerged
-                    ? 'bg-purple-100 border border-purple-400 text-purple-950 hover:bg-purple-700 hover:text-white'
-                    : 'bg-purple-50 hover:bg-purple-600 hover:text-white text-purple-950 border border-purple-300'
-                }`}
-              >
-                <Users className="h-4 w-4" />
-                <span>{isAlreadyMerged ? `Merged (+${activeTable.mergedWith})` : 'Merge Tables'}</span>
-              </button>
+              {/* 2. Merge Tables or Collect Payment (When in Merge mode, replaced by Collect Payment) */}
+              {rightPane === 'merge' ? (
+                <button
+                  type="button"
+                  onClick={() => setRightPane('payment')}
+                  className="py-3 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white active:scale-95"
+                >
+                  <CreditCard className="h-4 w-4" />
+                  <span>Collect Payment</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setRightPane('merge')}
+                  className={`py-3 px-3 rounded-xl font-black text-xs transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
+                    isAlreadyMerged
+                      ? 'bg-purple-100 border border-purple-400 text-purple-950 hover:bg-purple-700 hover:text-white'
+                      : 'bg-purple-50 hover:bg-purple-600 hover:text-white text-purple-950 border border-purple-300'
+                  }`}
+                >
+                  <Users className="h-4 w-4" />
+                  <span>{isAlreadyMerged ? `Merged (+${activeTable.mergedWith})` : 'Merge Tables'}</span>
+                </button>
+              )}
 
               {/* 4. Print / Invoice Button */}
               {/* <button
@@ -920,45 +923,26 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    {/* <button
-                      onClick={() => setCurrentScreen(6)}
-                      className="text-[10px] font-bold text-slate-700 hover:text-slate-900 border border-slate-300 rounded px-2.5 py-1 flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
-                      title="Open full dedicated Merge Screen 6"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      <span>Full Merge Screen</span>
-                    </button>
                     <button
                       onClick={() => setRightPane('bill_summary')}
                       className="p-1 hover:bg-slate-100 rounded text-slate-600 cursor-pointer"
                       title="Close"
                     >
                       <X className="h-4 w-4" />
-                    </button> */}
+                    </button>
                   </div>
                 </div>
 
                 {isAlreadyMerged ? (
                   <div className="border-2 border-purple-300 bg-purple-50/70 rounded-xl p-4 flex flex-col gap-3 shadow-2xs">
-                    {/* <div className="flex items-center gap-2 text-purple-950 font-black text-xs">
-                      <Link2 className="h-4 w-4 text-purple-700" />
-                      <span>Table Consolidation Active</span>
-                    </div> */}
                     <div className="text-xs text-purple-950 font-bold">
-                      Table {activeTable.number} is merged with  Table {activeTable.mergedWith}.
+                      Table {activeTable.number} is merged with Table {activeTable.mergedWith}.
                     </div>
                     <div className="text-[11px] text-purple-900 space-y-1 bg-white/80 p-3 rounded-lg border border-purple-200">
                       <div className="flex justify-between">
                         <span>Consolidated Bill:</span>
                         <span className="font-black">₹{runningTotal.toFixed(2)}</span>
                       </div>
-                      <div className="flex justify-between">
-                        {/* <span>Combined Party:</span> */}
-                        {/* <span className="font-black">{activeTable.guestCount || 4} Guests</span> */}
-                      </div>
-                      {/* <div className="text-[10px] text-purple-700 mt-1">
-                        • Kitchen KOTs and billing unified under one consolidated account.
-                      </div> */}
                     </div>
 
                     <button
@@ -967,7 +951,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                       className="w-full py-3 bg-rose-50 text-rose-950 border border-rose-300 hover:bg-rose-700 hover:text-white rounded-lg font-black text-xs transition-all shadow-2xs mt-2 flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Users className="h-4 w-4" />
-                      <span>Unmerge </span>
+                      <span>Unmerge Tables</span>
                     </button>
                   </div>
                 ) : (
@@ -1016,10 +1000,6 @@ export const TabletScreen3TableDetail: React.FC = () => {
                         <span>Consolidated Bill:</span>
                         <span>₹{(runningTotal + (targetMergeTableObj?.currentBill || 0)).toFixed(2)}</span>
                       </div>
-                      {/* <div className="flex justify-between text-[11px] text-purple-700">
-                        <span>Total Guests:</span>
-                        <span>{(activeTable.guestCount || 2) + (targetMergeTableObj?.guestCount || 2)} Guests</span>
-                      </div> */}
                     </div>
 
                     <button
@@ -1028,7 +1008,7 @@ export const TabletScreen3TableDetail: React.FC = () => {
                       className="w-full py-3 bg-purple-700 hover:bg-purple-800 text-white rounded-lg font-black text-xs transition shadow-2xs mt-auto flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Users className="h-4 w-4" />
-                      <span>Confirm Merge </span>
+                      <span>Confirm Merge</span>
                     </button>
                   </div>
                 )}
@@ -1043,14 +1023,6 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     Payment Settlement — Table {activeTable.number}
                   </span>
                   <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => setCurrentScreen(7)}
-                      className="text-[10px] font-bold text-slate-700 hover:text-slate-900 border border-slate-300 rounded px-2.5 py-1 flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
-                      title="Open full dedicated Payment Screen 7"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      <span>Full Payment Screen</span>
-                    </button>
                     <button
                       onClick={() => setRightPane('bill_summary')}
                       className="p-1 hover:bg-slate-100 rounded text-slate-600 cursor-pointer"
@@ -1148,14 +1120,6 @@ export const TabletScreen3TableDetail: React.FC = () => {
                     Tax Invoice &amp; Table Settlement
                   </span>
                   <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => setCurrentScreen(8)}
-                      className="text-[10px] font-bold text-slate-700 hover:text-slate-900 border border-slate-300 rounded px-2.5 py-1 flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
-                      title="Open full dedicated Tax Invoice Screen 8"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      <span>Full Invoice Screen</span>
-                    </button>
                     <button
                       onClick={() => setRightPane('bill_summary')}
                       className="p-1 hover:bg-slate-100 rounded text-slate-600 cursor-pointer"

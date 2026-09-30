@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useWaiterStore } from '../../../store/useWaiterStore';
-import { useSharedBridge } from '../../../store/useSharedBridge';
-import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
+import { useWaiterStore } from '@/store/useWaiterStore';
+import { useSharedBridge } from '@/store/useSharedBridge';
+import { WaiterTabletLandscapeHousing } from '../WaiterTabletLandscapeHousing';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 
 const CHECKLIST = [

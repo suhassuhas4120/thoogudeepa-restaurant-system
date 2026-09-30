@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useWaiterStore } from '../../../store/useWaiterStore';
-import { useSharedBridge } from '../../../store/useSharedBridge';
-import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
+import { useWaiterStore } from '@/store/useWaiterStore';
+import { useSharedBridge, SharedTable } from '@/store/useSharedBridge';
+import { WaiterTabletLandscapeHousing } from '../WaiterTabletLandscapeHousing';
 import { ArrowLeft, Users, CheckCircle2, Utensils } from 'lucide-react';
 
 export const TabletScreen6MergeSplit: React.FC = () => {
@@ -11,12 +11,12 @@ export const TabletScreen6MergeSplit: React.FC = () => {
   const { tables, waiterMergeTables, waiterUnmergeTable } = useSharedBridge();
 
   const primary = selectedTableNumber || 'A-04';
-  const activeTable = tables.find((t) => t.number === primary) || tables[0];
+  const activeTable = tables.find((t: SharedTable) => t.number === primary) || tables[0];
   const isAlreadyMerged = Boolean(activeTable?.mergedWith);
 
   const availableTables = tables
-    .filter((t) => t.number !== primary)
-    .map((t) => t.number);
+    .filter((t: SharedTable) => t.number !== primary)
+    .map((t: SharedTable) => t.number);
 
   const [selectedMergeTables, setSelectedMergeTables] = useState<string[]>(
     activeTable?.mergedWith
@@ -28,12 +28,12 @@ export const TabletScreen6MergeSplit: React.FC = () => {
   const [mergeConfirmed, setMergeConfirmed] = useState<string | null>(null);
 
   const combinedBill = selectedMergeTables.reduce((sum, num) => {
-    const t = tables.find((tbl) => tbl.number === num);
+    const t = tables.find((tbl: SharedTable) => tbl.number === num);
     return sum + (t?.currentBill || 0);
   }, 0);
 
   const combinedGuests = selectedMergeTables.reduce((sum, num) => {
-    const t = tables.find((tbl) => tbl.number === num);
+    const t = tables.find((tbl: SharedTable) => tbl.number === num);
     return sum + (t?.capacity || 4);
   }, 0);
 

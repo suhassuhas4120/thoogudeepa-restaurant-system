@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useWaiterStore } from '../../../store/useWaiterStore';
-import { useSharedBridge, getTableBillBreakdown } from '../../../store/useSharedBridge';
-import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
+import { useWaiterStore } from '@/store/useWaiterStore';
+import { useSharedBridge, getTableBillBreakdown, SharedTable } from '@/store/useSharedBridge';
+import { WaiterTabletLandscapeHousing } from '../WaiterTabletLandscapeHousing';
 import {
   ArrowLeft,
   QrCode,
@@ -28,7 +28,7 @@ export const TabletScreen7Payment: React.FC = () => {
   const [posAuthCode, setPosAuthCode] = useState('');
   const [cardAuthorized, setCardAuthorized] = useState(false);
 
-  const activeTable = tables.find((t) => t.number === (selectedTableNumber || 'A-04')) || tables[0];
+  const activeTable = tables.find((t: SharedTable) => t.number === (selectedTableNumber || 'A-04')) || tables[0];
   const breakdown = getTableBillBreakdown(activeTable, settlementTip);
 
   const [cashReceived, setCashReceived] = useState<number>(breakdown.grandTotal);
@@ -297,7 +297,7 @@ export const TabletScreen7Payment: React.FC = () => {
               </div>
               <div className="max-h-40 overflow-y-auto space-y-1 pr-1 font-mono text-xs">
                 {breakdown.items.length > 0 ? (
-                  breakdown.items.map((row, idx) => (
+                  breakdown.items.map((row: any, idx: number) => (
                     <div key={idx} className="flex justify-between items-center text-slate-700 py-0.5">
                       <div className="flex items-center gap-1.5 truncate max-w-[240px]">
                         <span className="font-bold text-orange-600 bg-orange-50 px-1 rounded">

@@ -13,6 +13,7 @@ export const ScreenW1Login: React.FC = () => {
     setActiveCaptain,
     activeSection,
     setActiveSection,
+    setShowFloorTables,
   } = useWaiterStore();
 
   const [pin, setPin] = useState('');
@@ -41,6 +42,7 @@ export const ScreenW1Login: React.FC = () => {
   const handleLogin = () => {
     if (pin === '1234') {
       setErrorMsg('');
+      setShowFloorTables(false);
       setCurrentScreen(2);
     } else {
       setErrorMsg('ACCESS DENIED: PIN 1234 REQUIRED');
@@ -93,6 +95,8 @@ export const ScreenW1Login: React.FC = () => {
                 type="button"
                 onClick={() => setActiveSection(sec)}
                 className={`py-2 px-2.5 rounded-xl border text-[10.5px] font-mono font-black transition cursor-pointer ${
+                  sec === 'ALL' ? 'col-span-2' : ''
+                } ${
                   activeSection === sec
                     ? 'border-orange-500 bg-orange-50 text-orange-950 ring-1 ring-orange-500/20'
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-stone-50'

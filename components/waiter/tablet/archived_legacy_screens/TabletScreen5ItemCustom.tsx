@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useWaiterStore } from '../../../store/useWaiterStore';
-import { useSharedBridge } from '../../../store/useSharedBridge';
-import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
-import { INITIAL_MENU_ITEMS } from '../../../data/menuItems';
-import { MenuItem } from '../../../types/customer';
+import { useWaiterStore } from '@/store/useWaiterStore';
+import { useSharedBridge } from '@/store/useSharedBridge';
+import { WaiterTabletLandscapeHousing } from '../WaiterTabletLandscapeHousing';
+import { INITIAL_MENU_ITEMS } from '@/data/menuItems';
+import { MenuItem, CartItem } from '@/types/customer';
 import { ArrowLeft, Flame, ImageIcon } from 'lucide-react';
 
 export const TabletScreen5ItemCustom: React.FC = () => {
@@ -40,7 +40,7 @@ export const TabletScreen5ItemCustom: React.FC = () => {
     };
 
     const itemsToFire = orderCart.length > 0
-      ? orderCart.map((ci, idx) => {
+      ? orderCart.map((ci: CartItem, idx: number) => {
           if (idx === orderCart.length - 1) {
             return {
               item: customItem,
@@ -134,7 +134,7 @@ export const TabletScreen5ItemCustom: React.FC = () => {
               </div>
               <div className="space-y-1 max-h-32 overflow-y-auto">
                 {orderCart.length > 0 ? (
-                  orderCart.map((ci, idx) => (
+                  orderCart.map((ci: CartItem, idx: number) => (
                     <div key={idx} className="flex justify-between items-center text-[11px] text-slate-700 py-0.5 border-b border-dashed border-slate-100 last:border-0">
                       <span className="truncate flex-1 pr-2">
                         • {ci.quantity}x {ci.menuItem.name}

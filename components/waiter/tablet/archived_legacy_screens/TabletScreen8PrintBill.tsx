@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useWaiterStore } from '../../../store/useWaiterStore';
-import { useSharedBridge, getTableBillBreakdown } from '../../../store/useSharedBridge';
-import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
-import { INITIAL_MENU_ITEMS } from '../../../data/menuItems';
+import { useWaiterStore } from '@/store/useWaiterStore';
+import { useSharedBridge, getTableBillBreakdown, SharedTable } from '@/store/useSharedBridge';
+import { WaiterTabletLandscapeHousing } from '../WaiterTabletLandscapeHousing';
+import { INITIAL_MENU_ITEMS } from '@/data/menuItems';
 import { ArrowLeft, Printer, MessageCircle, CheckCircle2, Trash2 } from 'lucide-react';
 
 export const TabletScreen8PrintBill: React.FC = () => {
@@ -14,7 +14,7 @@ export const TabletScreen8PrintBill: React.FC = () => {
   const [whatsappSent, setWhatsappSent] = useState(false);
   const [tableVacated, setTableVacated] = useState(false);
 
-  const activeTable = tables.find((t) => t.number === (selectedTableNumber || 'A-04')) || tables[0];
+  const activeTable = tables.find((t: SharedTable) => t.number === (selectedTableNumber || 'A-04')) || tables[0];
   const breakdown = getTableBillBreakdown(activeTable, settlementTip);
 
   const invoiceNum = `INV-2026-${activeTable.number.replace(/\D/g, '') || '104'}`;
@@ -110,7 +110,7 @@ export const TabletScreen8PrintBill: React.FC = () => {
                   <span>ITEM</span><span>QTY</span><span>RATE</span><span>AMT</span>
                 </div>
                 {breakdown.items.length > 0 ? (
-                  breakdown.items.map((item, idx) => (
+                  breakdown.items.map((item: any, idx: number) => (
                     <div key={idx} className="flex justify-between text-[10px] text-slate-700 py-0.5">
                       <span className="flex-1 truncate pr-1">{item.name}</span>
                       <span className="w-5 text-center">{item.quantity}</span>
@@ -169,7 +169,7 @@ export const TabletScreen8PrintBill: React.FC = () => {
               <strong className="text-xs font-black text-slate-900">Tax Invoice Details:</strong>
               <div className="flex flex-col gap-1 font-mono text-xs">
                 {breakdown.items.length > 0 ? (
-                  breakdown.items.map((row, i) => (
+                  breakdown.items.map((row: any, i: number) => (
                     <div key={i} className="flex justify-between text-slate-700">
                       <span>{row.quantity}x {row.name}</span>
                       <span>₹ {row.lineTotal}.00</span>

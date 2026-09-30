@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useWaiterStore } from '../../../store/useWaiterStore';
-import { useSharedBridge } from '../../../store/useSharedBridge';
-import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
-import { INITIAL_MENU_ITEMS } from '../../../data/menuItems';
+import { useWaiterStore } from '@/store/useWaiterStore';
+import { useSharedBridge, SharedTable } from '@/store/useSharedBridge';
+import { WaiterTabletLandscapeHousing } from '../WaiterTabletLandscapeHousing';
+import { INITIAL_MENU_ITEMS } from '@/data/menuItems';
+import { MenuItem, CartItem } from '@/types/customer';
 import { ArrowLeft, ShoppingCart, ArrowRight, Search, Plus, Minus, Check, Ban, Lock, Clock, UtensilsCrossed, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -25,10 +26,10 @@ export const TabletScreen4TakeOrder: React.FC = () => {
   const [selectedCat, setSelectedCat] = useState('ALL');
   const [addedItemNotice, setAddedItemNotice] = useState<string | null>(null);
 
-  const activeTable = tables.find((t) => t.number === currentTable) || tables[0];
+  const activeTable = tables.find((t: SharedTable) => t.number === currentTable) || tables[0];
   const categories = ['ALL', 'CHEF SPECIAL', 'BIRYANI', 'STARTERS', 'GRAVY & SIDES', 'BEVERAGES'];
 
-  const filteredItems = INITIAL_MENU_ITEMS.filter((item) => {
+  const filteredItems = INITIAL_MENU_ITEMS.filter((item: MenuItem) => {
     const matchCat =
       selectedCat === 'ALL' ||
       (selectedCat === 'CHEF SPECIAL' &&
@@ -45,10 +46,10 @@ export const TabletScreen4TakeOrder: React.FC = () => {
     return matchCat && matchSearch;
   });
 
-  const cartTotal = orderCart.reduce((sum, i) => sum + i.totalPrice, 0);
-  const cartItemCount = orderCart.reduce((sum, i) => sum + i.quantity, 0);
+  const cartTotal = orderCart.reduce((sum: number, i: CartItem) => sum + i.totalPrice, 0);
+  const cartItemCount = orderCart.reduce((sum: number, i: CartItem) => sum + i.quantity, 0);
 
-  const handleAdd = (item: any) => {
+  const handleAdd = (item: MenuItem) => {
     addToOrderCart(item);
     setAddedItemNotice(item.name);
     setTimeout(() => setAddedItemNotice(null), 1500);
@@ -77,7 +78,7 @@ export const TabletScreen4TakeOrder: React.FC = () => {
                 onChange={(e) => selectTable(e.target.value)}
                 className="bg-white border-2 border-slate-900 rounded-lg px-2.5 py-1 font-mono text-xs font-black text-orange-600 focus:outline-none shadow-2xs cursor-pointer"
               >
-                {tables.map((t) => (
+                {tables.map((t: SharedTable) => (
                   <option key={t.id} value={t.number}>
                     Table {t.number} ({t.status} • ₹{t.currentBill})
                   </option>
@@ -98,7 +99,7 @@ export const TabletScreen4TakeOrder: React.FC = () => {
               Already Fired Dishes (Locked against duplication):
             </span>
             <div className="flex flex-wrap gap-2 text-[11px]">
-              {activeTable.activeItems.map((it, idx) => (
+              {activeTable.activeItems.map((it: { name: string; quantity: number; status: string }, idx: number) => (
                 <span key={idx} className="bg-white border border-slate-300 rounded px-2 py-0.5 text-slate-700 font-bold">
                   • {it.quantity}x {it.name} • {it.status}
                 </span>
@@ -192,11 +193,11 @@ export const TabletScreen4TakeOrder: React.FC = () => {
               )}
             </div>
           ) : (
-            filteredItems.map((item) => {
-              const item86 = inventory86.find((i) => i.id === item.id);
+            filteredItems.map((item: MenuItem) => {
+              const item86 = inventory86.find((i: { id: string; is86?: boolean; prepDelayMinutes?: number }) => i.id === item.id);
               const isSoldOut = !!item86?.is86;
               const prepDelay = item86?.prepDelayMinutes || 0;
-              const inCart = orderCart.find((ci) => ci.menuItem.id === item.id);
+              const inCart = orderCart.find((ci: CartItem) => ci.menuItem.id === item.id);
               const qty = inCart ? inCart.quantity : 0;
 
               return (
