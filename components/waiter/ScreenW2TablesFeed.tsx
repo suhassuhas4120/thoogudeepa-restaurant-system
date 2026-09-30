@@ -166,6 +166,7 @@ export const ScreenW2TablesFeed: React.FC = () => {
       badge: 'SOLD OUT',
       title: `${item.name} is Sold Out`,
       detail: `Kitchen stock finished. Do not take new orders for this dish.`,
+      timestamp: 'Just Now',
     }))
     .filter((n) => !dismissedNoticeIds.includes(n.id));
 
@@ -503,8 +504,17 @@ export const ScreenW2TablesFeed: React.FC = () => {
                             )}
                           </div>
 
-                          {/* Action Button: Serve Food (Always Serve Food - Enabled when food is ready, Disabled when not) */}
-                          {isOccupied && (
+                          {/* Action Button: Serve Food (Always Present - Enabled when food is ready, Disabled when not/no orders) */}
+                          {isBilling ? (
+                            <button
+                              type="button"
+                              onClick={(e) => handleVacateTable(e, t.number)}
+                              className="h-9 px-3.5 rounded-xl bg-purple-100 hover:bg-purple-600 text-purple-950 hover:text-white border-2 border-purple-400 font-mono font-black text-xs transition duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95 shrink-0 whitespace-nowrap"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              <span>Vacate</span>
+                            </button>
+                          ) : (
                             <button
                               type="button"
                               disabled={!hasReadyFood}
@@ -521,17 +531,6 @@ export const ScreenW2TablesFeed: React.FC = () => {
                             >
                               <Utensils className="h-3.5 w-3.5" />
                               <span>Serve Food</span>
-                            </button>
-                          )}
-
-                          {isBilling && (
-                            <button
-                              type="button"
-                              onClick={(e) => handleVacateTable(e, t.number)}
-                              className="h-9 px-3.5 rounded-xl bg-purple-100 hover:bg-purple-600 text-purple-950 hover:text-white border-2 border-purple-400 font-mono font-black text-xs transition duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95 shrink-0 whitespace-nowrap"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                              <span>Vacate</span>
                             </button>
                           )}
                         </div>
@@ -743,42 +742,44 @@ export const ScreenW2TablesFeed: React.FC = () => {
 
               {/* ──────────────────────────────────────────────
                   PRIORITY 3: MANAGER ALERTS (THIRD)
-                  - Single Badge on Left, Clean Stock Tag on Right
+                  - Structured exactly like Guest Calls: Badge + Time header, Message + Understood button detail row
               ─────────────────────────────────────────────── */}
               {(activeAlertFilter === 'ALL' || activeAlertFilter === 'MANAGER') &&
                 managerNotices.map((n) => (
                   <div
                     key={n.id}
-                    className="p-3.5 rounded-2xl border-2 border-rose-300 bg-rose-50 text-xs shadow-xs space-y-2 overflow-hidden"
+                    className="p-3.5 rounded-2xl bg-purple-50 border-2 border-purple-300 text-xs shadow-xs space-y-2.5 overflow-hidden"
                   >
-                    {/* Header Row: Badge on Left, Clean Tag on Right */}
+                    {/* Header Row: Badges on Left, Clean Time Text on Right */}
                     <div className="flex items-center justify-between gap-2 min-w-0">
-                      <span className="px-3 py-1 rounded-full text-[10px] font-mono font-black uppercase shrink-0 bg-rose-600 text-white shadow-2xs">
-                        ⚠️ {n.badge}
-                      </span>
-                      <span className="text-[11px] font-mono text-rose-800 font-bold shrink-0">
-                        Stock Notice
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="px-3 py-1 rounded-full bg-slate-900 text-white font-mono text-xs font-black shrink-0 shadow-2xs">
+                          MANAGER
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md text-[9.5px] font-mono font-black uppercase shrink-0 bg-purple-700 text-white">
+                          ⚠️ {n.badge}
+                        </span>
+                      </div>
+
+                      {/* Clean Time Display */}
+                      <span className="text-[11px] font-mono text-slate-500 font-bold shrink-0">
+                        ⏱ {n.timestamp || 'Just Now'}
                       </span>
                     </div>
 
-                    {/* Title & Description: Clean text wrapping strictly within card boundaries */}
-                    <div className="space-y-1 min-w-0">
-                      <div className="font-black text-slate-950 text-xs font-mono break-words leading-snug">
-                        {n.title}
+                    {/* Detail Row: Message on Left + Understood Button on Right (Matches Guest Calls) */}
+                    <div className="flex items-center justify-between gap-3 pt-0.5 min-w-0">
+                      <div className="text-xs text-slate-900 font-mono font-bold truncate flex-1 min-w-0">
+                        {n.title}: <span className="font-medium text-slate-600">{n.detail}</span>
                       </div>
-                      <div className="text-[11px] text-slate-700 font-mono font-medium break-words leading-relaxed">
-                        {n.detail}
-                      </div>
-                    </div>
 
-                    {/* Action Button on Right */}
-                    <div className="flex justify-end pt-1.5 border-t border-rose-200/70">
                       <button
                         type="button"
                         onClick={() => setDismissedNoticeIds((prev) => [...prev, n.id])}
-                        className="h-8 px-4 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-mono font-bold text-[10.5px] transition cursor-pointer shrink-0 active:scale-95 shadow-xs"
+                        className="h-9 px-4 rounded-full bg-purple-700 hover:bg-purple-800 text-white text-xs font-mono font-black transition cursor-pointer shadow-xs shrink-0 flex items-center gap-1.5 active:scale-95 whitespace-nowrap"
                       >
-                        Understood
+                        <CheckCircle2 className="h-4 w-4" />
+                        <span>Understood</span>
                       </button>
                     </div>
                   </div>

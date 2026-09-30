@@ -19,6 +19,12 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWaiterStore } from '../../store/useWaiterStore';
 import { useSharedBridge } from '../../store/useSharedBridge';
+import {
+  playKitchenChime,
+  playCustomerChime,
+  playManagerChime,
+  triggerHapticVibrate,
+} from '../../lib/soundEffects';
 
 interface WaiterTabletHousingProps {
   children: React.ReactNode;
@@ -44,15 +50,131 @@ export const WaiterTabletHousing: React.FC<WaiterTabletHousingProps> = ({
     setCurrentScreen,
     orderCart,
     activeToast,
+    setActiveToast,
     dismissToast,
     setActiveAlertFilter,
+    soundAlertsEnabled,
   } = useWaiterStore();
 
   const {
+    kdsTickets,
+    pings,
+    inventory86,
     waiterResolvePing,
     waiterMarkKitchenItemServed,
     waiterMarkTableFoodServed,
   } = useSharedBridge();
+
+  const previousReadyTicketIds = React.useRef<string[]>([]);
+  const previousPendingPingIds = React.useRef<string[]>([]);
+  const previousSoldOutIds = React.useRef<string[]>([]);
+  const isInitialized = React.useRef(false);
+  const toastTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  // Auto-dismiss toast after 7.5 seconds
+  React.useEffect(() => {
+    if (activeToast) {
+      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+      toastTimeoutRef.current = setTimeout(() => {
+        dismissToast();
+      }, 7500);
+    }
+    return () => {
+      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    };
+  }, [activeToast, dismissToast]);
+
+  // Monitor live alerts across all portals (Kitchen, Customer, Manager)
+  React.useEffect(() => {
+    const currentReadyTickets = (kdsTickets || []).filter((tk) => tk.status === 'READY');
+    const currentReadyIds = currentReadyTickets.map((t) => t.id);
+
+    const currentPendingPings = (pings || []).filter((p) => p.status === 'PENDING');
+    const currentPendingIds = currentPendingPings.map((p) => p.id);
+
+    const currentSoldOutItems = (inventory86 || []).filter((it) => it.is86);
+    const currentSoldOutIds = currentSoldOutItems.map((it) => it.id);
+
+    // Initial mount: record baseline
+    if (!isInitialized.current) {
+      previousReadyTicketIds.current = currentReadyIds;
+      previousPendingPingIds.current = currentPendingIds;
+      previousSoldOutIds.current = currentSoldOutIds;
+      isInitialized.current = true;
+      return;
+    }
+
+    // 1. Kitchen Alert Detection: New ready tickets or newly plated dishes
+    const newReady = currentReadyTickets.filter(
+      (tk) => !previousReadyTicketIds.current.includes(tk.id)
+    );
+    if (newReady.length > 0) {
+      const latestTicket = newReady[0];
+      if (soundAlertsEnabled) {
+        playKitchenChime();
+      }
+      triggerHapticVibrate([160, 80, 200]);
+      setActiveToast({
+        id: `kds-${latestTicket.id}-${Date.now()}`,
+        source: 'KITCHEN',
+        title: `Order Ready • Table ${latestTicket.tableNumber}`,
+        detail: latestTicket.items.map((i) => `${i.quantity}x ${i.name}`).join(', '),
+        timestamp: latestTicket.timestamp || 'Just Now',
+        tableNumber: latestTicket.tableNumber,
+        ticketId: latestTicket.id,
+      });
+      previousReadyTicketIds.current = currentReadyIds;
+      return;
+    }
+    previousReadyTicketIds.current = currentReadyIds;
+
+    // 2. Customer Alert Detection: New pending guest call / assistance request
+    const newPings = currentPendingPings.filter(
+      (p) => !previousPendingPingIds.current.includes(p.id)
+    );
+    if (newPings.length > 0) {
+      const latestPing = newPings[0];
+      if (soundAlertsEnabled) {
+        playCustomerChime();
+      }
+      triggerHapticVibrate([120, 60, 120]);
+      setActiveToast({
+        id: `ping-${latestPing.id}-${Date.now()}`,
+        source: 'CUSTOMER',
+        title: `Guest Call • Table ${latestPing.tableNumber}`,
+        detail: `${latestPing.guestName || 'Guest'}: ${latestPing.message || latestPing.type || 'Needs assistance at table'}`,
+        timestamp: latestPing.timestamp || 'Just Now',
+        tableNumber: latestPing.tableNumber,
+        pingId: latestPing.id,
+      });
+      previousPendingPingIds.current = currentPendingIds;
+      return;
+    }
+    previousPendingPingIds.current = currentPendingIds;
+
+    // 3. Manager Alert Detection: Dish marked 86 / Sold Out
+    const newSoldOut = currentSoldOutItems.filter(
+      (it) => !previousSoldOutIds.current.includes(it.id)
+    );
+    if (newSoldOut.length > 0) {
+      const latestSoldOut = newSoldOut[0];
+      if (soundAlertsEnabled) {
+        playManagerChime();
+      }
+      triggerHapticVibrate([200, 100, 200]);
+      setActiveToast({
+        id: `mgr-${latestSoldOut.id}-${Date.now()}`,
+        source: 'MANAGER',
+        title: `Manager Notice • 86 Sold Out`,
+        detail: `${latestSoldOut.name} is now Sold Out. Kitchen cannot accept new orders for this dish.`,
+        timestamp: 'Just Now',
+        noticeId: latestSoldOut.id,
+      });
+      previousSoldOutIds.current = currentSoldOutIds;
+      return;
+    }
+    previousSoldOutIds.current = currentSoldOutIds;
+  }, [kdsTickets, pings, inventory86, soundAlertsEnabled, setActiveToast]);
 
   const cartCount = orderCart.reduce((s, i) => s + i.quantity, 0);
 
