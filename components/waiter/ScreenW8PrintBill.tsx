@@ -39,7 +39,7 @@ export const ScreenW8PrintBill: React.FC = () => {
               className="flex items-center gap-1 text-xs font-black text-slate-700 hover:text-slate-900 cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span>Back to Table</span>
+              <span>Back</span>
             </button>
             <span className="font-mono text-xs font-black text-slate-900">
               Table: {activeTable.number}
@@ -51,11 +51,11 @@ export const ScreenW8PrintBill: React.FC = () => {
             <div className="font-mono text-xs font-black text-slate-900">
               THOOGUDEEPA DONNE BIRYANI MANE
             </div>
-            <div className="font-mono text-[10px] text-slate-400">
+            {/* <div className="font-mono text-[10px] text-slate-400">
               Tax Invoice #{invoiceNum} • SAC 996331
-            </div>
+            </div> */}
             <div className="font-mono text-[10.5px] font-bold text-slate-700 pb-2 border-b border-dashed border-slate-200">
-              Table: {activeTable.number} • Captain: {captainName}
+              Table: {activeTable.number} - {captainName}
             </div>
 
             <div className="space-y-1 text-left text-xs font-medium text-slate-800 py-1">
@@ -122,7 +122,7 @@ export const ScreenW8PrintBill: React.FC = () => {
             className="w-full py-3 rounded-xl border border-slate-200 bg-white font-mono text-xs font-black text-slate-800 shadow-2xs hover:bg-stone-50 flex items-center justify-center gap-2 cursor-pointer"
           >
             <Printer className="h-4 w-4 text-slate-700" />
-            <span>{printed ? '✓ Thermal Receipt Printed' : 'Print 80mm Thermal Bill'}</span>
+            <span>{printed ? '✓ Thermal Receipt Printed' : 'Print  Thermal Bill'}</span>
           </motion.button>
 
           <motion.button
@@ -144,15 +144,15 @@ export const ScreenW8PrintBill: React.FC = () => {
             className="w-full py-2.5 rounded-xl border border-dashed border-rose-300 bg-rose-50/60 hover:bg-rose-100 font-mono text-xs font-black text-rose-700 text-center cursor-pointer flex items-center justify-center gap-1.5 transition"
           >
             <Trash2 className="h-3.5 w-3.5" />
-            <span>Vacate &amp; Return to Tables (Screen 2) ➔</span>
+            <span>Vacate  ➔</span>
           </button>
 
-          <button
+          {/* <button
             onClick={() => setCurrentScreen(3)}
             className="w-full py-1.5 font-mono text-[11px] font-bold text-slate-500 hover:text-slate-800 text-center cursor-pointer"
           >
             Return to Table Management
-          </button>
+          </button> */}
         </div>
       </div>
     </WaiterTabletHousing>

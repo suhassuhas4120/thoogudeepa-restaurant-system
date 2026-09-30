@@ -46,10 +46,10 @@ export const ScreenW6MergeSplit: React.FC = () => {
               className="flex items-center gap-1 text-xs font-black text-slate-700 hover:text-slate-900 cursor-pointer"
             >
               <ArrowLeft className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span>Back to Table</span>
+              <span>Back </span>
             </button>
             <span className="font-mono text-xs font-black text-slate-900">
-              Target: Table {activeTable?.number}
+              Table {activeTable?.number}
             </span>
           </div>
 
@@ -62,10 +62,10 @@ export const ScreenW6MergeSplit: React.FC = () => {
 
           {/* Merge / Unmerge Tables Card */}
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs space-y-3">
-            <div className="flex items-center gap-2 font-mono text-[10.5px] font-black text-purple-700">
+            {/* <div className="flex items-center gap-2 font-mono text-[10.5px] font-black text-purple-700">
               <Link2 className="h-4 w-4" />
               <span>{isAlreadyMerged ? 'Manage Merged Table' : 'Merge Tables for Large Party'}</span>
-            </div>
+            </div> */}
 
             {isAlreadyMerged ? (
               <div className="space-y-3">
@@ -76,17 +76,17 @@ export const ScreenW6MergeSplit: React.FC = () => {
                   onClick={handleUnmerge}
                   className="w-full py-2.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white font-mono text-xs font-black transition cursor-pointer"
                 >
-                  Unmerge / Separate Tables
+                  Unmerge  Tables
                 </button>
               </div>
             ) : (
               <>
-                <p className="text-xs text-slate-500">
+                {/* <p className="text-xs text-slate-500">
                   Combine running orders and bill of an adjacent table into Table {activeTable?.number}.
-                </p>
+                </p> */}
 
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-bold text-slate-700">Merge with:</span>
+                  <span className="font-mono text-xs font-bold text-slate-700">Merge:</span>
                   <select
                     value={sourceTable}
                     onChange={(e) => setSourceTable(e.target.value)}
@@ -104,7 +104,7 @@ export const ScreenW6MergeSplit: React.FC = () => {
                   onClick={handleMerge}
                   className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-mono text-xs font-black transition cursor-pointer"
                 >
-                  Merge Table {sourceTable} into Table {activeTable?.number}
+                  Merge Table {sourceTable}  + Table {activeTable?.number}
                 </button>
               </>
             )}
@@ -150,7 +150,7 @@ export const ScreenW6MergeSplit: React.FC = () => {
             onClick={() => setCurrentScreen(4)}
             className="w-full py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-stone-50 text-slate-800 font-mono text-xs font-black transition cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
           >
-            <span>Punch Order for Table {activeTable?.number} ➔</span>
+            <span>Take Order {activeTable?.number} ➔</span>
           </button>
           <button
             onClick={() => setCurrentScreen(7)}

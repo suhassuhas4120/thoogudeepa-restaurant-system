@@ -46,6 +46,7 @@ export interface StaffRosterMember {
   phone: string;
   cashCollected: number;
   cashHandedOver: number;
+  tipReceived: number;
 }
 
 export interface HardwareDevice {

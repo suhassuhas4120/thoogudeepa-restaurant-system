@@ -14,81 +14,68 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export const ScreenW2TablesFeed: React.FC = () => {
-  // =========================================================
-  // WAITER STORE
-  // =========================================================
+// Optional fields that may be missing from the shared types
+type TableView = SharedTable & {
+  mergedWith?: string;
+  guestCount?: number;
+  activeItems?: { status?: string }[];
+};
 
+type KdsView = SharedKDSTicket & {
+  elapsedMinutes?: number;
+};
+
+export const ScreenW2TablesFeed: React.FC = () => {
   const {
     setCurrentScreen,
     selectTable,
-    activeCaptain,
     activeSection,
   } = useWaiterStore();
 
-  // =========================================================
-  // SHARED BRIDGE
-  // =========================================================
-
   const {
-    tables,
+    tables: sharedTables,
     pings,
-    kdsTickets,
+    kdsTickets: sharedKdsTickets,
     waiterResolvePing,
     waiterMarkKitchenItemServed,
     waiterMarkTableFoodServed,
     waiterVacatesTable,
-    waiterSeatsTable,
   } = useSharedBridge();
 
-  // =========================================================
-  // FLOOR OVERVIEW
-  //
-  // false = tables hidden
-  // true  = tables visible
-  // =========================================================
-
-  const [showFloor, setShowFloor] =
-    useState(false);
-
-  // =========================================================
-  // SECTION
-  // =========================================================
+  const tables = sharedTables as TableView[];
+  const kdsTickets = sharedKdsTickets as KdsView[];
 
   const [selectedSection, setSelectedSection] =
     useState<string>(
       activeSection || 'ALL'
     );
 
-  // =========================================================
-  // KITCHEN / CUSTOMER TAB
-  // =========================================================
-
   const [activeFeedTab, setActiveFeedTab] =
     useState<'KITCHEN' | 'CUSTOMER'>(
       'KITCHEN'
     );
 
-  // =========================================================
-  // DYNAMIC FLOOR METRICS
-  // =========================================================
+  // Floor Overview dropdown
+  const [showTables, setShowTables] =
+    useState(false);
 
+  // Dynamic Floor Metrics
   const activeOrdersCount =
     kdsTickets.filter(
-      (tk) =>
+      (tk: KdsView) =>
         tk.status !== 'COMPLETED'
     ).length;
 
   const occupiedCount =
     tables.filter(
-      (t: SharedTable) =>
+      (t: TableView) =>
         t.status === 'OCCUPIED' ||
         t.status === 'BILLING'
     ).length;
 
   const vacantCount =
     tables.filter(
-      (t: SharedTable) =>
+      (t: TableView) =>
         t.status === 'VACANT'
     ).length;
 
@@ -96,35 +83,23 @@ export const ScreenW2TablesFeed: React.FC = () => {
     tables.reduce(
       (
         acc: number,
-        t: SharedTable
+        t: TableView
       ) =>
         acc +
-        (
-          t.status === 'OCCUPIED' ||
-          t.status === 'BILLING'
-            ? t.guestCount || 0
-            : 0
-        ),
+        (t.status === 'OCCUPIED' ||
+        t.status === 'BILLING'
+          ? t.guestCount || 0
+          : 0),
       0
     );
-
-  // =========================================================
-  // SECTION FILTERS
-  //
-  // CAPTAIN-ALL IS NOT DISPLAYED
-  // =========================================================
 
   const filterSections = [
     'ALL',
     'SECTION A',
     'SECTION B',
-    'TERRACE',
-    'FAMILY DINING',
+    'SECTION C',
+    'SECTION D',
   ];
-
-  // =========================================================
-  // SECTION DISPLAY NAME
-  // =========================================================
 
   const getSectionDisplayName = (
     sec: string
@@ -134,68 +109,62 @@ export const ScreenW2TablesFeed: React.FC = () => {
         return 'All Tables';
 
       case 'SECTION A':
-        return 'Section A';
+        return 'SECTION A';
 
       case 'SECTION B':
-        return 'Section B';
+        return 'SECTION B';
 
-      case 'TERRACE':
-        return 'Terrace';
+      case 'SECTION C':
+        return 'SECTION C';
 
-      case 'FAMILY DINING':
-        return 'Family Dining';
+      case 'SECTION D':
+        return 'SECTION D';
 
       default:
         return sec;
     }
   };
 
-  // =========================================================
-  // FILTER TABLES
-  // =========================================================
-
   const filteredTables =
     tables.filter(
-      (table: SharedTable) => {
+      (table: TableView) => {
         if (
           selectedSection === 'ALL'
         ) {
           return true;
         }
 
-        const tableSec =
-          (table.section || '')
-            .trim()
-            .toUpperCase();
+        const tableSec = (
+          table.section || ''
+        )
+          .trim()
+          .toUpperCase();
 
         const filterSec =
           selectedSection
             .trim()
             .toUpperCase();
 
-        // TERRACE
         if (
-          filterSec === 'TERRACE'
-        ) {
-          return (
-            tableSec === 'TERRACE' ||
-            tableSec.includes(
-              'TERRACE'
-            ) ||
-            tableSec === 'SECTION C'
-          );
-        }
-
-        // FAMILY DINING
-        if (
-          filterSec ===
-          'FAMILY DINING'
+          filterSec === 'SECTION C'
         ) {
           return (
             tableSec ===
-              'FAMILY DINING' ||
+              'SECTION C' ||
             tableSec.includes(
-              'DINING'
+              'SECTION C'
+            )
+          );
+        }
+
+        if (
+          filterSec === 'SECTION D'
+        ) {
+          return (
+            tableSec ===
+              'SECTION D' ||
+            tableSec.includes(
+              'SECTION D'
             )
           );
         }
@@ -206,20 +175,14 @@ export const ScreenW2TablesFeed: React.FC = () => {
       }
     );
 
-  // =========================================================
-  // ACTIVE KITCHEN TICKETS
-  //
-  // READY -> PREP -> NEW
-  // =========================================================
-
+  // Kitchen orders:
+  // READY -> PREP -> NEW -> COMPLETED
   const activeKdsTickets =
-    kdsTickets
-      .filter(
-        (tk) =>
-          tk.status !==
-          'COMPLETED'
-      )
-      .sort((a, b) => {
+    [...kdsTickets].sort(
+      (
+        a: KdsView,
+        b: KdsView
+      ) => {
         const order: Record<
           string,
           number
@@ -227,27 +190,15 @@ export const ScreenW2TablesFeed: React.FC = () => {
           READY: 0,
           PREP: 1,
           NEW: 2,
+          COMPLETED: 3,
         };
 
         return (
-          (order[a.status] ?? 3) -
-          (order[b.status] ?? 3)
+          (order[a.status] ?? 4) -
+          (order[b.status] ?? 4)
         );
-      });
-
-  // =========================================================
-  // READY PICKUP COUNT
-  // =========================================================
-
-  const readyPickupCount =
-    kdsTickets.filter(
-      (tk) =>
-        tk.status === 'READY'
-    ).length;
-
-  // =========================================================
-  // TABLE CLICK
-  // =========================================================
+      }
+    );
 
   const handleTableClick = (
     tableNumber: string
@@ -255,35 +206,6 @@ export const ScreenW2TablesFeed: React.FC = () => {
     selectTable(tableNumber);
     setCurrentScreen(3);
   };
-
-  // =========================================================
-  // SEAT TABLE
-  //
-  // Logic kept from original code.
-  // =========================================================
-
-  const handleSeatTable = (
-    e: React.MouseEvent,
-    tableNumber: string
-  ) => {
-    e.stopPropagation();
-
-    waiterSeatsTable(
-      tableNumber
-    );
-
-    selectTable(
-      tableNumber
-    );
-
-    setCurrentScreen(3);
-  };
-
-  // =========================================================
-  // VACATE TABLE
-  //
-  // Logic kept from original code.
-  // =========================================================
 
   const handleVacateTable = (
     e: React.MouseEvent,
@@ -296,24 +218,16 @@ export const ScreenW2TablesFeed: React.FC = () => {
     );
   };
 
-  // =========================================================
-  // SERVE READY TABLE
-  //
-  // Logic kept from original code.
-  // =========================================================
-
   const handleServeReadyTable = (
     e: React.MouseEvent,
     tableNumber: string
   ) => {
     e.stopPropagation();
 
-    // 1. Mark table food as served
     waiterMarkTableFoodServed(
       tableNumber
     );
 
-    // 2. Also mark matching KDS tickets
     const cleanNum =
       tableNumber.replace(
         /\D/g,
@@ -321,34 +235,31 @@ export const ScreenW2TablesFeed: React.FC = () => {
       );
 
     kdsTickets
-      .filter((tk) => {
-        const tkNum =
-          (
+      .filter(
+        (tk: KdsView) => {
+          const tkNum = (
             tk.tableNumber || ''
           ).replace(
             /\D/g,
             ''
           );
 
-        return (
-          tk.tableNumber ===
-            tableNumber ||
-          (
-            cleanNum &&
-            tkNum === cleanNum
-          )
-        );
-      })
-      .forEach((tk) => {
-        waiterMarkKitchenItemServed(
-          tk.id
-        );
-      });
+          return (
+            tk.tableNumber ===
+              tableNumber ||
+            (cleanNum &&
+              tkNum === cleanNum)
+          );
+        }
+      )
+      .forEach(
+        (tk: KdsView) => {
+          waiterMarkKitchenItemServed(
+            tk.id
+          );
+        }
+      );
   };
-
-  // =========================================================
-  // TABLE STATUS BADGE
-  // =========================================================
 
   const getStatusBadge = (
     status: string
@@ -371,851 +282,638 @@ export const ScreenW2TablesFeed: React.FC = () => {
     }
   };
 
-  // =========================================================
-  // RETURN
-  // =========================================================
+  // Kitchen status display
+  const getKitchenStatus = (
+    status: string
+  ) => {
+    switch (status) {
+      case 'NEW':
+        return 'Received';
+
+      case 'PREP':
+        return 'Preparing';
+
+      case 'READY':
+        return 'Ready';
+
+      case 'COMPLETED':
+        return 'Served';
+
+      default:
+        return 'Received';
+    }
+  };
 
   return (
     <WaiterTabletHousing
       screenNumber={2}
       screenTitle="TABLES MATRIX & DUAL FEEDS"
     >
-
-      <div className="flex-1 flex flex-col p-2 sm:p-2.5 gap-2 overflow-hidden">
+      <div className="flex-1 flex flex-col p-2.5 space-y-2.5 overflow-hidden">
 
         {/* =====================================================
             FLOOR OVERVIEW
         ====================================================== */}
+        <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-2xs shrink-0 select-none">
 
-        <div className="rounded-xl border border-slate-200 bg-white shadow-2xs shrink-0 overflow-hidden">
+          {/* Floor Overview Header */}
+          <div className="flex items-center justify-between text-[10px] font-mono font-bold text-slate-500 mb-1.5 pb-1 border-b border-slate-100">
 
-          {/* ===================================================
-              FLOOR OVERVIEW HEADER
-          ==================================================== */}
-
-          <button
-            type="button"
-            onClick={() =>
-              setShowFloor(
-                (prev) => !prev
-              )
-            }
-            className="w-full text-left p-2.5 cursor-pointer"
-          >
-
-            {/* HEADER */}
-
-            <div className="flex items-center justify-between mb-1.5 pb-1 border-b border-slate-100">
-
-              <div className="flex items-center gap-1.5">
-
-                <span className="text-[9px] text-slate-500">
-
-                  {showFloor
-                    ? '▲'
-                    : '▼'}
-
-                </span>
-
-                <span className="uppercase text-[10px] font-mono text-slate-900 font-extrabold">
-
-                  Floor Overview
-
-                </span>
-
-              </div>
-
-              <span className="text-[9px] font-mono text-slate-400 font-bold">
-
-                LIVE
-
+            <button
+              type="button"
+              onClick={() =>
+                setShowTables(
+                  (prev) => !prev
+                )
+              }
+              className="flex items-center gap-1.5 uppercase text-slate-900 font-extrabold cursor-pointer"
+            >
+              <span
+                className={`text-[8px] transition-transform duration-200 ${
+                  showTables
+                    ? 'rotate-180'
+                    : ''
+                }`}
+              >
+                ▼
               </span>
 
+              <span>
+                Floor Overview
+              </span>
+            </button>
+
+          </div>
+
+          {/* Floor Metrics */}
+          <div className="grid grid-cols-4 gap-1.5 text-center font-mono text-[9px]">
+
+            {/* Occupied */}
+            <div className="bg-slate-900 text-white rounded-lg p-1.5">
+              <div className="text-[8px] opacity-80 uppercase">
+                Occupied
+              </div>
+
+              <div className="text-sm font-black">
+                {occupiedCount}
+              </div>
             </div>
 
-
-            {/* =================================================
-                FLOOR METRICS
-            ================================================== */}
-
-            <div className="grid grid-cols-4 gap-1.5 text-center font-mono text-[9px]">
-
-              {/* OCCUPIED */}
-
-              <div className="bg-slate-900 text-white rounded-lg p-1.5">
-
-                <div className="text-[8px] opacity-80 uppercase">
-
-                  Occupied
-
-                </div>
-
-                <div className="text-sm font-black">
-
-                  {occupiedCount}
-
-                </div>
-
+            {/* Vacant */}
+            <div className="bg-slate-100 text-slate-800 rounded-lg p-1.5 border border-slate-200">
+              <div className="text-[8px] text-slate-500 uppercase">
+                Vacant
               </div>
 
-
-              {/* VACANT */}
-
-              <div className="bg-slate-100 text-slate-800 rounded-lg p-1.5 border border-slate-200">
-
-                <div className="text-[8px] text-slate-500 uppercase">
-
-                  Vacant
-
-                </div>
-
-                <div className="text-sm font-black">
-
-                  {vacantCount}
-
-                </div>
-
+              <div className="text-sm font-black">
+                {vacantCount}
               </div>
-
-
-              {/* ORDERS */}
-
-              <div className="bg-amber-50 text-amber-900 rounded-lg p-1.5 border border-amber-200">
-
-                <div className="text-[8px] text-amber-700 uppercase">
-
-                  Orders
-
-                </div>
-
-                <div className="text-sm font-black">
-
-                  {activeOrdersCount}
-
-                </div>
-
-              </div>
-
-
-              {/* SEATED */}
-
-              <div className="bg-emerald-50 text-emerald-900 rounded-lg p-1.5 border border-emerald-200">
-
-                <div className="text-[8px] text-emerald-700 uppercase">
-
-                  Seated
-
-                </div>
-
-                <div className="text-sm font-black">
-
-                  {totalGuests}
-
-                </div>
-
-              </div>
-
             </div>
 
-          </button>
+            {/* Orders */}
+            <div className="bg-amber-50 text-amber-900 rounded-lg p-1.5 border border-amber-200">
+              <div className="text-[8px] text-amber-700 uppercase">
+                Orders
+              </div>
 
+              <div className="text-sm font-black">
+                {activeOrdersCount}
+              </div>
+            </div>
 
-          {/* ===================================================
-              TABLES
-              
-              HIDDEN BY DEFAULT.
-              CLICK FLOOR OVERVIEW TO SHOW.
-          ==================================================== */}
+            {/* Seated */}
+            <div className="bg-emerald-50 text-emerald-900 rounded-lg p-1.5 border border-emerald-200">
+              <div className="text-[8px] text-emerald-700 uppercase">
+                Seated
+              </div>
 
-          {showFloor && (
+              <div className="text-sm font-black">
+                {totalGuests}
+              </div>
+            </div>
 
-            <div className="border-t border-slate-200 p-2.5">
+          </div>
+        </div>
 
-              {/* ===============================================
-                  SECTION FILTER
-              ================================================ */}
+        {/* =====================================================
+            TABLES DROPDOWN
+        ====================================================== */}
+        {showTables && (
+          <div className="rounded-2xl border border-slate-200 bg-white p-2.5 shadow-xs flex flex-col min-h-0 max-h-[330px]">
 
-              <div className="flex items-center justify-between gap-1 mb-2">
+            {/* Section Filter Tabs */}
+            <div className="flex items-center justify-between gap-1 mb-2 shrink-0">
 
-                <div className="flex gap-1 overflow-x-auto pb-0.5 scrollbar-none">
+              <div className="flex gap-1 overflow-x-auto pb-0.5 scrollbar-none">
 
-                  {filterSections.map(
-                    (sec) => (
-
-                      <button
-                        key={sec}
-                        type="button"
-                        onClick={() =>
-                          setSelectedSection(
-                            sec
-                          )
-                        }
-                        className={`px-2.5 py-1.5 rounded-lg text-[9px] sm:text-[10px] font-mono font-bold shrink-0 transition duration-150 cursor-pointer ${
-                          selectedSection ===
+                {filterSections.map(
+                  (sec) => (
+                    <button
+                      key={sec}
+                      type="button"
+                      onClick={() =>
+                        setSelectedSection(
                           sec
-                            ? 'bg-slate-900 text-white border border-slate-900 shadow-xs'
-                            : 'bg-stone-50 border border-slate-300 text-slate-700 hover:bg-stone-200 hover:text-slate-950'
-                        }`}
-                      >
-
-                        {
-                          getSectionDisplayName(
-                            sec
-                          )
-                        }
-
-                      </button>
-
-                    )
-                  )}
-
-                </div>
-
-                <span className="font-mono text-[9px] text-slate-400 font-bold shrink-0">
-
-                  {
-                    filteredTables.length
-                  }{' '}
-                  Tables
-
-                </span>
-
-              </div>
-
-
-              {/* ===============================================
-                  TABLE GRID
-                  
-                  2 TABLES PER ROW
-              ================================================ */}
-
-              <div className="grid grid-cols-2 gap-2 max-h-[42vh] overflow-y-auto pr-0.5">
-
-                {filteredTables.length >
-                0 ? (
-
-                  filteredTables.map(
-                    (
-                      t: SharedTable
-                    ) => {
-
-                      const isOccupied =
-                        t.status ===
-                        'OCCUPIED';
-
-                      const isBilling =
-                        t.status ===
-                        'BILLING';
-
-                      const isVacant =
-                        t.status ===
-                        'VACANT';
-
-                      const isCleaning =
-                        t.status ===
-                        'CLEANING';
-
-                      const hasReadyItem =
-                        t.activeItems?.some(
-                          (
-                            it: {
-                              status?: string;
-                            }
-                          ) =>
-                            it.status ===
-                              'Ready' ||
-                            it.status ===
-                              'READY'
-                        );
-
-                      return (
-
-                        <motion.div
-                          key={t.id}
-                          whileTap={{
-                            scale: 0.97,
-                          }}
-                          onClick={() =>
-                            handleTableClick(
-                              t.number
-                            )
-                          }
-                          className={`rounded-xl border p-2.5 text-center cursor-pointer transition shadow-2xs flex flex-col justify-between min-h-[114px] ${
-                            hasReadyItem
-                              ? 'border-emerald-500 bg-emerald-50/60 hover:bg-emerald-50 ring-1 ring-emerald-500/30'
-                              : isBilling
-                              ? 'border-purple-300 bg-purple-50/50 hover:bg-purple-50/80 ring-1 ring-purple-400/20'
-                              : isOccupied
-                              ? 'border-slate-300 bg-white hover:border-slate-400'
-                              : isCleaning
-                              ? 'border-blue-300 bg-blue-50/50 hover:bg-blue-50'
-                              : isVacant
-                              ? 'border-slate-200 bg-stone-50/70 hover:bg-white'
-                              : 'border-slate-200 bg-stone-50/70 hover:bg-white'
-                          }`}
-                        >
-
-                          {/* TABLE NAME */}
-
-                          <div className="flex items-center justify-between font-mono gap-1">
-
-                            <span className="text-xs font-black text-slate-900 truncate">
-
-                              {t.mergedWith
-                                ? `${t.number} + ${t.mergedWith}`
-                                : t.number}
-
-                            </span>
-
-                            <span className="text-[8px] font-bold text-slate-400 truncate">
-
-                              {t.section}
-
-                            </span>
-
-                          </div>
-
-
-                          {/* STATUS */}
-
-                          <div className="flex items-center justify-center gap-1 mt-1">
-
-                            {t.mergedWith ? (
-
-                              <span className="px-1.5 py-0.5 rounded text-[8.5px] font-mono font-black border bg-purple-100 text-purple-900 border-purple-300">
-
-                                Merged
-
-                              </span>
-
-                            ) : (
-
-                              <span
-                                className={`px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold border uppercase ${getStatusBadge(
-                                  t.status
-                                )}`}
-                              >
-
-                                {t.status}
-
-                              </span>
-
-                            )}
-
-                          </div>
-
-
-                          {/* BILL / TIME */}
-
-                          <div className="text-[9.5px] font-mono text-slate-600 mt-1 leading-tight">
-
-                            {isOccupied ||
-                            isBilling ? (
-
-                              <div className="flex justify-between items-center px-1">
-
-                                <span className="font-extrabold text-slate-900">
-
-                                  ₹
-                                  {
-                                    t.currentBill
-                                  }
-
-                                </span>
-
-                                <span className="text-slate-500">
-
-                                  ⏱{' '}
-                                  {
-                                    t.seatedTime
-                                  }
-
-                                </span>
-
-                              </div>
-
-                            ) : (
-
-                              <div className="text-slate-400">
-
-                                Capacity:{' '}
-                                {
-                                  t.capacity
-                                }{' '}
-                                guests
-
-                              </div>
-
-                            )}
-
-                          </div>
-
-
-                          {/* FOOD READY */}
-
-                          {hasReadyItem && (
-
-                            <div className="mt-1">
-
-                              <span className="inline-block px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300 text-[8px] font-mono font-black">
-
-                                FOOD READY
-
-                              </span>
-
-                            </div>
-
-                          )}
-
-                        </motion.div>
-
-                      );
-                    }
+                        )
+                      }
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold shrink-0 transition duration-150 cursor-pointer ${
+                        selectedSection ===
+                        sec
+                          ? 'bg-slate-900 text-white border border-slate-900 shadow-xs'
+                          : 'bg-stone-50 border border-slate-300 text-slate-700 hover:bg-stone-200 hover:text-slate-950'
+                      }`}
+                    >
+                      {getSectionDisplayName(
+                        sec
+                      )}
+                    </button>
                   )
-
-                ) : (
-
-                  <div className="col-span-2 text-center py-8 text-slate-400 font-mono text-[10px]">
-
-                    No tables found
-
-                  </div>
-
                 )}
 
               </div>
 
+              <span className="font-mono text-[9.5px] text-slate-400 font-bold shrink-0">
+                {
+                  filteredTables.length
+                }{' '}
+                Tables
+              </span>
+
             </div>
 
-          )}
-
-        </div>
-
-
-        {/* =====================================================
-            KITCHEN ORDERS / GUEST CALLS
-        ====================================================== */}
-
-        <div className="flex-1 min-h-0 rounded-2xl border border-slate-200 bg-white p-2 shadow-xs flex flex-col overflow-hidden">
-
-          {/* ===================================================
-              TOP BUTTONS
-          ==================================================== */}
-
-          <div className="grid grid-cols-2 gap-1.5 shrink-0">
-
             {/* =================================================
-                KITCHEN ORDERS BUTTON
+                TABLE GRID
             ================================================== */}
+            <div className="grid grid-cols-2 gap-2 overflow-y-auto pr-1">
 
-            <button
-              type="button"
-              onClick={() =>
-                setActiveFeedTab(
-                  'KITCHEN'
-                )
-              }
-              className={`min-h-[44px] rounded-lg px-2 py-1.5 font-mono text-[9px] font-bold transition cursor-pointer flex items-center justify-center gap-1 ${
-                activeFeedTab ===
-                'KITCHEN'
-                  ? 'bg-slate-900 text-white shadow-2xs font-black'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-stone-100'
-              }`}
-            >
-
-              <span className="text-[11px]">
-                🍳
-              </span>
-
-              <div className="flex flex-col items-start leading-tight">
-
-                <span>
-                  Kitchen
-                </span>
-
-                <span>
-                  Orders ({activeKdsTickets.length})
-                </span>
-
-              </div>
-
-              {readyPickupCount >
-                0 && (
-
-                <span
-                  className={`ml-1 px-1.5 py-1 rounded-full text-[7.5px] font-black leading-none ${
-                    activeFeedTab ===
-                    'KITCHEN'
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-emerald-100 text-emerald-800'
-                  }`}
-                >
-
-                  {readyPickupCount}
-
-                  <br />
-
-                  Ready
-
-                </span>
-
-              )}
-
-            </button>
-
-
-            {/* =================================================
-                GUEST CALLS BUTTON
-            ================================================== */}
-
-            <button
-              type="button"
-              onClick={() =>
-                setActiveFeedTab(
-                  'CUSTOMER'
-                )
-              }
-              className={`min-h-[44px] rounded-lg px-2 py-1.5 font-mono text-[9px] font-bold transition cursor-pointer flex items-center justify-center gap-1 ${
-                activeFeedTab ===
-                'CUSTOMER'
-                  ? 'bg-orange-600 text-white shadow-2xs font-black'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-stone-100'
-              }`}
-            >
-
-              <span className="text-[11px]">
-                🔔
-              </span>
-
-              <div className="flex flex-col items-start leading-tight">
-
-                <span>
-                  Guest
-                </span>
-
-                <span>
-                  Calls ({pings.length})
-                </span>
-
-              </div>
-
-            </button>
-
-          </div>
-
-
-          {/* ===================================================
-              FEED CONTENT
-          ==================================================== */}
-
-          <div className="flex-1 min-h-0 overflow-y-auto pt-2 space-y-2">
-
-            {/* =================================================
-                CUSTOMER / GUEST CALLS
-            ================================================== */}
-
-            {activeFeedTab ===
-            'CUSTOMER' ? (
-
-              pings.length > 0 ? (
-
-                pings.map((p) => (
-
-                  <div
-                    key={p.id}
-                    className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-orange-50/70 border border-orange-200 shadow-2xs"
-                  >
-
-                    {/* CALL DETAILS */}
-
-                    <div className="min-w-0 flex-1">
-
-                      <div className="font-mono font-black text-slate-900 flex items-center gap-1 text-[11px]">
-
-                        <span>
-
-                          Table{' '}
-                          {
-                            p.tableNumber
-                          }
-
-                        </span>
-
-                        <span className="text-orange-700 font-bold">
-
-                          • {p.type}
-
-                        </span>
-
-                      </div>
-
-                      <div className="text-[9.5px] text-slate-500 font-mono mt-0.5">
-
-                        {
-                          p.guestName
-                        }
-
-                        {' • '}
-
-                        {
-                          p.timestamp
-                        }
-
-                      </div>
-
-                    </div>
-
-
-                    {/* RESOLVE */}
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        waiterResolvePing(
-                          p.id
-                        )
-                      }
-                      className="shrink-0 rounded-lg bg-orange-50 hover:bg-orange-600 text-orange-900 hover:text-white border border-orange-300 hover:border-orange-600 px-3 py-1.5 text-[9px] font-mono font-bold transition duration-150 cursor-pointer shadow-2xs"
-                    >
-
-                      Resolve
-
-                    </button>
-
-                  </div>
-
-                ))
-
-              ) : (
-
-                <div className="text-center py-8 text-slate-400 font-mono text-[10px] flex flex-col items-center justify-center gap-1">
-
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-
-                  <span>
-
-                    No pending customer assistance calls
-
-                  </span>
-
-                </div>
-
-              )
-
-            ) : (
-
-              /* =================================================
-                 KITCHEN ORDERS
-              ================================================== */
-
-              activeKdsTickets.length >
-              0 ? (
-
-                activeKdsTickets.map(
+              {[...filteredTables]
+                .sort(
                   (
-                    kr: SharedKDSTicket
+                    a: TableView,
+                    b: TableView
+                  ) =>
+                    a.number.localeCompare(
+                      b.number,
+                      undefined,
+                      {
+                        numeric: true,
+                        sensitivity:
+                          'base',
+                      }
+                    )
+                )
+                .map(
+                  (
+                    t: TableView
                   ) => {
 
-                    const isReady =
-                      kr.status ===
-                      'READY';
+                    const isOccupied =
+                      t.status ===
+                      'OCCUPIED';
 
-                    const isCooking =
-                      kr.status ===
-                      'PREP';
+                    const isBilling =
+                      t.status ===
+                      'BILLING';
 
-                    const isQueued =
-                      kr.status ===
-                      'NEW';
+                    const hasReadyItem =
+                      t.activeItems?.some(
+                        (
+                          it: {
+                            status?: string;
+                          }
+                        ) =>
+                          String(
+                            it.status ||
+                              ''
+                          ).toUpperCase() ===
+                          'READY'
+                      ) ?? false;
 
                     return (
-
-                      <div
-                        key={kr.id}
-                        className={`rounded-xl border p-2.5 shadow-2xs transition ${
-                          isReady
-                            ? 'bg-emerald-50/90 border-emerald-300'
-                            : isCooking
-                            ? 'bg-amber-50/70 border-amber-200'
-                            : 'bg-slate-50/80 border-slate-200'
+                      <motion.div
+                        key={t.id}
+                        whileTap={{
+                          scale: 0.98,
+                        }}
+                        onClick={() =>
+                          handleTableClick(
+                            t.number
+                          )
+                        }
+                        className={`rounded-xl border p-2.5 cursor-pointer transition-all duration-150 h-[112px] min-h-[112px] max-h-[112px] flex flex-col overflow-hidden ${
+                          hasReadyItem
+                            ? 'bg-emerald-50/60 border-emerald-300'
+                            : isBilling
+                            ? 'bg-purple-50/50 border-purple-300'
+                            : isOccupied
+                            ? 'bg-white border-slate-200 hover:border-slate-300'
+                            : 'bg-slate-50 border-slate-200 hover:bg-white'
                         }`}
                       >
 
-                        {/* =====================================
-                            ORDER CONTENT
-                        ====================================== */}
+                        {/* Top Row */}
+                        <div className="flex items-center justify-between shrink-0">
 
-                        <div className="flex items-start justify-between gap-2">
+                          <span className="text-[12px] font-black font-mono text-slate-900">
+                            {t.mergedWith
+                              ? `${t.number} + ${t.mergedWith}`
+                              : t.number}
+                          </span>
 
-                          {/* LEFT SIDE */}
+                          <span className="text-[7px] font-mono font-bold text-slate-400 uppercase truncate ml-2">
+                            {t.section}
+                          </span>
 
-                          <div className="min-w-0 flex-1">
+                        </div>
 
-                            {/* TABLE + STATUS */}
+                        {/* Status */}
+                        <div className="flex justify-center mt-2 shrink-0">
 
-                            <div className="flex items-center gap-1.5 flex-wrap font-mono">
+                          {t.mergedWith ? (
+                            <span className="px-2 py-0.5 rounded-md text-[8px] font-mono font-bold border bg-purple-100 text-purple-900 border-purple-200">
+                              MERGED
+                            </span>
+                          ) : (
+                            <span
+                              className={`px-2 py-0.5 rounded-md text-[8px] font-mono font-bold border uppercase ${getStatusBadge(
+                                t.status
+                              )}`}
+                            >
+                              {t.status}
+                            </span>
+                          )}
 
-                              <span className="font-black text-slate-900 text-[11px]">
+                        </div>
 
-                                Table{' '}
-                                {
-                                  kr.tableNumber
-                                }
+                        {/* Bill / Time */}
+                        {(isOccupied ||
+                          isBilling) && (
+                          <div className="flex items-center justify-between px-1 mt-2 shrink-0">
 
-                              </span>
+                            <span className="text-[9px] font-mono font-black text-slate-800">
+                              ₹
+                              {
+                                t.currentBill
+                              }
+                            </span>
 
+                            <span className="text-[8px] font-mono text-slate-400">
+                              ⏱{' '}
+                              {
+                                t.seatedTime
+                              }
+                            </span>
 
-                              {isReady ? (
+                          </div>
+                        )}
 
-                                <span className="px-1.5 py-1 rounded-md text-[7.5px] font-mono font-black bg-emerald-500 text-white whitespace-nowrap">
+                        {/* Empty space for vacant tables */}
+                        {!isOccupied &&
+                          !isBilling &&
+                          !hasReadyItem && (
+                            <div className="flex-1" />
+                          )}
 
-                                  Ready for Pickup
+                        {/* Bottom Action */}
+                        <div className="mt-auto shrink-0">
 
-                                </span>
-
-                              ) : isCooking ? (
-
-                                <span className="px-1.5 py-1 rounded-md text-[7.5px] font-mono font-bold bg-amber-200 text-amber-900 whitespace-nowrap">
-
-                                  Cooking
-
-                                </span>
-
-                              ) : (
-
-                                <span className="px-1.5 py-1 rounded-md text-[7.5px] font-mono font-bold bg-slate-200 text-slate-700 whitespace-nowrap">
-
-                                  Queued
-
-                                </span>
-
-                              )}
-
-                            </div>
-
-
-                            {/* FOOD ITEMS */}
-
-                            <div className="font-mono text-[9.5px] leading-tight text-slate-800 font-medium mt-1">
-
-                              {kr.items
-                                .map(
-                                  (
-                                    it
-                                  ) =>
-                                    `${it.name} × ${it.quantity}`
+                          {hasReadyItem ? (
+                            <button
+                              type="button"
+                              onClick={(
+                                e
+                              ) =>
+                                handleServeReadyTable(
+                                  e,
+                                  t.number
                                 )
-                                .join(
-                                  ', '
-                                )}
+                              }
+                              className="w-full h-[24px] rounded-md bg-emerald-100 hover:bg-emerald-600 text-emerald-900 hover:text-white border border-emerald-300 px-2 text-[8px] font-mono font-bold transition cursor-pointer"
+                            >
+                              Serve Food
+                            </button>
+                          ) : isBilling ? (
+                            <button
+                              type="button"
+                              onClick={(
+                                e
+                              ) =>
+                                handleVacateTable(
+                                  e,
+                                  t.number
+                                )
+                              }
+                              className="w-full h-[24px] rounded-md bg-purple-100 hover:bg-purple-600 text-purple-900 hover:text-white border border-purple-300 px-2 text-[8px] font-mono font-bold transition cursor-pointer"
+                            >
+                              Vacate
+                            </button>
+                          ) : null}
 
-                            </div>
+                        </div>
 
+                      </motion.div>
+                    );
+                  }
+                )}
 
-                            {/* TIME / STATUS */}
+            </div>
+          </div>
+        )}
 
-                            <div className="text-[8.5px] leading-tight text-slate-500 font-mono mt-1">
+        {/* =====================================================
+            BOTTOM SECTION: DUAL OPERATIONS FEEDS
+        ====================================================== */}
+        <div className="flex-1 rounded-2xl border border-slate-200 bg-white p-2.5 shadow-xs flex flex-col overflow-hidden">
 
-                              {isReady
-                                ? `Ready at ${kr.timestamp} • Hot on pass window`
-                                : isCooking
-                                ? `In preparation • Cook time: ${
-                                    kr.elapsedMinutes ||
-                                    8
-                                  }m`
-                                : `Order ticket received at ${kr.timestamp}`}
+          {/* Tabs */}
+          <div className="flex items-center justify-between pb-2 border-b border-slate-100 shrink-0">
 
-                            </div>
+            <div className="flex gap-1.5">
 
-                          </div>
+              {/* Kitchen */}
+              <button
+                type="button"
+                onClick={() =>
+                  setActiveFeedTab(
+                    'KITCHEN'
+                  )
+                }
+                className={`px-3 py-1 rounded-lg font-mono text-[10px] font-bold transition cursor-pointer flex items-center gap-1 ${
+                  activeFeedTab ===
+                  'KITCHEN'
+                    ? 'bg-slate-900 text-white shadow-2xs font-black'
+                    : 'text-slate-600 hover:bg-stone-100'
+                }`}
+              >
+                <span>
+                  🍳 Kitchen Orders (
+                  {
+                    activeOrdersCount
+                  }
+                  )
+                </span>
+              </button>
 
+              {/* Customer */}
+              <button
+                type="button"
+                onClick={() =>
+                  setActiveFeedTab(
+                    'CUSTOMER'
+                  )
+                }
+                className={`px-3 py-1 rounded-lg font-mono text-[10px] font-bold transition cursor-pointer flex items-center gap-1 ${
+                  activeFeedTab ===
+                  'CUSTOMER'
+                    ? 'bg-orange-600 text-white shadow-2xs font-black'
+                    : 'text-slate-600 hover:bg-stone-100'
+                }`}
+              >
+                <span>
+                  🔔 Guest Calls (
+                  {
+                    pings.length
+                  }
+                  )
+                </span>
+              </button>
 
-                          {/* ===================================
-                              SERVE FOOD
-                          ==================================== */}
+            </div>
+          </div>
 
-                          <div className="shrink-0 pt-1">
+          {/* Feed Content */}
+          <div className="flex-1 overflow-y-auto pt-2 space-y-2">
 
-                            {isReady ? (
+            {/* Customer Calls */}
+            {activeFeedTab ===
+            'CUSTOMER' ? (
+              pings.length > 0 ? (
+                pings.map(
+                  (
+                    p: (typeof pings)[number]
+                  ) => (
+                    <div
+                      key={p.id}
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-orange-50/70 border border-orange-200 text-xs shadow-2xs"
+                    >
 
-                              <button
-                                type="button"
-                                onClick={() => {
+                      <div>
 
-                                  // 1. Mark KDS item served
-                                  waiterMarkKitchenItemServed(
-                                    kr.id
-                                  );
+                        <div className="font-mono font-black text-slate-900 flex items-center gap-1 text-[11px]">
 
-                                  // 2. Mark table food served
-                                  if (
-                                    kr.tableNumber
-                                  ) {
-                                    waiterMarkTableFoodServed(
-                                      kr.tableNumber
-                                    );
-                                  }
+                          <span>
+                            Table{' '}
+                            {
+                              p.tableNumber
+                            }
+                          </span>
 
-                                }}
-                                className="rounded-lg bg-emerald-100 hover:bg-emerald-600 text-emerald-900 hover:text-white border border-emerald-400 hover:border-emerald-600 px-3 py-2 text-[9px] font-mono font-black transition duration-150 cursor-pointer shadow-2xs whitespace-nowrap"
-                              >
+                          <span className="text-orange-700 font-bold">
+                            •{' '}
+                            {p.type}
+                          </span>
 
-                                Serve Food
+                        </div>
 
-                              </button>
-
-                            ) : isCooking ? (
-
-                              <span className="inline-block px-2.5 py-2 rounded-md bg-amber-100 text-amber-800 text-[8px] font-mono font-bold border border-amber-200 whitespace-nowrap">
-
-                                Cooking...
-
-                              </span>
-
-                            ) : (
-
-                              <span className="inline-block px-2.5 py-2 rounded-md bg-slate-100 text-slate-600 text-[8px] font-mono font-bold border border-slate-200 whitespace-nowrap">
-
-                                Queued
-
-                              </span>
-
-                            )}
-
-                          </div>
-
+                        <div className="text-[10px] text-slate-500 font-mono mt-0.5">
+                          {
+                            p.guestName
+                          }{' '}
+                          •{' '}
+                          {
+                            p.timestamp
+                          }
                         </div>
 
                       </div>
 
-                    );
-                  }
+                      <button
+                        type="button"
+                        onClick={() =>
+                          waiterResolvePing(
+                            p.id
+                          )
+                        }
+                        className="rounded-lg bg-orange-50 hover:bg-orange-600 text-orange-900 hover:text-white border border-orange-300 hover:border-orange-600 px-3 py-1.5 text-[10px] font-mono font-bold transition duration-150 cursor-pointer shadow-2xs"
+                      >
+                        Resolve
+                      </button>
+
+                    </div>
+                  )
                 )
-
               ) : (
+                <div className="text-center py-8 text-slate-400 font-mono text-[11px] flex flex-col items-center justify-center gap-1">
 
-                <div className="text-center py-8 text-slate-400 font-mono text-[10px] flex flex-col items-center justify-center gap-1">
-
-                  <Utensils className="h-5 w-5 text-slate-300" />
+                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
 
                   <span>
-
-                    No active kitchen orders
-
+                    No pending customer assistance calls
                   </span>
 
                 </div>
-
               )
+            ) : activeKdsTickets.length >
+              0 ? (
 
+              /* Kitchen Orders */
+              activeKdsTickets.map(
+                (kr: KdsView) => {
+
+                  const isReady =
+                    kr.status ===
+                    'READY';
+
+                  const isPreparing =
+                    kr.status ===
+                    'PREP';
+
+                  const isReceived =
+                    kr.status ===
+                    'NEW';
+
+                  const isServed =
+                    kr.status ===
+                    'COMPLETED';
+
+                  const kitchenStatus =
+                    getKitchenStatus(
+                      kr.status
+                    );
+
+                  return (
+                    <div
+                      key={kr.id}
+                      className={`flex items-center justify-between p-2.5 rounded-xl border text-xs shadow-2xs transition ${
+                        isReady
+                          ? 'bg-emerald-50/90 border-emerald-300'
+                          : isPreparing
+                          ? 'bg-amber-50/70 border-amber-200'
+                          : isServed
+                          ? 'bg-slate-50 border-slate-200 opacity-80'
+                          : 'bg-slate-50/80 border-slate-200'
+                      }`}
+                    >
+
+                      <div className="flex-1 mr-2">
+
+                        <div className="flex items-center gap-1.5 font-mono">
+
+                          <span className="font-black text-slate-900 text-xs">
+                            Table{' '}
+                            {
+                              kr.tableNumber
+                            }
+                          </span>
+
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[8.5px] font-mono font-bold ${
+                              isReady
+                                ? 'bg-emerald-600 text-white'
+                                : isPreparing
+                                ? 'bg-amber-200 text-amber-900'
+                                : isServed
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : 'bg-slate-200 text-slate-700'
+                            }`}
+                          >
+                            {
+                              kitchenStatus
+                            }
+                          </span>
+
+                        </div>
+
+                        <div className="font-mono text-[10.5px] text-slate-800 font-medium mt-1">
+                          {kr.items
+                            .map(
+                              (
+                                it: {
+                                  name: string;
+                                  quantity: number;
+                                }
+                              ) =>
+                                `${it.name} × ${it.quantity}`
+                            )
+                            .join(
+                              ', '
+                            )}
+                        </div>
+
+                        <div className="text-[9.5px] text-slate-500 font-mono mt-0.5">
+                          {isReady
+                            ? `Ready at ${kr.timestamp} • Hot on pass window`
+                            : isPreparing
+                            ? `In preparation • Cook time: ${
+                                kr.elapsedMinutes ||
+                                8
+                              }m`
+                            : isReceived
+                            ? `Order ticket received at ${kr.timestamp}`
+                            : `Served at ${kr.timestamp}`}
+                        </div>
+
+                      </div>
+
+                      {/* Right Side Status / Action */}
+                      <div>
+
+                        {isReady ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              waiterMarkKitchenItemServed(
+                                kr.id
+                              );
+
+                              if (
+                                kr.tableNumber
+                              ) {
+                                waiterMarkTableFoodServed(
+                                  kr.tableNumber
+                                );
+                              }
+                            }}
+                            className="rounded-lg bg-emerald-100 hover:bg-emerald-600 text-emerald-900 hover:text-white border border-emerald-400 hover:border-emerald-600 px-3 py-1.5 text-[10px] font-mono font-black transition duration-150 cursor-pointer shadow-2xs whitespace-nowrap"
+                          >
+                            Serve Food
+                          </button>
+                        ) : isPreparing ? (
+                          <span className="inline-block px-2.5 py-1 rounded-md bg-amber-100 text-amber-800 text-[9.5px] font-mono font-bold border border-amber-200 whitespace-nowrap">
+                            Preparing
+                          </span>
+                        ) : isReceived ? (
+                          <span className="inline-block px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 text-[9.5px] font-mono font-bold border border-slate-200 whitespace-nowrap">
+                            Received
+                          </span>
+                        ) : (
+                          <span className="inline-block px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 text-[9.5px] font-mono font-bold border border-emerald-200 whitespace-nowrap">
+                            Served
+                          </span>
+                        )}
+
+                      </div>
+
+                    </div>
+                  );
+                }
+              )
+            ) : (
+              <div className="text-center py-8 text-slate-400 font-mono text-[11px] flex flex-col items-center justify-center gap-1">
+
+                <Utensils className="h-5 w-5 text-slate-300" />
+
+                <span>
+                  No kitchen orders
+                </span>
+
+              </div>
             )}
 
           </div>
-
         </div>
 
       </div>
-
     </WaiterTabletHousing>
   );
 };

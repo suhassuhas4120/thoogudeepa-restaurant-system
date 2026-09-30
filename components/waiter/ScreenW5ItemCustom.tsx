@@ -4,7 +4,12 @@ import React, { useState } from 'react';
 import { useWaiterStore } from '../../store/useWaiterStore';
 import { useSharedBridge } from '../../store/useSharedBridge';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
-import { ArrowLeft, Plus, Minus, Flame, CheckCircle2, ArrowRight } from 'lucide-react';
+import {
+  ArrowLeft,
+  ShoppingBag,
+  Minus,
+  Flame,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const ScreenW5ItemCustom: React.FC = () => {
@@ -16,13 +21,19 @@ export const ScreenW5ItemCustom: React.FC = () => {
     updateOrderCartQty,
     clearOrderCart,
   } = useWaiterStore();
+
   const { waiterFiresKOT } = useSharedBridge();
 
   const [dietaryNote, setDietaryNote] = useState('');
-  const cartTotal = orderCart.reduce((s, i) => s + i.totalPrice, 0);
+
+  const cartTotal = orderCart.reduce(
+    (s, i) => s + i.totalPrice,
+    0
+  );
 
   const handleFireKOT = () => {
     if (orderCart.length === 0) return;
+
     const tableNum = selectedTableNumber || 'A-04';
     const captain = activeCaptain || 'Floor Captain';
 
@@ -40,9 +51,13 @@ export const ScreenW5ItemCustom: React.FC = () => {
   };
 
   return (
-    <WaiterTabletHousing screenNumber={5} screenTitle="ORDER CUSTOMIZATION & KOT DISPATCH">
+    <WaiterTabletHousing
+      screenNumber={5}
+      screenTitle="ORDER CUSTOMIZATION & KOT DISPATCH"
+    >
       <div className="flex-1 flex flex-col justify-between p-4 overflow-y-auto space-y-3">
         <div className="space-y-3">
+
           {/* Header */}
           <div className="flex items-center justify-between">
             <button
@@ -52,13 +67,10 @@ export const ScreenW5ItemCustom: React.FC = () => {
               <ArrowLeft className="h-3.5 w-3.5 stroke-[2.5]" />
               <span>Back to Menu</span>
             </button>
+
             <span className="font-mono text-xs font-black text-slate-900">
               Table: {selectedTableNumber || 'A-04'}
             </span>
-          </div>
-
-          <div className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-500">
-            KOT Items for Kitchen Submission
           </div>
 
           {/* Cart List */}
@@ -73,6 +85,7 @@ export const ScreenW5ItemCustom: React.FC = () => {
                     <div className="text-xs font-black text-slate-900 truncate">
                       {ci.menuItem.name}
                     </div>
+
                     <div className="text-[10px] font-mono text-slate-500">
                       ₹ {ci.totalPrice} • {ci.selectedOption}
                     </div>
@@ -80,16 +93,22 @@ export const ScreenW5ItemCustom: React.FC = () => {
 
                   <div className="flex items-center gap-1.5 bg-stone-100 p-1 rounded-lg border border-slate-200">
                     <button
-                      onClick={() => updateOrderCartQty(ci.cartItemId, -1)}
+                      onClick={() =>
+                        updateOrderCartQty(ci.cartItemId, -1)
+                      }
                       className="h-6 w-6 rounded bg-white font-mono font-bold text-xs cursor-pointer"
                     >
                       -
                     </button>
+
                     <span className="min-w-4 text-center font-mono font-bold text-xs">
                       {ci.quantity}
                     </span>
+
                     <button
-                      onClick={() => updateOrderCartQty(ci.cartItemId, 1)}
+                      onClick={() =>
+                        updateOrderCartQty(ci.cartItemId, 1)
+                      }
                       className="h-6 w-6 rounded bg-white font-mono font-bold text-xs cursor-pointer"
                     >
                       +
@@ -98,17 +117,25 @@ export const ScreenW5ItemCustom: React.FC = () => {
                 </div>
               ))
             ) : (
-              <div className="p-6 text-center text-slate-400 font-mono text-xs border border-dashed border-slate-200 rounded-xl bg-white">
-                No dishes in cart. Tap back to add items.
+              /* Empty Cart UI */
+              <div className="p-6 text-center border border-dashed border-slate-200 rounded-xl bg-white flex flex-col items-center justify-center">
+                <div className="h-10 w-10 rounded-full bg-stone-100 border border-slate-200 flex items-center justify-center mb-2">
+                  <ShoppingBag className="h-5 w-5 text-slate-400" />
+                </div>
+
+                <div className="text-xs font-black text-slate-600">
+                  No dishes in cart.
+                </div>
+
+                <div className="text-[10px] font-mono text-slate-400 mt-1">
+                  Tap back to add items.
+                </div>
               </div>
             )}
           </div>
 
           {/* Kitchen Dietary Notes */}
           <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-2xs">
-            <label className="text-[10px] font-bold font-mono uppercase text-slate-500">
-              Special Guest Dietary Instructions / Chef Notes
-            </label>
             <input
               type="text"
               value={dietaryNote}
@@ -128,8 +155,9 @@ export const ScreenW5ItemCustom: React.FC = () => {
         >
           <div className="flex items-center gap-1.5">
             <Flame className="h-4 w-4 fill-white" />
-            <span>Fire KOT to Kitchen</span>
+            <span>Kitchen</span>
           </div>
+
           <span>₹ {cartTotal} ➔</span>
         </motion.button>
       </div>

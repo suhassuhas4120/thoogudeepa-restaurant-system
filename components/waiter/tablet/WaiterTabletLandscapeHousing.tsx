@@ -63,19 +63,19 @@ export const WaiterTabletLandscapeHousing: React.FC<WaiterTabletLandscapeHousing
                 THOOGUDEEPA DONNE BIRYANI MANE
               </span>
             </div>
-            <span className="text-slate-300">|</span>
+            {/* <span className="text-slate-300">|</span>
             <span className="text-[11px] bg-slate-100 border border-slate-300 px-2 py-0.5 rounded text-slate-700 font-bold">
               FLOOR CAPTAIN TABLET TERMINAL
-            </span>
+            </span> */}
           </div>
 
           <div className="flex items-center gap-4 text-[11px]">
-            <div className="flex items-center gap-1.5 text-slate-700">
+            {/* <div className="flex items-center gap-1.5 text-slate-700">
               <UserCheck className="h-3.5 w-3.5 text-orange-600" />
               <span className="font-bold">{activeCaptain || 'Captain'}</span>
               <span className="text-slate-400">•</span>
               <span className="text-slate-500">{activeSection}</span>
-            </div>
+            </div> */}
 
             {showKitchenHotline && (
               <button
