@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useWaiterStore } from '../../store/useWaiterStore';
+import { useWaiterStore, formatCaptainName } from '../../store/useWaiterStore';
 import {
   useSharedBridge,
   getTableBillBreakdown,
@@ -163,7 +163,7 @@ export const ScreenW3TableDetail: React.FC = () => {
             </div>
 
             <div className="pt-1 border-t border-slate-100 text-[11px] text-slate-800 font-black">
-              {table.serverName || activeCaptain || 'Captain'}
+              {formatCaptainName(table.serverName || activeCaptain)}
             </div>
           </div>
 

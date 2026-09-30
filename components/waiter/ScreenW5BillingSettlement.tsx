@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useWaiterStore } from '../../store/useWaiterStore';
+import { useWaiterStore, formatCaptainName } from '../../store/useWaiterStore';
 import { useSharedBridge, getTableBillBreakdown } from '../../store/useSharedBridge';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
 import {
@@ -39,7 +39,7 @@ export const ScreenW5BillingSettlement: React.FC = () => {
 
   // Zero tip: bill is strictly Subtotal + 5% GST
   const breakdown = getTableBillBreakdown(activeTable, 0);
-  const captainName = activeTable?.serverName || activeCaptain || 'Captain';
+  const captainName = formatCaptainName(activeTable?.serverName || activeCaptain);
 
   // Payment methods: CASH first, UPI second, CARD third
   const [method, setMethod] = useState<'CASH' | 'UPI' | 'CARD'>('CASH');

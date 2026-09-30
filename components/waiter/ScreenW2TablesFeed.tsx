@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useWaiterStore } from '../../store/useWaiterStore';
+import { useWaiterStore, formatCaptainName } from '../../store/useWaiterStore';
 import {
   useSharedBridge,
   SharedTable,
@@ -244,7 +244,7 @@ export const ScreenW2TablesFeed: React.FC = () => {
             <div className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="font-mono text-xs font-black text-slate-900 uppercase tracking-wide">
-                {activeCaptain || 'Captain'}
+                {formatCaptainName(activeCaptain)}
               </span>
               <span className="text-[10px] font-mono text-slate-500 font-bold">
                 • {selectedSection === 'ALL' ? 'All Sections' : selectedSection}
@@ -484,48 +484,50 @@ export const ScreenW2TablesFeed: React.FC = () => {
                         </div>
 
                         {/* End Row: Bill on Left, Action Button on Right (Clean & Uncrowded) */}
-                        <div className="flex items-center justify-between gap-3 pt-1 border-t border-slate-100 min-w-0">
+                        <div className="flex items-center justify-between gap-2.5 pt-1.5 border-t border-slate-100 min-w-0">
                           {/* Bill at the End */}
-                          <div className="font-mono text-xs font-black shrink-0">
+                          <div className="font-mono text-xs font-black min-w-0 flex-1">
                             {isBilling ? (
-                              <span className="text-purple-950 bg-purple-100 px-2.5 py-1 rounded-lg border border-purple-300 shadow-2xs">
-                                Bill: <span className="font-black">₹{t.currentBill}</span> <span className="text-[10px] text-purple-600 font-normal">• Paid</span>
+                              <span className="inline-flex items-center gap-1 text-purple-950 bg-purple-100 px-2 py-1 rounded-lg border border-purple-300 shadow-2xs max-w-full truncate">
+                                <span>Bill:</span>
+                                <span className="font-black">₹{t.currentBill}</span>
+                                <span className="text-[10px] text-purple-600 font-normal shrink-0">• Paid</span>
                               </span>
                             ) : (
-                              <span className="text-emerald-900 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-300 shadow-2xs">
-                                Bill: <span className="text-emerald-700 font-black">₹{t.currentBill}</span> <span className="text-[10px] text-slate-500 font-normal">• ⏱ {t.seatedTime}</span>
+                              <span className="inline-flex items-center gap-1 text-emerald-900 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-300 shadow-2xs max-w-full truncate">
+                                <span>Bill:</span>
+                                <span className="text-emerald-700 font-black">₹{t.currentBill}</span>
+                                <span className="text-[10px] text-slate-500 font-normal shrink-0 truncate">• ⏱ {t.seatedTime}</span>
                               </span>
                             )}
                           </div>
 
-                          {/* Action Button at the End */}
+                          {/* Action Button: Serve Food (Always Serve Food - Enabled when food is ready, Disabled when not) */}
                           {isOccupied && (
-                            hasReadyFood ? (
-                              <button
-                                type="button"
-                                onClick={(e) => handleServeReadyTable(e, t.number)}
-                                className="h-9 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-mono font-black text-xs transition duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-md active:scale-95 animate-pulse shrink-0 whitespace-nowrap"
-                              >
-                                <Utensils className="h-3.5 w-3.5" />
-                                <span>Serve Food</span>
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                disabled
-                                className="h-9 px-3.5 rounded-xl bg-slate-100 text-slate-400 border border-slate-300 font-mono font-bold text-[11px] flex items-center justify-center gap-1 cursor-not-allowed opacity-80 shrink-0 whitespace-nowrap"
-                              >
-                                <Clock className="h-3.5 w-3.5 text-slate-400" />
-                                <span>Preparing...</span>
-                              </button>
-                            )
+                            <button
+                              type="button"
+                              disabled={!hasReadyFood}
+                              onClick={(e) => {
+                                if (hasReadyFood) {
+                                  handleServeReadyTable(e, t.number);
+                                }
+                              }}
+                              className={`h-9 px-3.5 rounded-xl font-mono text-xs flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap transition duration-150 ${
+                                hasReadyFood
+                                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white font-black cursor-pointer shadow-md active:scale-95 animate-pulse'
+                                  : 'bg-slate-100 text-slate-400 border border-slate-200 font-bold cursor-not-allowed opacity-70'
+                              }`}
+                            >
+                              <Utensils className="h-3.5 w-3.5" />
+                              <span>Serve Food</span>
+                            </button>
                           )}
 
                           {isBilling && (
                             <button
                               type="button"
                               onClick={(e) => handleVacateTable(e, t.number)}
-                              className="h-9 px-4 rounded-xl bg-purple-100 hover:bg-purple-600 text-purple-950 hover:text-white border-2 border-purple-400 font-mono font-black text-xs transition duration-150 flex items-center justify-center gap-1 cursor-pointer shadow-xs active:scale-95 shrink-0 whitespace-nowrap"
+                              className="h-9 px-3.5 rounded-xl bg-purple-100 hover:bg-purple-600 text-purple-950 hover:text-white border-2 border-purple-400 font-mono font-black text-xs transition duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95 shrink-0 whitespace-nowrap"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                               <span>Vacate</span>

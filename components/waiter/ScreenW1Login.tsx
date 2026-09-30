@@ -83,7 +83,7 @@ export const ScreenW1Login: React.FC = () => {
               value={activeCaptain}
               onChange={(e) => setActiveCaptain(e.target.value)}
               className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-stone-50 text-xs font-black text-slate-900 focus:outline-none focus:border-orange-500"
-              placeholder=" e.g captain name"
+              placeholder="e.g. Captain Ramesh"
             />
           </div>
 
