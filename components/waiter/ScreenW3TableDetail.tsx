@@ -163,7 +163,7 @@ export const ScreenW3TableDetail: React.FC = () => {
             </div>
 
             <div className="pt-1 border-t border-slate-100 text-[11px] text-slate-800 font-black">
-              {formatCaptainName(table.serverName || activeCaptain)}
+              {formatCaptainName(activeCaptain || table.serverName)}
             </div>
           </div>
 

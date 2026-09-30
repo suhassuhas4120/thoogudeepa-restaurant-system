@@ -39,7 +39,7 @@ export const ScreenW5BillingSettlement: React.FC = () => {
 
   // Zero tip: bill is strictly Subtotal + 5% GST
   const breakdown = getTableBillBreakdown(activeTable, 0);
-  const captainName = formatCaptainName(activeTable?.serverName || activeCaptain);
+  const captainName = formatCaptainName(activeCaptain || activeTable?.serverName);
 
   // Payment methods: CASH first, UPI second, CARD third
   const [method, setMethod] = useState<'CASH' | 'UPI' | 'CARD'>('CASH');

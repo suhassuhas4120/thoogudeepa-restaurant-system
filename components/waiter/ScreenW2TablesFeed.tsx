@@ -239,24 +239,25 @@ export const ScreenW2TablesFeed: React.FC = () => {
             - Sound ON/OFF is ICON ONLY (no extra text)
         ====================================================== */}
         <div className="bg-white border-b border-slate-200 px-4 py-2.5 shrink-0 shadow-2xs select-none">
-          {/* Header Row: Captain Name + Controls */}
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-mono text-xs font-black text-slate-900 uppercase tracking-wide">
+          {/* Header Row: Captain Name + Section + Controls (Strictly One Line) */}
+          <div className="flex items-center justify-between gap-2 mb-2 flex-nowrap min-w-0 w-full">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1 whitespace-nowrap overflow-hidden">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span className="font-mono text-xs font-black text-slate-900 uppercase tracking-tight truncate shrink-0">
                 {formatCaptainName(activeCaptain)}
               </span>
-              <span className="text-[10px] font-mono text-slate-500 font-bold">
-                • {selectedSection === 'ALL' ? 'All Sections' : selectedSection}
+              <span className="text-slate-300 font-bold shrink-0">•</span>
+              <span className="text-[10.5px] font-mono text-slate-600 font-bold truncate shrink-0">
+                {selectedSection === 'ALL' ? 'All Sections' : selectedSection}
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 shrink-0">
               {/* Sound Notification Toggle: ICON ONLY */}
               <button
                 type="button"
                 onClick={toggleSoundAlerts}
-                className={`h-8 w-8 rounded-xl transition cursor-pointer border shadow-2xs active:scale-95 flex items-center justify-center ${
+                className={`h-7 w-7 rounded-lg transition cursor-pointer border shadow-2xs active:scale-95 flex items-center justify-center shrink-0 ${
                   soundAlertsEnabled
                     ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
                     : 'bg-slate-100 text-slate-400 border-slate-300 hover:bg-slate-200'
@@ -264,9 +265,9 @@ export const ScreenW2TablesFeed: React.FC = () => {
                 title={soundAlertsEnabled ? 'Sound alerts active (tap to mute)' : 'Sound alerts muted (tap to unmute)'}
               >
                 {soundAlertsEnabled ? (
-                  <Volume2 className="h-4 w-4 text-emerald-600 animate-pulse" />
+                  <Volume2 className="h-3.5 w-3.5 text-emerald-600 animate-pulse" />
                 ) : (
-                  <VolumeX className="h-4 w-4 text-slate-400" />
+                  <VolumeX className="h-3.5 w-3.5 text-slate-400" />
                 )}
               </button>
 
@@ -274,7 +275,7 @@ export const ScreenW2TablesFeed: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowTables(!showTables)}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-mono text-[11px] font-black transition cursor-pointer shadow-xs active:scale-95"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-mono text-[10.5px] font-black transition cursor-pointer shadow-xs active:scale-95 shrink-0 whitespace-nowrap"
               >
                 <span>{showTables ? 'Hide Tables ▲' : `Tables (${filteredTables.length}) ▼`}</span>
               </button>

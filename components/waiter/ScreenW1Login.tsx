@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useWaiterStore } from '../../store/useWaiterStore';
+import { useWaiterStore, formatCaptainName } from '../../store/useWaiterStore';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -42,6 +42,8 @@ export const ScreenW1Login: React.FC = () => {
   const handleLogin = () => {
     if (pin === '1234') {
       setErrorMsg('');
+      const finalCaptain = activeCaptain.trim() || 'Captain Ramesh';
+      setActiveCaptain(formatCaptainName(finalCaptain));
       setShowFloorTables(false);
       setCurrentScreen(2);
     } else {
