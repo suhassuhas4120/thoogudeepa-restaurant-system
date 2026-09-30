@@ -463,7 +463,7 @@ export const ScreenW2TablesFeed: React.FC = () => {
                           {isOccupied && (
                             <>
                               <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                                {hasReadyFood ? '🔥 Ready to Serve:' : '🍳 Cooking in Kitchen:'}
+                                {hasReadyFood ? '🔥 Ready to Serve:' : '🍳 Preparing in Kitchen:'}
                               </div>
                               <div className="font-bold text-slate-900 truncate mt-0.5 min-w-0">
                                 {itemsSummary || 'Order taking in progress...'}
@@ -516,7 +516,7 @@ export const ScreenW2TablesFeed: React.FC = () => {
                                 className="h-9 px-3.5 rounded-xl bg-slate-100 text-slate-400 border border-slate-300 font-mono font-bold text-[11px] flex items-center justify-center gap-1 cursor-not-allowed opacity-80 shrink-0 whitespace-nowrap"
                               >
                                 <Clock className="h-3.5 w-3.5 text-slate-400" />
-                                <span>Cooking...</span>
+                                <span>Preparing...</span>
                               </button>
                             )
                           )}
@@ -660,7 +660,7 @@ export const ScreenW2TablesFeed: React.FC = () => {
                                 : 'bg-slate-200 text-slate-800'
                             }`}
                           >
-                            {isReady ? 'Ready' : `Cooking (${kr.elapsedMinutes || 8}m)`}
+                            {isReady ? 'Ready' : `Preparing (${kr.elapsedMinutes || 8}m)`}
                           </span>
                         </div>
 

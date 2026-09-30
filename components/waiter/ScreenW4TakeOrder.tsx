@@ -249,7 +249,7 @@ export const ScreenW4TakeOrder: React.FC = () => {
               className="p-3 bg-emerald-600 text-white rounded-xl shadow-lg flex items-center justify-center gap-2 text-xs font-black z-40"
             >
               <CheckCircle2 className="h-4 w-4" />
-              <span>KOT Fired</span>
+              <span>Order Sent to Kitchen</span>
             </motion.div>
           )}
         </AnimatePresence>

@@ -180,7 +180,7 @@ export const ScreenK3Detail: React.FC = () => {
                         <span>ELAPSED: {currentTicket?.elapsedMinutes} MIN</span>
                       </div>
                       <div className="text-[10px] font-mono text-slate-500 mt-0.5">
-                        Order Fired at {currentTicket?.timestamp}
+                        Order Received at {currentTicket?.timestamp}
                       </div>
                     </div>
                   </div>

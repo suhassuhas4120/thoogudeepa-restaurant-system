@@ -37,9 +37,9 @@ export const Screen5LiveTracking: React.FC = () => {
   const { isFetching: isQuerySyncing } = useOrderTrackingQuery();
 
   const stages: { key: OrderStage; label: string; icon: string }[] = [
-    { key: 'PLACED', label: 'PLACED', icon: '📝' },
-    { key: 'PREP', label: 'PREP', icon: '🔥' },
-    { key: 'PLATED', label: 'PLATED', icon: '🍽️' },
+    { key: 'PLACED', label: 'RECEIVED', icon: '📝' },
+    { key: 'PREP', label: 'PREPARING', icon: '🔥' },
+    { key: 'PLATED', label: 'READY', icon: '🍽️' },
     { key: 'SERVED', label: 'SERVED', icon: '✨' },
   ];
 
@@ -157,7 +157,7 @@ export const Screen5LiveTracking: React.FC = () => {
                         ? 'bg-orange-100 text-orange-800 border-orange-200'
                         : 'bg-stone-100 text-slate-700 border-slate-200'
                     }`}>
-                      [STATUS: {it.stage}]
+                      [STATUS: {it.stage === 'PLATED' ? 'READY' : it.stage === 'PREP' ? 'PREPARING' : it.stage === 'SERVED' ? 'SERVED' : 'RECEIVED'}]
                     </span>
                   </div>
                   <div className="mt-1 flex items-center gap-1.5 text-[10px] font-bold text-slate-500 font-mono">

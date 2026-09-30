@@ -391,8 +391,8 @@ const freshTables: SharedTable[] = [
     serverName: 'Captain Ramesh',
     kotCount: 1,
     activeItems: [
-      { name: 'Thoogudeepa Mutton Donne Biryani', quantity: 1, status: 'Cooking' },
-      { name: 'Gunpowder Pepper Chicken Dry', quantity: 1, status: 'Cooking' },
+      { name: 'Thoogudeepa Mutton Donne Biryani', quantity: 1, status: 'Preparing' },
+      { name: 'Gunpowder Pepper Chicken Dry', quantity: 1, status: 'Preparing' },
     ],
   },
   { id: 't-2', number: 'A-02', section: 'SECTION A', capacity: 2, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Ramesh', kotCount: 0 },
@@ -751,10 +751,10 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
                 ? ticketItem.stage === 'PLATED'
                   ? 'Ready'
                   : ticketItem.stage === 'PREP'
-                  ? 'Cooking'
+                  ? 'Preparing'
                   : ticketItem.stage === 'SERVED'
                   ? 'Served'
-                  : 'Placed'
+                  : 'Received'
                 : ai.status,
             };
           }),
@@ -800,10 +800,10 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
                 ? stage === 'PLATED'
                   ? 'Ready'
                   : stage === 'PREP'
-                  ? 'Cooking'
+                  ? 'Preparing'
                   : stage === 'SERVED'
                   ? 'Served'
-                  : 'Placed'
+                  : 'Received'
                 : ai.status,
             };
           }),
@@ -854,10 +854,10 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
                 ? stage === 'PLATED'
                   ? 'Ready'
                   : stage === 'PREP'
-                  ? 'Cooking'
+                  ? 'Preparing'
                   : stage === 'SERVED'
                   ? 'Served'
-                  : 'Placed'
+                  : 'Received'
                 : ai.status,
             };
           }),

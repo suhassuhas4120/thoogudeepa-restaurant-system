@@ -21,7 +21,7 @@ export const Screen4Cart: React.FC = () => {
 
   const handleSeparateOrder = (cartItemId: string, name: string) => {
     orderSeparately(cartItemId);
-    setSeparateNotice(`Order fired separately for ${name}!`);
+    setSeparateNotice(`Order placed separately for ${name}!`);
     setTimeout(() => setSeparateNotice(null), 2500);
   };
 

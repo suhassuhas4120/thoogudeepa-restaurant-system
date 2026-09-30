@@ -201,9 +201,9 @@ export const ScreenW5BillingSettlement: React.FC = () => {
                 <span>SGST (2.5%):</span>
                 <span>₹{breakdown.sgst.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-slate-950 font-black text-lg pt-1 border-t border-slate-900">
-                <span>Grand Total:</span>
-                <span className="text-lg text-emerald-700">₹{breakdown.grandTotal.toFixed(2)}</span>
+              <div className="flex justify-between items-center text-slate-950 font-black text-lg pt-1.5 border-t border-slate-900">
+                <span className="text-lg">Total:</span>
+                <span className="text-lg text-emerald-700 font-mono">₹{breakdown.grandTotal.toFixed(2)}</span>
               </div>
             </div>
           </div>
