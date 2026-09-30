@@ -19,6 +19,10 @@
 import { create } from 'zustand';
 import { INITIAL_MENU_ITEMS } from '../data/menuItems';
 import { MenuItem, OrderStage } from '../types/customer';
+import { validateAndCreateKOTTicket } from '../lib/validation/kotValidator';
+import { validateAndCalculateBill } from '../lib/validation/billingValidator';
+import { validateTableStateTransition } from '../lib/validation/tableValidator';
+import { dbService } from '../lib/db/databaseService';
 
 export interface WaiterProfile {
   id: string;
@@ -676,7 +680,16 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
   /* ─── Customer Places Order ──────────────────────────────────── */
   customerPlacesOrder: (tableNumber, guestName, guestCount, items) => {
     const cleanNum = (tableNumber || '').replace(/\D/g, '');
-    const ticket: SharedKDSTicket = {
+
+    const validation = validateAndCreateKOTTicket({
+      tableNumber,
+      serverName: guestName || 'Dine-in Guest',
+      items,
+      inventory86: get().inventory86,
+      source: 'CUSTOMER',
+    });
+
+    const ticket: SharedKDSTicket = validation.sanitizedTicket || {
       id: makeTicketId(),
       tableNumber,
       serverName: guestName,
@@ -694,6 +707,10 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
         addOns: i.addOns,
       })),
     };
+
+    // Asynchronous background persistence to database
+    dbService.persistKOTTicket(ticket).catch(() => {});
+
     const newItems: SharedActiveItem[] = items.map((i) => ({
       name: i.item.name,
       quantity: i.quantity,
@@ -1006,7 +1023,15 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
 
   /* ─── Waiter Fires KOT ───────────────────────────────────────── */
   waiterFiresKOT: (tableNumber, captainName, items) => {
-    const ticket: SharedKDSTicket = {
+    const validation = validateAndCreateKOTTicket({
+      tableNumber,
+      serverName: captainName,
+      items,
+      inventory86: get().inventory86,
+      source: 'WAITER',
+    });
+
+    const ticket: SharedKDSTicket = validation.sanitizedTicket || {
       id: makeTicketId(),
       tableNumber,
       serverName: captainName,
@@ -1023,6 +1048,10 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
         options: i.selectedOption,
       })),
     };
+
+    // Asynchronous background persistence to database
+    dbService.persistKOTTicket(ticket).catch(() => {});
+
     const kotItems: SharedActiveItem[] = items.map((i) => ({
       name: i.item.name,
       quantity: i.quantity,
@@ -1217,6 +1246,21 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
       const currentRecords = state.settlementRecords || freshSettlementRecords;
       const updatedRecords = [newRecord, ...currentRecords];
 
+      // Validate and asynchronously persist invoice to database
+      const targetBreakdown = getTableBillBreakdown(targetTbl);
+      const billValidation = validateAndCalculateBill({
+        tableNumber,
+        serverName: assignedServer,
+        breakdown: targetBreakdown,
+        paymentMode: cleanMethod,
+        discountAmount: discount,
+        tipAmount: effectiveTip,
+      });
+
+      if (billValidation.invoiceRecord) {
+        dbService.persistInvoice(billValidation.invoiceRecord).catch(() => {});
+      }
+
       return {
         tables: state.tables.map((t) =>
           t.number === tableNumber || (partner && t.number === partner)
@@ -1253,6 +1297,12 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
   waiterVacatesTable: (tableNumber) => {
     set((state) => {
       const targetTbl = state.tables.find((t) => t.number === tableNumber);
+      if (targetTbl) {
+        const transition = validateTableStateTransition(targetTbl.status, 'VACANT', targetTbl.currentBill);
+        if (!transition.allowed) {
+          console.warn(`[Table Vacate Notice]: ${transition.reason}`);
+        }
+      }
       const partner = targetTbl?.mergedWith;
       return {
         tables: state.tables.map((t) =>
@@ -1536,4 +1586,50 @@ if (typeof window !== 'undefined') {
       } catch {}
     });
   } catch {}
+
+  // 3. Multi-Device Real-Time SSE Hub (auto-syncs with backend API on port 3001)
+  if (typeof window !== 'undefined' && 'EventSource' in window) {
+    try {
+      const sseHost = window.location.hostname || 'localhost';
+      const sseUrl = `http://${sseHost}:3001/api/realtime/stream`;
+      let eventSource: EventSource | null = null;
+      let sseBroadcasting = false;
+
+      const connectSSE = () => {
+        try {
+          eventSource = new EventSource(sseUrl);
+          eventSource.onmessage = (event) => {
+            try {
+              const msg = JSON.parse(event.data);
+              if (msg.type === 'SYNC_STATE' && msg.payload) {
+                sseBroadcasting = true;
+                useSharedBridge.setState(msg.payload);
+                sseBroadcasting = false;
+              }
+            } catch {}
+          };
+          eventSource.onerror = () => {
+            if (eventSource) {
+              eventSource.close();
+              eventSource = null;
+            }
+            setTimeout(connectSSE, 5000);
+          };
+        } catch {}
+      };
+
+      connectSSE();
+
+      useSharedBridge.subscribe((state) => {
+        if (sseBroadcasting) return;
+        try {
+          fetch(`http://${sseHost}:3001/api/realtime/publish`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ state }),
+          }).catch(() => {});
+        } catch {}
+      });
+    } catch {}
+  }
 }
