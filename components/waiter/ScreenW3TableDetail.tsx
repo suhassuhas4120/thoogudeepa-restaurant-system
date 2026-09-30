@@ -145,8 +145,8 @@ export const ScreenW3TableDetail: React.FC = () => {
           )}
 
           {/* Table Summary Card */}
-          <div className="rounded-2xl border-2 border-slate-200 bg-white p-3.5 shadow-xs space-y-2.5">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div className="rounded-2xl border-2 border-slate-200 bg-white p-3.5 shadow-xs space-y-2">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 min-w-0">
                 <span className="text-lg font-black text-slate-950 tracking-tight shrink-0">
                   TABLE {isMerged ? `${table.number}+${table.mergedWith}` : table.number}
@@ -156,23 +156,14 @@ export const ScreenW3TableDetail: React.FC = () => {
                 </span>
               </div>
 
-              <div className="text-right shrink-0">
-                <div className="text-[9px] text-slate-400 font-bold uppercase">Bill</div>
-                <span className="text-lg font-black text-orange-600 font-mono">
-                  ₹{breakdown.grandTotal > 0 ? breakdown.grandTotal.toFixed(2) : Number(table.currentBill || 0).toFixed(2)}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-0.5 text-[11px] text-slate-500 font-bold">
-              <span className="text-slate-800 font-black">
-                {table.serverName || activeCaptain || 'Captain'}
-              </span>
-
-              <div className="flex items-center gap-1 text-slate-400 text-[10.5px]">
+              <div className="flex items-center gap-1 text-slate-400 text-[10.5px] font-bold">
                 <Clock className="h-3 w-3" />
                 <span>{table.seatedTime || 'Just Seated'}</span>
               </div>
+            </div>
+
+            <div className="pt-1 border-t border-slate-100 text-[11px] text-slate-800 font-black">
+              {table.serverName || activeCaptain || 'Captain'}
             </div>
           </div>
 
@@ -200,15 +191,22 @@ export const ScreenW3TableDetail: React.FC = () => {
                       <div className="font-black text-slate-900 truncate text-xs">
                         {item.name}
                       </div>
-                      <div className="text-[11px] text-slate-500 font-mono font-semibold mt-0.5">
-                        ₹{item.unitPrice.toFixed(2)} × {item.quantity}
+                      <div className="text-[10.5px] text-slate-400 font-mono mt-0.5">
+                        ₹{item.unitPrice.toFixed(2)} ea
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="font-mono font-black text-xs text-slate-950">
+                      {/* Highlighted Multiply on the right side */}
+                      <span className="font-mono font-black text-[11px] px-2 py-0.5 rounded-md bg-orange-50 text-orange-600 border border-orange-200 shadow-2xs">
+                        <span className="text-orange-400 mr-0.5 font-bold">×</span>
+                        <span>{item.quantity}</span>
+                      </span>
+
+                      <span className="font-mono font-black text-xs text-slate-950 min-w-[50px] text-right">
                         ₹{item.lineTotal.toFixed(2)}
                       </span>
+
                       <span
                         className={`text-[9.5px] font-black px-2 py-0.5 rounded-full border ${
                           item.status === 'Ready'

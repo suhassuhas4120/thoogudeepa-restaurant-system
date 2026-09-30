@@ -126,29 +126,19 @@ export const ScreenW5BillingSettlement: React.FC = () => {
           <div className="rounded-2xl border-2 border-slate-300 bg-white p-3.5 shadow-xs space-y-2.5">
             {/* Bill Header */}
             <div className="flex items-center justify-between pb-2 border-b border-slate-200">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-base font-black text-slate-950">
-                    TABLE {activeTable?.mergedWith ? `${activeTable.number} + ${activeTable.mergedWith}` : activeTable?.number}
+              <div className="flex items-center gap-2">
+                <span className="text-base font-black text-slate-950">
+                  TABLE {activeTable?.mergedWith ? `${activeTable.number} + ${activeTable.mergedWith}` : activeTable?.number}
+                </span>
+                {activeTable?.mergedWith && (
+                  <span className="px-1.5 py-0.5 rounded-md bg-purple-600 text-white text-[8.5px] font-black uppercase tracking-wider shadow-2xs">
+                    MERGED
                   </span>
-                  {activeTable?.mergedWith && (
-                    <span className="px-1.5 py-0.5 rounded-md bg-purple-600 text-white text-[8.5px] font-black uppercase tracking-wider shadow-2xs">
-                      MERGED
-                    </span>
-                  )}
-                </div>
-                <div className="text-[11px] text-slate-500 font-bold">
-                  Captain: {captainName}
-                </div>
+                )}
               </div>
 
-              <div className="text-right">
-                <div className="text-[9.5px] text-slate-400 font-bold uppercase">
-                  {isPaymentConfirmed ? 'Total Paid' : 'Total Bill'}
-                </div>
-                <div className="text-sm font-black text-emerald-700 font-mono">
-                  ₹{breakdown.grandTotal.toFixed(2)}
-                </div>
+              <div className="text-[11px] text-slate-600 font-bold shrink-0">
+                {captainName}
               </div>
             </div>
 
@@ -164,24 +154,25 @@ export const ScreenW5BillingSettlement: React.FC = () => {
                   breakdown.items.map((item, idx) => (
                     <div
                       key={idx}
-                      className="flex justify-between items-center text-xs py-1 border-b border-dashed border-slate-100 last:border-0"
+                      className="flex justify-between items-center text-xs py-1.5 border-b border-dashed border-slate-100 last:border-0 gap-2"
                     >
-                      <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
-                        {/* Always visible quantity badge */}
-                        <span className="font-mono font-black text-[11px] bg-orange-100 text-orange-900 border border-orange-200 px-1.5 py-0.5 rounded-md shrink-0">
-                          {item.quantity}×
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <div className="font-bold text-slate-900 truncate text-xs">
-                            {item.name}
-                          </div>
-                          <div className="text-[10.5px] text-slate-500 font-mono mt-0.5">
-                            ₹{item.unitPrice.toFixed(2)} × {item.quantity}
-                          </div>
+                      <div className="flex-1 min-w-0 pr-2">
+                        <div className="font-bold text-slate-900 truncate text-xs">
+                          {item.name}
+                        </div>
+                        <div className="text-[10.5px] text-slate-400 font-mono mt-0.5">
+                          ₹{item.unitPrice.toFixed(2)} ea
                         </div>
                       </div>
-                      <div className="text-right shrink-0">
-                        <span className="font-mono font-black text-xs text-slate-950 block">
+
+                      <div className="flex items-center gap-2.5 shrink-0">
+                        {/* Highlighted Multiply on the right side */}
+                        <span className="font-mono font-black text-[11px] px-2 py-0.5 rounded-md bg-orange-50 text-orange-600 border border-orange-200 shadow-2xs">
+                          <span className="text-orange-400 mr-0.5 font-bold">×</span>
+                          <span>{item.quantity}</span>
+                        </span>
+
+                        <span className="font-mono font-black text-xs text-slate-950 min-w-[56px] text-right">
                           ₹{item.lineTotal.toFixed(2)}
                         </span>
                       </div>
