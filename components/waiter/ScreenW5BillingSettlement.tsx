@@ -137,16 +137,16 @@ export const ScreenW5BillingSettlement: React.FC = () => {
                     </span>
                   )}
                 </div>
-                <div className="text-[10px] text-slate-400 font-bold">
+                <div className="text-[11px] text-slate-500 font-bold">
                   Captain: {captainName}
                 </div>
               </div>
 
               <div className="text-right">
-                <div className="text-[9px] text-slate-400 font-bold uppercase">
-                  {isPaymentConfirmed ? 'Total Paid' : 'Total Payable'}
+                <div className="text-[9.5px] text-slate-400 font-bold uppercase">
+                  {isPaymentConfirmed ? 'Total Paid' : 'Total Bill'}
                 </div>
-                <div className="text-xl font-black text-emerald-700">
+                <div className="text-sm font-black text-emerald-700 font-mono">
                   ₹{breakdown.grandTotal.toFixed(2)}
                 </div>
               </div>
@@ -159,22 +159,32 @@ export const ScreenW5BillingSettlement: React.FC = () => {
                 <span>Amount</span>
               </div>
 
-              <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin">
+              <div className="max-h-44 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin">
                 {breakdown.items.length > 0 ? (
                   breakdown.items.map((item, idx) => (
                     <div
                       key={idx}
-                      className="flex justify-between items-center text-xs py-0.5"
+                      className="flex justify-between items-center text-xs py-1 border-b border-dashed border-slate-100 last:border-0"
                     >
-                      <div className="truncate flex-1 pr-2">
-                        <span className="font-bold text-slate-900">{item.name}</span>
-                        <span className="text-[10px] text-orange-600 font-bold ml-1.5">
-                          × {item.quantity}
+                      <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
+                        {/* Always visible quantity badge */}
+                        <span className="font-mono font-black text-[11px] bg-orange-100 text-orange-900 border border-orange-200 px-1.5 py-0.5 rounded-md shrink-0">
+                          {item.quantity}×
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="font-bold text-slate-900 truncate text-xs">
+                            {item.name}
+                          </div>
+                          <div className="text-[10.5px] text-slate-500 font-mono mt-0.5">
+                            ₹{item.unitPrice.toFixed(2)} × {item.quantity}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className="font-mono font-black text-xs text-slate-950 block">
+                          ₹{item.lineTotal.toFixed(2)}
                         </span>
                       </div>
-                      <span className="font-mono font-bold text-slate-900 shrink-0">
-                        ₹{item.lineTotal.toFixed(2)}
-                      </span>
                     </div>
                   ))
                 ) : (
@@ -200,9 +210,9 @@ export const ScreenW5BillingSettlement: React.FC = () => {
                 <span>SGST (2.5%):</span>
                 <span>₹{breakdown.sgst.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-slate-950 font-black text-sm pt-1 border-t border-slate-900">
+              <div className="flex justify-between text-slate-950 font-black text-lg pt-1 border-t border-slate-900">
                 <span>Grand Total:</span>
-                <span className="text-emerald-700">₹{breakdown.grandTotal.toFixed(2)}</span>
+                <span className="text-lg text-emerald-700">₹{breakdown.grandTotal.toFixed(2)}</span>
               </div>
             </div>
           </div>
