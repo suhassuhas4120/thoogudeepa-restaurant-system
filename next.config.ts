@@ -1,11 +1,12 @@
 import path from "path";
 import type { NextConfig } from "next";
 
+const isStaticExport = process.env.NEXT_EXPORT === 'true';
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  output: 'export',
+  ...(isStaticExport ? { output: 'export' } : {}),
   trailingSlash: true,
-  outputFileTracingRoot: path.join(__dirname, '../'),
   images: {
     unoptimized: true,
   },
