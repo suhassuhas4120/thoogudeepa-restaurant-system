@@ -32,7 +32,75 @@ interface K2Table {
   items: K2TableItem[];
 }
 
-const INITIAL_K2_TABLES: K2Table[] = [];
+const INITIAL_K2_TABLES: K2Table[] = [
+  {
+    id: 'tbl-1',
+    tableNumber: 'TABLE 01',
+    kotNumber: '101',
+    elapsedMinutes: 14,
+    serverName: 'Captain Ramesh',
+    items: [
+      { id: 't1-i1', name: 'Special Chicken Donne Biryani', quantity: 2, stage: 'PREPARING' },
+      { id: 't1-i2', name: 'Mutton Chops Fry (Dry)', quantity: 1, stage: 'RECEIVED' },
+    ],
+  },
+  {
+    id: 'tbl-2',
+    tableNumber: 'TABLE 02',
+    kotNumber: '102',
+    elapsedMinutes: 8,
+    serverName: 'Captain Suresh',
+    items: [
+      { id: 't2-i1', name: 'Donne Mutton Biryani (Regular)', quantity: 2, stage: 'RECEIVED' },
+      { id: 't2-i2', name: 'Guntur Chicken Wings', quantity: 1, stage: 'RECEIVED' },
+    ],
+  },
+  {
+    id: 'tbl-3',
+    tableNumber: 'TABLE 03',
+    kotNumber: '103',
+    elapsedMinutes: 22,
+    serverName: 'Captain Naveen',
+    items: [
+      { id: 't3-i1', name: 'Special Chicken Donne Biryani', quantity: 1, stage: 'READY' },
+      { id: 't3-i2', name: 'Chicken Kshatriya Kebab', quantity: 1, stage: 'READY' },
+    ],
+  },
+  {
+    id: 'tbl-4',
+    tableNumber: 'TABLE 04',
+    isVip: true,
+    kotNumber: '104',
+    elapsedMinutes: 12,
+    serverName: 'Captain Ramesh',
+    items: [
+      { id: 't4-i1', name: 'Donne Mutton Biryani (Large)', quantity: 1, stage: 'PREPARING' },
+      { id: 't4-i2', name: 'Nati Koli Donne Biryani', quantity: 2, stage: 'PREPARING' },
+    ],
+  },
+  {
+    id: 'tbl-5',
+    tableNumber: 'TABLE 05',
+    kotNumber: '105',
+    elapsedMinutes: 5,
+    serverName: 'Captain Suresh',
+    items: [
+      { id: 't5-i1', name: 'Donne Mutton Biryani (Regular)', quantity: 1, stage: 'RECEIVED' },
+      { id: 't5-i2', name: 'Donne Egg Biryani', quantity: 3, stage: 'RECEIVED' },
+    ],
+  },
+  {
+    id: 'tbl-6',
+    tableNumber: 'TABLE 06',
+    kotNumber: '106',
+    elapsedMinutes: 18,
+    serverName: 'Captain Naveen',
+    items: [
+      { id: 't6-i1', name: 'Mutton Chops Fry (Dry)', quantity: 2, stage: 'READY' },
+      { id: 't6-i2', name: 'Special Donne Biryani Rice Combo', quantity: 1, stage: 'PREPARING' },
+    ],
+  },
+];
 
 const STAGE_STEPS = ['RECEIVED', 'PREPARING', 'READY'] as const;
 const STAGE_LABELS = ['1.REC', '2.PREP', '3.READY'];
@@ -120,8 +188,13 @@ export const ScreenK2Overview: React.FC = () => {
   }, [bridgeTickets, itemStageOverride]);
 
   const allTablesToRender: K2Table[] = useMemo(() => {
-    return activeBridgeTables;
-  }, [activeBridgeTables]);
+    if (activeBridgeTables.length === 0) return tablesState;
+    const tableNumsInBridge = new Set(activeBridgeTables.map((t) => t.tableNumber));
+    const remainingSeed = tablesState.filter(
+      (t) => !tableNumsInBridge.has(t.tableNumber)
+    );
+    return [...activeBridgeTables, ...remainingSeed];
+  }, [activeBridgeTables, tablesState]);
 
   const categoryFilteredTables = useMemo(() => {
     return allTablesToRender
@@ -282,9 +355,8 @@ export const ScreenK2Overview: React.FC = () => {
   };
 
   const timeQueueTickets = useMemo(() => {
-    const activeTickets = bridgeTickets.filter((tk) => tk.status !== 'COMPLETED');
-    if (activeTickets.length > 0) {
-      return activeTickets.map((tk) => ({
+    if (bridgeTickets.length > 0) {
+      return bridgeTickets.map((tk) => ({
         ticketNum: tk.id.replace('KDS-', ''),
         table: `TABLE ${tk.tableNumber}`,
         time: ` (${tk.elapsedMinutes || 1}m)`,
@@ -446,13 +518,9 @@ export const ScreenK2Overview: React.FC = () => {
             </div>
 
             {categoryFilteredTables.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-64 text-slate-400 gap-2">
-                <span className="text-3xl">🥘</span>
-                <span className="font-mono text-xs font-bold text-slate-700 uppercase">
-                  ALL KITCHEN ORDERS CLEARED
-                </span>
-                <span className="text-[11px] font-medium text-slate-400 text-center max-w-sm">
-                  Orders placed from the customer dining app or floor staff will appear here instantly in real-time.
+              <div className="flex flex-col items-center justify-center h-64 text-slate-400">
+                <span className="font-mono text-xs font-bold">
+                  NO ACTIVE ORDERS FOR THIS FILTER
                 </span>
               </div>
             ) : (
@@ -557,39 +625,32 @@ export const ScreenK2Overview: React.FC = () => {
                 </span>
               </div>
 
-              {timeQueueTickets.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-slate-400 gap-1 text-center">
-                  <span className="font-mono text-[10.5px] font-bold text-slate-500 uppercase">NO TIMED ORDERS</span>
-                  <span className="text-[10px] text-slate-400">Time queue is currently clear</span>
-                </div>
-              ) : (
-                <div className="space-y-2.5">
-                  {timeQueueTickets.map((tq, idx) => (
-                    <div
-                      key={idx}
-                      onClick={() => handleOpenTable(tq.table)}
-                      className="p-2.5 rounded-lg border-2 border-slate-900 bg-stone-50 hover:bg-orange-50/50 cursor-pointer transition shadow-[2px_2px_0px_#0f172a]"
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-mono text-xs font-black text-slate-900">
-                          #{tq.ticketNum} • {tq.table}
-                        </span>
-                        <span className="font-mono text-[10px] font-bold text-slate-500">
-                          {tq.time}
-                        </span>
-                      </div>
-
-                      <div className="space-y-0.5 font-mono text-[10px] text-slate-700">
-                        {tq.items.map((itLine, i) => (
-                          <div key={i} className="truncate">
-                            • {itLine}
-                          </div>
-                        ))}
-                      </div>
+              <div className="space-y-2.5">
+                {timeQueueTickets.map((tq, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => handleOpenTable(tq.table)}
+                    className="p-2.5 rounded-lg border-2 border-slate-900 bg-stone-50 hover:bg-orange-50/50 cursor-pointer transition shadow-[2px_2px_0px_#0f172a]"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-mono text-xs font-black text-slate-900">
+                        #{tq.ticketNum} • {tq.table}
+                      </span>
+                      <span className="font-mono text-[10px] font-bold text-slate-500">
+                        {tq.time}
+                      </span>
                     </div>
-                  ))}
-                </div>
-              )}
+
+                    <div className="space-y-0.5 font-mono text-[10px] text-slate-700">
+                      {tq.items.map((itLine, i) => (
+                        <div key={i} className="truncate">
+                          • {itLine}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <button
