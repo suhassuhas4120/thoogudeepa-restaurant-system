@@ -282,43 +282,12 @@ export const ScreenK2Overview: React.FC = () => {
   };
 
   const timeQueueTickets = useMemo(() => {
-    if (bridgeTickets.length > 0) {
-      return bridgeTickets.map((tk) => ({
-        ticketNum: tk.id.replace('KDS-', ''),
-        table: `TABLE ${tk.tableNumber}`,
-        time: ` (${tk.elapsedMinutes || 1}m)`,
-        items: tk.items.map((it) => `${it.quantity}x ${it.name}`),
-      }));
-    }
-    return [
-      {
-        ticketNum: '101',
-        table: 'TABLE 01',
-        time: '(14m)',
-        items: [
-          '2x Special Chicken Donne Biryani [NOTE: LESS SPICY]',
-          '1x Mutton Chops Fry [NOTE: EXTRA CRISPY]',
-        ],
-      },
-      {
-        ticketNum: '102',
-        table: 'TABLE 02',
-        time: '(10m)',
-        items: [
-          '2x Donne Mutton Biryani [NOTE: EXTRA SALNA]',
-          '1x Guntur Chicken Wings [NOTE: STANDARD]',
-        ],
-      },
-      {
-        ticketNum: '103',
-        table: 'TABLE 03',
-        time: '(06m)',
-        items: [
-          '1x Special Chicken Donne Biryani',
-          '1x Chicken Kshatriya Kebab',
-        ],
-      },
-    ];
+    return bridgeTickets.map((tk) => ({
+      ticketNum: tk.id.replace('KDS-', ''),
+      table: `TABLE ${tk.tableNumber}`,
+      time: ` (${tk.elapsedMinutes || 1}m)`,
+      items: tk.items.map((it) => `${it.quantity}x ${it.name}`),
+    }));
   }, [bridgeTickets]);
 
   return (
@@ -563,30 +532,37 @@ export const ScreenK2Overview: React.FC = () => {
               </div>
 
               <div className="space-y-2.5">
-                {timeQueueTickets.map((tq, idx) => (
-                  <div
-                    key={idx}
-                    onClick={() => handleOpenTable(tq.table)}
-                    className="p-2.5 rounded-lg border-2 border-slate-900 bg-stone-50 hover:bg-orange-50/50 cursor-pointer transition shadow-[2px_2px_0px_#0f172a]"
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-mono text-xs font-black text-slate-900">
-                        #{tq.ticketNum} • {tq.table}
-                      </span>
-                      <span className="font-mono text-[10px] font-bold text-slate-500">
-                        {tq.time}
-                      </span>
-                    </div>
-
-                    <div className="space-y-0.5 font-mono text-[10px] text-slate-700">
-                      {tq.items.map((itLine, i) => (
-                        <div key={i} className="truncate">
-                          • {itLine}
-                        </div>
-                      ))}
-                    </div>
+                {timeQueueTickets.length === 0 ? (
+                  <div className="py-8 px-2 text-center border-2 border-dashed border-slate-300 rounded-lg bg-stone-50">
+                    <p className="font-mono text-[11px] font-bold text-slate-500 uppercase">NO ACTIVE QUEUE</p>
+                    <p className="font-mono text-[9px] text-slate-400 mt-1">Live customer orders will appear here automatically</p>
                   </div>
-                ))}
+                ) : (
+                  timeQueueTickets.map((tq, idx) => (
+                    <div
+                      key={idx}
+                      onClick={() => handleOpenTable(tq.table)}
+                      className="p-2.5 rounded-lg border-2 border-slate-900 bg-stone-50 hover:bg-orange-50/50 cursor-pointer transition shadow-[2px_2px_0px_#0f172a]"
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-mono text-xs font-black text-slate-900">
+                          #{tq.ticketNum} • {tq.table}
+                        </span>
+                        <span className="font-mono text-[10px] font-bold text-slate-500">
+                          {tq.time}
+                        </span>
+                      </div>
+
+                      <div className="space-y-0.5 font-mono text-[10px] text-slate-700">
+                        {tq.items.map((itLine, i) => (
+                          <div key={i} className="truncate">
+                            • {itLine}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
