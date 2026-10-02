@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useWaiterStore } from '../../../store/useWaiterStore';
-import { useSharedBridge, getTableBillBreakdown } from '../../../store/useSharedBridge';
+import { useSharedBridge, getTableBillBreakdown, matchTable, normalizeTableNumber } from '../../../store/useSharedBridge';
 import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
 import { INITIAL_MENU_ITEMS } from '../../../data/menuItems';
 import { MenuItem } from '../../../types/customer';
@@ -78,8 +78,8 @@ export const TabletScreen3TableDetail: React.FC = () => {
   // Payment State (Screen 7 within Right Pane)
   const [payMode, setPayMode] = useState<'CASH' | 'UPI' | 'POS'>('CASH');
 
-  const currentTable = selectedTableNumber || 'A-04';
-  const activeTable = tables.find((t) => t.number === currentTable) || tables[0];
+  const normCurrent = normalizeTableNumber(selectedTableNumber);
+  const activeTable = tables.find((t) => matchTable(t.number, normCurrent)) || tables[0];
   const isAlreadyMerged = Boolean(activeTable?.mergedWith);
   const breakdown = getTableBillBreakdown(activeTable);
   const runningTotal = breakdown.grandTotal;

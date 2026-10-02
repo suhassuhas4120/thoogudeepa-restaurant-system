@@ -7,7 +7,7 @@ import { Wifi, ArrowRight, Crown, CheckCircle2, ShieldCheck, Sparkles } from 'lu
 import { motion } from 'framer-motion';
 
 export const Screen1Welcome: React.FC = () => {
-  const { setCurrentScreen, guestName, setGuestName, venueName } = useCustomer();
+  const { setCurrentScreen, guestName, setGuestName, venueName, tableNumber, seatNumber } = useCustomer();
   const [wifiConnected, setWifiConnected] = useState(false);
 
   const handleWifiConnect = () => {
@@ -77,7 +77,7 @@ export const Screen1Welcome: React.FC = () => {
             <motion.button
               whileTap={{ scale: 0.98 }}
               onClick={() => {
-                if (!guestName.trim()) setGuestName('GUEST (TABLE A-04)');
+                if (!guestName.trim()) setGuestName(`GUEST (${tableNumber}${seatNumber ? ` S${seatNumber}` : ''})`);
                 setCurrentScreen(2);
               }}
               className="flex w-full items-center justify-center gap-2 rounded-[20px] border border-slate-200 bg-white/90 py-3 px-4 text-[11px] font-black tracking-[0.12em] text-slate-700 shadow-[0_8px_18px_rgba(15,23,42,0.04)] transition hover:bg-slate-50"

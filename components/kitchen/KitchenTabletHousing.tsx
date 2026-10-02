@@ -1,8 +1,9 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { Wifi, Flame } from 'lucide-react';
 import { useKitchenStore } from '../../store/useKitchenStore';
+import { STATION_LABELS } from '../../types/kitchen';
 
 interface KitchenTabletHousingProps {
   children: React.ReactNode;
@@ -18,6 +19,7 @@ export const KitchenTabletHousing: React.FC<KitchenTabletHousingProps> = ({
   className = '',
 }) => {
   const {
+    activeStation,
     waiterAlertNotice,
     dismissWaiterAlert,
   } = useKitchenStore();
@@ -67,7 +69,7 @@ export const KitchenTabletHousing: React.FC<KitchenTabletHousingProps> = ({
             <span>⚡ {waiterAlertNotice}</span>
             <button
               onClick={dismissWaiterAlert}
-              className="text-[10px] text-slate-400 hover:text-white underline ml-2 cursor-pointer"
+              className="text-[10px] text-slate-400 hover:text-white underline ml-2"
             >
               Dismiss
             </button>

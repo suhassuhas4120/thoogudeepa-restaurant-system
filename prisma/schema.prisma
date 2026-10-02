@@ -1,0 +1,243 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum StaffRole {
+  WAITER
+  KITCHEN
+  MANAGER
+  ADMIN
+}
+
+enum TableStatus {
+  VACANT
+  OCCUPIED
+  BILLING
+  CLEANING
+}
+
+enum KOTStatus {
+  NEW
+  PREP
+  READY
+  COMPLETED
+}
+
+enum OrderStage {
+  Pending
+  Preparing
+  Ready
+  Served
+}
+
+enum PaymentMode {
+  CASH
+  UPI
+  POS
+  SPLIT
+}
+
+enum PingType {
+  CALL_WAITER
+  REQUEST_BILL
+  WATER
+  CLEANING
+  CUSTOM
+}
+
+enum PingStatus {
+  PENDING
+  ACCEPTED
+  RESOLVED
+}
+
+model StaffUser {
+  id              String     @id @default(cuid())
+  name            String
+  displayName     String
+  role            StaffRole  @default(WAITER)
+  pinHash         String
+  sectionAssigned String?
+  isActive        Boolean    @default(true)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  auditLogs       AuditLog[]
+  settlements     ShiftSettlement[]
+
+  @@map("staff_users")
+}
+
+model RestaurantTable {
+  id          String      @id @default(cuid())
+  number      String      @unique
+  section     String
+  capacity    Int         @default(4)
+  status      TableStatus @default(VACANT)
+  guestCount  Int         @default(0)
+  seatedTime  String?
+  currentBill Decimal     @default(0.00) @db.Decimal(10, 2)
+  serverName  String      @default("Staff Captain")
+  kotCount    Int         @default(0)
+  kotNotes    String?
+  mergedWith  String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  kots        KOTTicket[]
+  invoices    TaxInvoice[]
+  pings       ServicePing[]
+
+  @@map("restaurant_tables")
+}
+
+model MenuDish {
+  id          String    @id
+  name        String
+  category    String
+  price       Decimal   @db.Decimal(10, 2)
+  isVeg       Boolean   @default(false)
+  badge       String?
+  description String?
+  imageUrl    String?
+  createdAt   DateTime  @default(now())
+
+  inventory86 Inventory86Control?
+
+  @@map("menu_dishes")
+}
+
+model Inventory86Control {
+  dishId           String   @id
+  dish             MenuDish @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  is86             Boolean  @default(false)
+  prepDelayMinutes Int      @default(0)
+  markedBy         String?
+  updatedAt        DateTime @default(now()) @updatedAt
+
+  @@map("inventory_86_controls")
+}
+
+model KOTTicket {
+  id             String          @id
+  kotNumber      Int
+  tableNumber    String
+  table          RestaurantTable @relation(fields: [tableNumber], references: [number], onDelete: Cascade)
+  serverName     String
+  timestamp      String
+  source         String          @default("WAITER")
+  status         KOTStatus       @default(NEW)
+  elapsedMinutes Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  items          KOTItem[]
+
+  @@map("kot_tickets")
+}
+
+model KOTItem {
+  id        String     @id
+  ticketId  String
+  ticket    KOTTicket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  dishId    String?
+  dishName  String
+  quantity  Int
+  unitPrice Decimal    @default(0.00) @db.Decimal(10, 2)
+  lineTotal Decimal    @default(0.00) @db.Decimal(10, 2)
+  stage     OrderStage @default(Pending)
+  prepMode  String     @default("Standard")
+  options   String?
+  notes     String?
+  createdAt DateTime   @default(now())
+
+  @@map("kot_items")
+}
+
+model TaxInvoice {
+  id             String          @id
+  invoiceNumber  String          @unique
+  tableNumber    String
+  table          RestaurantTable @relation(fields: [tableNumber], references: [number], onDelete: Cascade)
+  serverName     String
+  foodSubtotal   Decimal         @db.Decimal(10, 2)
+  cgst           Decimal         @db.Decimal(10, 2)
+  sgst           Decimal         @db.Decimal(10, 2)
+  totalTax       Decimal         @db.Decimal(10, 2)
+  discountAmount Decimal         @default(0.00) @db.Decimal(10, 2)
+  tipAmount      Decimal         @default(0.00) @db.Decimal(10, 2)
+  grandTotal     Decimal         @db.Decimal(10, 2)
+  paymentMode    PaymentMode
+  settledAt      DateTime        @default(now())
+
+  items          InvoiceItem[]
+
+  @@map("tax_invoices")
+}
+
+model InvoiceItem {
+  id        String     @id @default(cuid())
+  invoiceId String
+  invoice   TaxInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  dishName  String
+  quantity  Int
+  unitPrice Decimal    @db.Decimal(10, 2)
+  lineTotal Decimal    @db.Decimal(10, 2)
+
+  @@map("invoice_items")
+}
+
+model ServicePing {
+  id            String          @id
+  tableNumber   String
+  table         RestaurantTable @relation(fields: [tableNumber], references: [number], onDelete: Cascade)
+  requestType   PingType
+  customMessage String?
+  timestamp     String
+  status        PingStatus      @default(PENDING)
+  resolvedBy    String?
+  resolvedAt    DateTime?
+  createdAt     DateTime        @default(now())
+
+  @@map("service_pings")
+}
+
+model ShiftSettlement {
+  id                String    @id @default(cuid())
+  staffUserId       String?
+  staffUser         StaffUser? @relation(fields: [staffUserId], references: [id], onDelete: SetNull)
+  captainName       String
+  shiftName         String
+  tablesServiced    Int       @default(0)
+  totalOrdersCount  Int       @default(0)
+  totalRevenue      Decimal   @default(0.00) @db.Decimal(10, 2)
+  cashCollected     Decimal   @default(0.00) @db.Decimal(10, 2)
+  upiCollected      Decimal   @default(0.00) @db.Decimal(10, 2)
+  posCollected      Decimal   @default(0.00) @db.Decimal(10, 2)
+  tipsAccrued       Decimal   @default(0.00) @db.Decimal(10, 2)
+  closedAt          DateTime  @default(now())
+
+  @@map("shift_settlements")
+}
+
+model AuditLog {
+  id          String     @id @default(cuid())
+  timestamp   DateTime   @default(now())
+  staffUserId String?
+  staffUser   StaffUser? @relation(fields: [staffUserId], references: [id], onDelete: SetNull)
+  staffName   String
+  role        String
+  actionType  String
+  tableNumber String?
+  details     String
+  ipAddress   String?
+
+  @@index([actionType])
+  @@index([timestamp])
+  @@map("audit_logs")
+}

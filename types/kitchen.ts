@@ -1,4 +1,4 @@
-import { OrderStage } from './customer';
+﻿import { OrderStage } from './customer';
 
 export type KitchenScreenId = 1 | 2 | 3;
 
@@ -15,7 +15,7 @@ export const STATION_LABELS: Record<KitchenStation, string> = {
   MASTER_DISPATCH: 'Master Dispatch',
 };
 
-// Universal Kitchen PIN
+// ✅ SINGLE UNIVERSAL PIN — no per-station passwords
 export const KITCHEN_MASTER_PIN = '1234';
 
 export const ALL_STATIONS: KitchenStation[] = [
@@ -25,7 +25,7 @@ export const ALL_STATIONS: KitchenStation[] = [
   'MASTER_DISPATCH',
 ];
 
-// Map item name keywords to appropriate kitchen preparation station
+// Which station handles which item (by name keyword)
 export function getStationForItem(itemName: string): KitchenStation {
   const n = itemName.toLowerCase();
   if (n.includes('biryani') || n.includes('rice') || n.includes('donne')) {
@@ -53,7 +53,7 @@ export function getStationForItem(itemName: string): KitchenStation {
   return 'MASTER_DISPATCH';
 }
 
-// Category list for Screen 2 filter
+// ✅ Category list for Screen 2 filter
 export type MenuCategory =
   | 'ALL CATEGORIES'
   | 'DUM BIRYANI'
@@ -71,10 +71,10 @@ export const ALL_CATEGORIES: MenuCategory[] = [
   'DESSERTS',
 ];
 
-// Map item -> category for filter logic
+// Map item → category (for filter logic)
 export function getCategoryForItem(itemName: string): MenuCategory {
   const n = itemName.toLowerCase();
-  if (n.includes('biryani') || n.includes('rice') || n.includes('donne')) return 'DUM BIRYANI';
+  if (n.includes('biryani') || n.includes('rice')) return 'DUM BIRYANI';
   if (
     n.includes('kebab') ||
     n.includes('tandoor') ||
@@ -83,7 +83,7 @@ export function getCategoryForItem(itemName: string): MenuCategory {
     n.includes('fry')
   )
     return 'STARTERS & KEBABS';
-  if (n.includes('curry') || n.includes('salna') || n.includes('gravy') || n.includes('saaru'))
+  if (n.includes('curry') || n.includes('salna') || n.includes('gravy'))
     return 'CURRY & SIDES';
   if (
     n.includes('juice') ||

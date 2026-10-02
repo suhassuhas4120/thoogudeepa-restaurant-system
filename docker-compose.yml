@@ -1,0 +1,39 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: thoogudeepa_pos_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://thoogudeepa_user:thoogudeepa_secure_pass@db:5432/thoogudeepa_pos?schema=public
+      - JWT_SECRET=thoogudeepa-enterprise-pos-secure-jwt-key-2026
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    container_name: thoogudeepa_pos_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: thoogudeepa_user
+      POSTGRES_PASSWORD: thoogudeepa_secure_pass
+      POSTGRES_DB: thoogudeepa_pos
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./lib/db/schema.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U thoogudeepa_user -d thoogudeepa_pos"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local

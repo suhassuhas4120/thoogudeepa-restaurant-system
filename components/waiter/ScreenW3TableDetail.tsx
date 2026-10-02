@@ -5,6 +5,8 @@ import { useWaiterStore, formatCaptainName } from '../../store/useWaiterStore';
 import {
   useSharedBridge,
   getTableBillBreakdown,
+  matchTable,
+  normalizeTableNumber,
 } from '../../store/useSharedBridge';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
 import {
@@ -38,13 +40,9 @@ export const ScreenW3TableDetail: React.FC = () => {
   const [showMergeModal, setShowMergeModal] = useState(false);
   const [mergeNotice, setMergeNotice] = useState<string | null>(null);
 
-  const cleanSelected = (selectedTableNumber || '').replace(/\D/g, '');
+  const normSelected = normalizeTableNumber(selectedTableNumber);
   const table =
-    tables.find((t) => t.number === selectedTableNumber) ||
-    tables.find((t) => {
-      const cleanT = t.number.replace(/\D/g, '');
-      return cleanSelected !== '' && cleanT !== '' && cleanSelected === cleanT;
-    }) ||
+    tables.find((t) => matchTable(t.number, normSelected)) ||
     tables[0];
 
   const breakdown = getTableBillBreakdown(table);

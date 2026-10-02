@@ -9,7 +9,8 @@ import {
   WaiterPingType,
 } from '../types/customer';
 import { INITIAL_MENU_ITEMS } from '../data/menuItems';
-import { useSharedBridge } from './useSharedBridge';
+import { useSharedBridge, normalizeTableNumber } from './useSharedBridge';
+import { saveSeatCart, getSavedSeatCart, clearSeatSession } from '../lib/session/seatSessionManager';
 
 interface CustomerStoreState {
   currentScreen: ScreenId;
@@ -17,6 +18,7 @@ interface CustomerStoreState {
   viewMode: 'single' | 'all';
   guestName: string;
   tableNumber: string;
+  seatNumber: number | null;
   venueName: string;
   selectedDetailItem: MenuItem;
   cart: CartItem[];
@@ -31,6 +33,7 @@ interface CustomerStoreState {
   setViewMode: (mode: 'single' | 'all') => void;
   setGuestName: (name: string) => void;
   setTableNumber: (table: string) => void;
+  setSeatNumber: (seat: number | null) => void;
   setSelectedDetailItem: (item: MenuItem) => void;
   addToCart: (
     item: MenuItem,
@@ -52,6 +55,7 @@ interface CustomerStoreState {
   pingWaiter: (type: WaiterPingType, customMsg?: string) => void;
   dismissWaiterNotification: () => void;
   resetSession: () => void;
+  restoreSavedCart: (tableNumber: string, seatNumber: number) => void;
 }
 
 // Calculate payment details dynamically based on items currently in cart
@@ -94,7 +98,8 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
   previousScreen: 1,
   viewMode: 'single',
   guestName: '',
-  tableNumber: 'A-04',
+  tableNumber: 'A-01',
+  seatNumber: 1,
   venueName: 'Thoogudeepa donne biryani mane',
   selectedDetailItem: INITIAL_MENU_ITEMS[0],
   cart: [],
@@ -117,7 +122,8 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
 
   setViewMode: (mode) => set({ viewMode: mode }),
   setGuestName: (guestName) => set({ guestName }),
-  setTableNumber: (tableNumber) => set({ tableNumber }),
+  setTableNumber: (tableNumber) => set({ tableNumber: normalizeTableNumber(tableNumber) }),
+  setSeatNumber: (seatNumber) => set({ seatNumber }),
   setSelectedDetailItem: (selectedDetailItem) => set({ selectedDetailItem }),
 
   addToCart: (
@@ -168,6 +174,8 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
         newCart = [...state.cart, newCartItem];
       }
 
+      saveSeatCart(state.tableNumber, state.seatNumber || 1, newCart, state.itemTracking, 2);
+
       return {
         cart: newCart,
         payment: calculatePaymentTotals(newCart, state.payment),
@@ -193,6 +201,8 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
         })
         .filter(Boolean) as CartItem[];
 
+      saveSeatCart(state.tableNumber, state.seatNumber || 1, newCart, state.itemTracking, 4);
+
       return {
         cart: newCart,
         payment: calculatePaymentTotals(newCart, state.payment),
@@ -203,6 +213,7 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
   removeCartItem: (cartItemId) => {
     set((state) => {
       const newCart = state.cart.filter((ci) => ci.cartItemId !== cartItemId);
+      saveSeatCart(state.tableNumber, state.seatNumber || 1, newCart, state.itemTracking, 4);
       return {
         cart: newCart,
         payment: calculatePaymentTotals(newCart, state.payment),
@@ -238,17 +249,32 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
 
       // Push only newlyAddedItems to shared bridge → Kitchen KDS + Waiter table updates
       const bridge = useSharedBridge.getState();
-      bridge.customerPlacesOrder(
-        state.tableNumber,
-        state.guestName || 'Guest',
-        1, // at least 1 guest
-        newlyAddedItems.map((c) => ({
-          item: c.menuItem,
-          selectedOption: c.selectedOption,
-          addOns: c.selectedAddOns,
-          quantity: c.quantity,
-        }))
-      );
+      const normTable = normalizeTableNumber(state.tableNumber);
+      if (state.seatNumber) {
+        bridge.customerPlacesSeatOrder(
+          normTable,
+          state.seatNumber,
+          state.guestName || `Seat ${state.seatNumber}`,
+          newlyAddedItems.map((c) => ({
+            item: c.menuItem,
+            selectedOption: c.selectedOption,
+            notes: c.selectedAddOns?.join(', '),
+            quantity: c.quantity,
+          }))
+        );
+      } else {
+        bridge.customerPlacesOrder(
+          normTable,
+          state.guestName || 'Guest',
+          1, // at least 1 guest
+          newlyAddedItems.map((c) => ({
+            item: c.menuItem,
+            selectedOption: c.selectedOption,
+            addOns: c.selectedAddOns,
+            quantity: c.quantity,
+          }))
+        );
+      }
 
       const newTracking: IndividualItemTracking[] = newlyAddedItems.map((c) => ({
         id: 'track-' + c.cartItemId,
@@ -259,10 +285,12 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
       }));
 
       const updatedCart = state.cart.map((c) => ({ ...c, isOrdered: true }));
+      const updatedTracking = [...state.itemTracking, ...newTracking];
+      saveSeatCart(state.tableNumber, state.seatNumber || 1, updatedCart, updatedTracking, 5);
 
       return {
         cart: updatedCart,
-        itemTracking: [...state.itemTracking, ...newTracking],
+        itemTracking: updatedTracking,
         orderStage: 'PLACED',
         previousScreen: state.currentScreen,
         currentScreen: 5, // Proceed to Live Tracking Screen 5
@@ -322,9 +350,13 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
   confirmAndPay: () => {
     const randomTxn = '#TXN-' + Math.floor(100000 + Math.random() * 900000);
     set((state) => {
-      // Record payment in bridge → updates waiter shift stats + table to BILLING
+      // Record payment in bridge → updates waiter shift stats + table to BILLING / settled
       const bridge = useSharedBridge.getState();
-      bridge.waiterRecordsPayment(state.tableNumber, state.payment.paymentMethod, state.payment.totalAmount);
+      if (state.seatNumber) {
+        bridge.seatSettlesBill(state.tableNumber, state.seatNumber, (state.payment.paymentMethod === 'NET_BANKING' ? 'UPI' : state.payment.paymentMethod) as any);
+      } else {
+        bridge.waiterRecordsPayment(state.tableNumber, state.payment.paymentMethod, state.payment.totalAmount);
+      }
 
       return {
         previousScreen: state.currentScreen,
@@ -360,6 +392,8 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
   },
 
   resetSession: () => {
+    const state = useCustomerStore.getState();
+    clearSeatSession(state.tableNumber, state.seatNumber || 1);
     set({
       currentScreen: 1,
       previousScreen: 1,
@@ -369,6 +403,21 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
       itemTracking: [],
       payment: initialEmptyPayment,
       waiterNotification: null,
+    });
+  },
+
+  restoreSavedCart: (tableNumber, seatNumber) => {
+    const saved = getSavedSeatCart(tableNumber, seatNumber);
+    if (!saved || !saved.cart || saved.cart.length === 0) return;
+
+    set((state) => {
+      const restoredPayment = calculatePaymentTotals(saved.cart, state.payment);
+      return {
+        cart: saved.cart,
+        itemTracking: saved.itemTracking && saved.itemTracking.length > 0 ? saved.itemTracking : state.itemTracking,
+        payment: restoredPayment,
+        currentScreen: (saved.currentScreen && saved.currentScreen > 1 ? saved.currentScreen : 4) as ScreenId,
+      };
     });
   },
 }));

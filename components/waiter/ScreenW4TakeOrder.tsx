@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useWaiterStore, formatCaptainName } from '../../store/useWaiterStore';
-import { useSharedBridge } from '../../store/useSharedBridge';
+import { useSharedBridge, matchTable, normalizeTableNumber } from '../../store/useSharedBridge';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
 import { INITIAL_MENU_ITEMS } from '../../data/menuItems';
 import { MenuItem } from '../../types/customer';
@@ -55,13 +55,9 @@ export const ScreenW4TakeOrder: React.FC = () => {
 
   const { inventory86, tables, waiterFiresKOT, waiterSeatsGuests } = useSharedBridge();
 
-  const cleanSelected = (selectedTableNumber || '').replace(/\D/g, '');
+  const normSelected = normalizeTableNumber(selectedTableNumber);
   const activeTable =
-    tables.find((t) => t.number === selectedTableNumber) ||
-    tables.find((t) => {
-      const cleanT = t.number.replace(/\D/g, '');
-      return cleanSelected !== '' && cleanT !== '' && cleanSelected === cleanT;
-    });
+    tables.find((t) => matchTable(t.number, normSelected));
   const currentTable = activeTable?.number || selectedTableNumber || 'A-02';
 
   const [selectedCat, setSelectedCat] = useState('ALL');

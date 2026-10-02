@@ -7,6 +7,9 @@ import {
   SharedTable,
   SharedPing,
   SharedKDSTicket,
+  matchTable,
+  normalizeTableNumber,
+  cleanDishTitle,
 } from '../../../store/useSharedBridge';
 import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
 import {
@@ -38,18 +41,18 @@ export const TabletScreen2TablesFeed: React.FC = () => {
     activeSection || 'ALL'
   );
 
+  const isOccupiedTable = (t: SharedTable) => {
+    const s = String(t.status || '').toUpperCase();
+    return s === 'OCCUPIED' || s === 'BILLING' || s === 'DINING';
+  };
+
   const activeOrdersCount = kdsTickets.filter(
     (tk) => tk.status !== 'COMPLETED'
   ).length;
 
-  const occupiedCount = tables.filter(
-    (t: SharedTable) =>
-      t.status === 'OCCUPIED' || t.status === 'BILLING'
-  ).length;
+  const occupiedCount = tables.filter(isOccupiedTable).length;
 
-  const vacantCount = tables.filter(
-    (t: SharedTable) => t.status === 'VACANT'
-  ).length;
+  const vacantCount = Math.max(0, tables.length - occupiedCount);
 
   const totalGuests = tables.reduce(
     (acc: number, t: SharedTable) =>
@@ -91,28 +94,13 @@ export const TabletScreen2TablesFeed: React.FC = () => {
   };
 
   const filteredTables = tables.filter((table: SharedTable) => {
-    if (selectedSection === 'ALL') {
-      return true;
-    }
-
-    const tableSec = (table.section || '').trim().toUpperCase();
-    const filterSec = selectedSection.trim().toUpperCase();
-
-    if (filterSec === 'SECTION C') {
-      return (
-        tableSec === 'SECTION C' ||
-        tableSec.includes('SECTION C')
-      );
-    }
-
-    if (filterSec === 'SECTION D') {
-      return (
-        tableSec === 'SECTION D' ||
-        tableSec.includes('SECTION D')
-      );
-    }
-
-    return tableSec === filterSec;
+    if (selectedSection === 'ALL') return true;
+    const num = (table.number || '').trim().toUpperCase();
+    if (selectedSection === 'SECTION A') return num.startsWith('A');
+    if (selectedSection === 'SECTION B') return num.startsWith('B');
+    if (selectedSection === 'SECTION C') return num.startsWith('C');
+    if (selectedSection === 'SECTION D') return num.startsWith('D');
+    return true;
   });
 
   const activeKdsTickets = kdsTickets
@@ -160,17 +148,8 @@ export const TabletScreen2TablesFeed: React.FC = () => {
 
     waiterMarkTableFoodServed(tableNumber);
 
-    const cleanNum = tableNumber.replace(/\D/g, '');
-
     kdsTickets
-      .filter((tk) => {
-        const tkNum = (tk.tableNumber || '').replace(/\D/g, '');
-
-        return (
-          tk.tableNumber === tableNumber ||
-          (cleanNum && tkNum === cleanNum)
-        );
-      })
+      .filter((tk) => matchTable(tk.tableNumber, tableNumber))
       .forEach((tk) => {
         waiterMarkKitchenItemServed(tk.id);
       });
@@ -402,48 +381,53 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                       {table.activeItems &&
                       table.activeItems.length > 0 ? (
 
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1 max-h-[90px] overflow-y-auto pr-1 scrollbar-thin">
 
-                          {table.activeItems
-                            .slice(0, 2)
-                            .map(
-                              (
-                                item: any,
-                                idx: number
-                              ) => {
+                          {table.activeItems.map(
+                            (
+                              item: any,
+                              idx: number
+                            ) => {
 
-                                const statusName =
-                                  getStatusName(item.status);
+                              const statusName =
+                                getStatusName(item.status);
+                              const cleanName = cleanDishTitle(item.name);
+                              const seatTag = item.seatNumber ? `S${item.seatNumber}` : (item.name.match(/\[Seat\s*(\d+)\]/i)?.[1] ? `S${item.name.match(/\[Seat\s*(\d+)\]/i)?.[1]}` : null);
 
-                                return (
-                                  <div
-                                    key={idx}
-                                    className="flex justify-between items-center gap-1"
+                              return (
+                                <div
+                                  key={idx}
+                                  className="flex justify-between items-center gap-1 min-w-0"
+                                >
+
+                                  <span className="truncate flex items-center gap-1 min-w-0">
+                                    <span className="font-black text-slate-900">{item.quantity}x</span>
+                                    <span className="truncate">{cleanName}</span>
+                                    {seatTag && (
+                                      <span className="bg-orange-100 text-orange-800 text-[8px] font-black px-1 py-0.2 rounded shrink-0">
+                                        {seatTag}
+                                      </span>
+                                    )}
+                                  </span>
+
+                                  <span
+                                    className={`text-[8px] font-bold px-1 py-0.5 rounded shrink-0 ${
+                                      statusName === 'Served'
+                                        ? 'bg-slate-100 text-slate-500'
+                                        : statusName === 'Ready'
+                                        ? 'bg-emerald-100 text-emerald-800'
+                                        : statusName === 'Preparing'
+                                        ? 'bg-orange-100 text-orange-800'
+                                        : 'bg-blue-100 text-blue-800'
+                                    }`}
                                   >
+                                    {statusName}
+                                  </span>
 
-                                    <span className="truncate">
-                                      {item.quantity}x{' '}
-                                      {item.name}
-                                    </span>
-
-                                    <span
-                                      className={`text-[8px] font-bold px-1 py-0.5 rounded shrink-0 ${
-                                        statusName === 'Served'
-                                          ? 'bg-slate-100 text-slate-500'
-                                          : statusName === 'Ready'
-                                          ? 'bg-emerald-100 text-emerald-800'
-                                          : statusName === 'Preparing'
-                                          ? 'bg-orange-100 text-orange-800'
-                                          : 'bg-blue-100 text-blue-800'
-                                      }`}
-                                    >
-                                      {statusName}
-                                    </span>
-
-                                  </div>
-                                );
-                              }
-                            )}
+                                </div>
+                              );
+                            }
+                          )}
 
                         </div>
 
@@ -684,21 +668,26 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                       >
 
                         <div className="flex-1 min-w-0">
-
-                          <strong className="text-[10px] font-black text-slate-900 block truncate">
-
-                            Table {item.tableNumber}:{' '}
-
-                            {totalQty}x{' '}
-
-                            {dishTitle}
-
-                          </strong>
-
-                          <span className="text-[9px] text-slate-500 font-bold block mt-1 truncate">
-                            ⏱ {item.timestamp}
-                          </span>
-
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <strong className="text-[11px] font-black text-slate-900">
+                              Table {item.tableNumber}
+                            </strong>
+                            {item.serverName && (
+                              <span className="bg-orange-100 text-orange-800 border border-orange-200 text-[9px] font-black px-1.5 py-0.2 rounded">
+                                {item.serverName}
+                              </span>
+                            )}
+                            <span className="text-[9px] text-slate-500 font-bold">
+                              ⏱ {item.timestamp}
+                            </span>
+                          </div>
+                          <div className="mt-1 text-[10px] font-mono text-slate-700 space-y-0.5">
+                            {item.items.map((it: any, iIdx: number) => (
+                              <div key={iIdx} className="truncate">
+                                • <span className="font-bold text-slate-900">{it.quantity}x</span> {cleanDishTitle(it.name)}
+                              </div>
+                            ))}
+                          </div>
                         </div>
 
                         <div className="w-[110px] shrink-0">
