@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useKitchenStore } from '../../store/useKitchenStore';
-import { useSharedBridge } from '../../store/useSharedBridge';
+import { useSharedBridge, cleanDishTitle } from '../../store/useSharedBridge';
 import { KitchenTabletHousing } from './KitchenTabletHousing';
 import {
   MenuCategory,
@@ -19,7 +19,8 @@ interface K2TableItem {
   stage: 'RECEIVED' | 'PREPARING' | 'READY';
   notes?: string;       
   options?: string;     
-  addOns?: string[];    
+  addOns?: string[];
+  seatNumber?: number;
 }
 
 interface K2Table {
@@ -106,14 +107,16 @@ export const ScreenK2Overview: React.FC = () => {
               : it.stage === 'PLATED'
               ? 'READY'
               : 'READY');
+          const seatNum = it.seatNumber || (tk.serverName && tk.serverName.includes('Seat') ? parseInt(tk.serverName.replace(/\D/g, ''), 10) : undefined);
           return {
             id: it.id,
-            name: it.name,
+            name: cleanDishTitle(it.name),
             quantity: it.quantity,
             stage: resolvedStage as 'RECEIVED' | 'PREPARING' | 'READY',
             notes: it.notes,       
             options: it.options,   
-            addOns: it.addOns,     
+            addOns: it.addOns,
+            seatNumber: seatNum,
           };
         }),
       }));
@@ -130,7 +133,7 @@ export const ScreenK2Overview: React.FC = () => {
         items: tbl.items.filter((it) => {
           return selectedCategory === 'ALL CATEGORIES'
             ? true
-            : getCategoryForItem(it.name) === selectedCategory;
+            : getCategoryForItem(cleanDishTitle(it.name)) === selectedCategory;
         }),
       }))
       .filter((tbl) => tbl.items.length > 0);
@@ -144,11 +147,13 @@ export const ScreenK2Overview: React.FC = () => {
 
     categoryFilteredTables.forEach((tbl) => {
       tbl.items.forEach((it) => {
-        const key = it.name;
+        const key = cleanDishTitle(it.name);
         const existing =
           map.get(key) || { total: 0, sources: [], stages: new Set<string>() };
         existing.total += it.quantity;
-        existing.sources.push(`${tbl.tableNumber} (x${it.quantity})`);
+        const seatTag = it.seatNumber ? `S${it.seatNumber}` : (tbl.serverName.includes('Seat') ? tbl.serverName.replace('Seat ', 'S') : '');
+        const sourceLabel = `${tbl.tableNumber}${seatTag ? ` ${seatTag}` : ''} (x${it.quantity})`;
+        existing.sources.push(sourceLabel);
         existing.stages.add(it.stage);
         map.set(key, existing);
       });
@@ -233,12 +238,12 @@ export const ScreenK2Overview: React.FC = () => {
   ) => {
     setBulkStages((prev) => ({ ...prev, [bulkItemName]: newStage }));
 
-    const bulkLower = bulkItemName.toLowerCase();
+    const bulkLower = cleanDishTitle(bulkItemName).toLowerCase();
     setItemStageOverride((prev) => {
       const next = { ...prev };
       allTablesToRender.forEach((tbl) => {
         tbl.items.forEach((it) => {
-          const itLower = it.name.toLowerCase();
+          const itLower = cleanDishTitle(it.name).toLowerCase();
           if (itLower.includes(bulkLower) || bulkLower.includes(itLower)) {
             next[`${tbl.id}-${it.id}`] = newStage;
           }
@@ -251,7 +256,7 @@ export const ScreenK2Overview: React.FC = () => {
       prev.map((tbl) => ({
         ...tbl,
         items: tbl.items.map((it) => {
-          const itLower = it.name.toLowerCase();
+          const itLower = cleanDishTitle(it.name).toLowerCase();
           const isMatch =
             itLower.includes(bulkLower) || bulkLower.includes(itLower);
           return isMatch ? { ...it, stage: newStage } : it;
@@ -285,8 +290,9 @@ export const ScreenK2Overview: React.FC = () => {
     return bridgeTickets.map((tk) => ({
       ticketNum: tk.id.replace('KDS-', ''),
       table: `TABLE ${tk.tableNumber}`,
+      serverName: tk.serverName || '',
       time: ` (${tk.elapsedMinutes || 1}m)`,
-      items: tk.items.map((it) => `${it.quantity}x ${it.name}`),
+      items: tk.items.map((it) => `${it.quantity}x ${cleanDishTitle(it.name)}`),
     }));
   }, [bridgeTickets]);
 
@@ -439,8 +445,13 @@ export const ScreenK2Overview: React.FC = () => {
                   >
                     <div>
                       <div className="flex items-center justify-between pb-1.5 border-b-2 border-slate-900 mb-2">
-                        <div className="flex items-center gap-1 font-mono text-xs font-black text-slate-900">
+                        <div className="flex items-center gap-1.5 font-mono text-xs font-black text-slate-900 flex-wrap">
                           <span>{tbl.tableNumber}</span>
+                          {tbl.serverName && (
+                            <span className="text-orange-700 bg-orange-100 border border-orange-300 px-1.5 py-0.5 rounded text-[9.5px] font-black uppercase">
+                              {tbl.serverName}
+                            </span>
+                          )}
                           {tbl.isVip && (
                             <span className="text-amber-500 font-bold">★</span>
                           )}
@@ -545,8 +556,8 @@ export const ScreenK2Overview: React.FC = () => {
                       className="p-2.5 rounded-lg border-2 border-slate-900 bg-stone-50 hover:bg-orange-50/50 cursor-pointer transition shadow-[2px_2px_0px_#0f172a]"
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-mono text-xs font-black text-slate-900">
-                          #{tq.ticketNum} • {tq.table}
+                        <span className="font-mono text-xs font-black text-slate-900 truncate">
+                          #{tq.ticketNum} • {tq.table} {tq.serverName ? `(${tq.serverName})` : ''}
                         </span>
                         <span className="font-mono text-[10px] font-bold text-slate-500">
                           {tq.time}

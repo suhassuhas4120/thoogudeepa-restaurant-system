@@ -10,7 +10,7 @@
     "type-check": "tsc --noEmit",
     "server:api": "node server/restaurantApiServer.js",
     "prisma:generate": "prisma generate",
-    "test:core": "node tests/core-architecture.test.js && node tests/api-server.test.js && node tests/api-routes.test.js && node tests/seat-anchor.test.js && node tests/session-recovery.test.js && node tests/b3-seat-ordering.test.js && node tests/cross-device-sync.test.js"
+    "test:core": "node tests/core-architecture.test.js && node tests/api-server.test.js && node tests/api-routes.test.js && node tests/seat-anchor.test.js && node tests/session-recovery.test.js && node tests/b3-seat-ordering.test.js && node tests/cross-device-sync.test.js && node tests/kds-bulk-aggregation.test.js"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

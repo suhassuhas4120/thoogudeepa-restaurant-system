@@ -8,6 +8,7 @@ import {
   SharedKDSTicket,
   matchTable,
   normalizeTableNumber,
+  cleanDishTitle,
 } from '../../store/useSharedBridge';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
 import {
@@ -91,13 +92,14 @@ export const ScreenW2TablesFeed: React.FC = () => {
     (tk: KdsView) => tk.status !== 'COMPLETED'
   ).length;
 
-  const occupiedCount = tables.filter(
-    (t: TableView) => t.status === 'OCCUPIED' || t.status === 'BILLING'
-  ).length;
+  const isOccupiedTable = (t: TableView) => {
+    const s = String(t.status || '').toUpperCase();
+    return s === 'OCCUPIED' || s === 'BILLING' || s === 'DINING';
+  };
 
-  const vacantCount = tables.filter(
-    (t: TableView) => t.status === 'VACANT'
-  ).length;
+  const occupiedCount = tables.filter(isOccupiedTable).length;
+
+  const vacantCount = Math.max(0, tables.length - occupiedCount);
 
   // Section filter options: Standard Section Names A, B, C, D
   const filterSections = [
@@ -338,7 +340,7 @@ export const ScreenW2TablesFeed: React.FC = () => {
 
                     // Formatted active items list
                     const itemsSummary = (t.activeItems || [])
-                      .map((it) => `${it.name} (${it.quantity})`)
+                      .map((it) => `${cleanDishTitle(it.name)} (${it.quantity})`)
                       .join(', ');
 
                     /* ── VACANT TABLE CARD: STATUS BADGE AT TOP, "No items yet ordered" AT CENTER, BILL AT END ── */
@@ -653,7 +655,7 @@ export const ScreenW2TablesFeed: React.FC = () => {
                       <div className="flex items-center justify-between gap-3 pt-0.5 min-w-0">
                         <div className="font-mono text-xs text-slate-900 font-bold truncate flex-1 min-w-0">
                           {kr.items
-                            .map((it: { name: string; quantity: number }) => `${it.name} (${it.quantity})`)
+                            .map((it: { name: string; quantity: number }) => `${cleanDishTitle(it.name)} (${it.quantity})`)
                             .join(', ')}
                         </div>
 
