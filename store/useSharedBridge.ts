@@ -25,6 +25,7 @@ import { validateTableStateTransition } from '../lib/validation/tableValidator';
 import { TableSeat, SeatItem, createDefaultSeats, aggregateTableFromSeats } from '../lib/validation/seatValidator';
 import { dbService } from '../lib/db/databaseService';
 import { clearSeatSession } from '../lib/session/seatSessionManager';
+import { supabase } from '../lib/db/supabaseClient';
 
 export interface WaiterProfile {
   id: string;
@@ -1774,46 +1775,56 @@ if (typeof window !== 'undefined') {
     });
   } catch {}
 
-  // 3. Multi-Device Real-Time SSE Hub (auto-syncs with backend API on port 3001)
-  if (typeof window !== 'undefined' && 'EventSource' in window) {
+  // 3. Multi-Device Real-Time Cloud Sync via Supabase Realtime WebSockets
+  if (typeof window !== 'undefined') {
     try {
-      const sseHost = window.location.hostname || 'localhost';
-      const sseUrl = `http://${sseHost}:3001/api/realtime/stream`;
-      let eventSource: EventSource | null = null;
-      let sseBroadcasting = false;
+      let isCloudBroadcasting = false;
+      const cloudChannel = supabase.channel('thoogudeepa_cloud_sync', {
+        config: { broadcast: { self: false } },
+      });
 
-      const connectSSE = () => {
-        try {
-          eventSource = new EventSource(sseUrl);
-          eventSource.onmessage = (event) => {
-            try {
-              const msg = JSON.parse(event.data);
-              if (msg.type === 'SYNC_STATE' && msg.payload) {
-                sseBroadcasting = true;
-                useSharedBridge.setState(msg.payload);
-                sseBroadcasting = false;
+      cloudChannel
+        .on('broadcast', { event: 'SYNC_BRIDGE' }, ({ payload }) => {
+          if (payload) {
+            isCloudBroadcasting = true;
+            useSharedBridge.setState(payload);
+            isCloudBroadcasting = false;
+          }
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'tables' }, (change: any) => {
+          if (change?.new && change.new.number) {
+            const state = useSharedBridge.getState();
+            const updated = state.tables.map((t) => {
+              if (t.number === change.new.number) {
+                return {
+                  ...t,
+                  status: change.new.status,
+                  currentBill: Number(change.new.current_bill) || t.currentBill,
+                  guestCount: Number(change.new.guest_count) || t.guestCount,
+                };
               }
-            } catch {}
-          };
-          eventSource.onerror = () => {
-            if (eventSource) {
-              eventSource.close();
-              eventSource = null;
-            }
-            setTimeout(connectSSE, 5000);
-          };
-        } catch {}
-      };
-
-      connectSSE();
+              return t;
+            });
+            useSharedBridge.setState({ tables: updated });
+          }
+        })
+        .subscribe();
 
       useSharedBridge.subscribe((state) => {
-        if (sseBroadcasting) return;
+        if (isCloudBroadcasting) return;
         try {
-          fetch(`http://${sseHost}:3001/api/realtime/publish`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ state }),
+          cloudChannel.send({
+            type: 'broadcast',
+            event: 'SYNC_BRIDGE',
+            payload: {
+              tables: state.tables,
+              kdsTickets: state.kdsTickets,
+              pings: state.pings,
+              inventory86: state.inventory86,
+              shiftStats: state.shiftStats,
+              settlementRecords: state.settlementRecords,
+              waiterAlerts: state.waiterAlerts,
+            },
           }).catch(() => {});
         } catch {}
       });
