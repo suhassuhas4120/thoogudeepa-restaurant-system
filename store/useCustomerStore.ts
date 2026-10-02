@@ -10,6 +10,7 @@ import {
 } from '../types/customer';
 import { INITIAL_MENU_ITEMS } from '../data/menuItems';
 import { useSharedBridge } from './useSharedBridge';
+import { saveSeatCart, getSavedSeatCart, clearSeatSession } from '../lib/session/seatSessionManager';
 
 interface CustomerStoreState {
   currentScreen: ScreenId;
@@ -54,6 +55,7 @@ interface CustomerStoreState {
   pingWaiter: (type: WaiterPingType, customMsg?: string) => void;
   dismissWaiterNotification: () => void;
   resetSession: () => void;
+  restoreSavedCart: (tableNumber: string, seatNumber: number) => void;
 }
 
 // Calculate payment details dynamically based on items currently in cart
@@ -172,6 +174,8 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
         newCart = [...state.cart, newCartItem];
       }
 
+      saveSeatCart(state.tableNumber, state.seatNumber || 1, newCart, state.itemTracking, 2);
+
       return {
         cart: newCart,
         payment: calculatePaymentTotals(newCart, state.payment),
@@ -197,6 +201,8 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
         })
         .filter(Boolean) as CartItem[];
 
+      saveSeatCart(state.tableNumber, state.seatNumber || 1, newCart, state.itemTracking, 4);
+
       return {
         cart: newCart,
         payment: calculatePaymentTotals(newCart, state.payment),
@@ -207,6 +213,7 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
   removeCartItem: (cartItemId) => {
     set((state) => {
       const newCart = state.cart.filter((ci) => ci.cartItemId !== cartItemId);
+      saveSeatCart(state.tableNumber, state.seatNumber || 1, newCart, state.itemTracking, 4);
       return {
         cart: newCart,
         payment: calculatePaymentTotals(newCart, state.payment),
@@ -277,10 +284,12 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
       }));
 
       const updatedCart = state.cart.map((c) => ({ ...c, isOrdered: true }));
+      const updatedTracking = [...state.itemTracking, ...newTracking];
+      saveSeatCart(state.tableNumber, state.seatNumber || 1, updatedCart, updatedTracking, 5);
 
       return {
         cart: updatedCart,
-        itemTracking: [...state.itemTracking, ...newTracking],
+        itemTracking: updatedTracking,
         orderStage: 'PLACED',
         previousScreen: state.currentScreen,
         currentScreen: 5, // Proceed to Live Tracking Screen 5
@@ -382,6 +391,8 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
   },
 
   resetSession: () => {
+    const state = useCustomerStore.getState();
+    clearSeatSession(state.tableNumber, state.seatNumber || 1);
     set({
       currentScreen: 1,
       previousScreen: 1,
@@ -391,6 +402,21 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
       itemTracking: [],
       payment: initialEmptyPayment,
       waiterNotification: null,
+    });
+  },
+
+  restoreSavedCart: (tableNumber, seatNumber) => {
+    const saved = getSavedSeatCart(tableNumber, seatNumber);
+    if (!saved || !saved.cart || saved.cart.length === 0) return;
+
+    set((state) => {
+      const restoredPayment = calculatePaymentTotals(saved.cart, state.payment);
+      return {
+        cart: saved.cart,
+        itemTracking: saved.itemTracking && saved.itemTracking.length > 0 ? saved.itemTracking : state.itemTracking,
+        payment: restoredPayment,
+        currentScreen: (saved.currentScreen && saved.currentScreen > 1 ? saved.currentScreen : 4) as ScreenId,
+      };
     });
   },
 }));

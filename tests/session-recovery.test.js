@@ -111,9 +111,36 @@ function clearSeatSession(tableNumber, seatNumber) {
   try {
     const cleanTable = (tableNumber || 'A-01').trim().toUpperCase();
     const key = `${STORAGE_KEY_PREFIX}${cleanTable}_${seatNumber}`;
+    const cartKey = `thoogudeepa_cart_${cleanTable}_${seatNumber}`;
     window.localStorage.removeItem(key);
     window.sessionStorage.removeItem(key);
+    window.localStorage.removeItem(cartKey);
+    window.sessionStorage.removeItem(cartKey);
   } catch {}
+}
+
+function saveSeatCart(tableNumber, seatNumber, cart, itemTracking = [], currentScreen = 2) {
+  if (typeof window === 'undefined') return;
+  try {
+    const cleanTable = (tableNumber || 'A-01').trim().toUpperCase();
+    const cartKey = `thoogudeepa_cart_${cleanTable}_${seatNumber}`;
+    const payload = JSON.stringify({ cart, itemTracking, currentScreen });
+    window.localStorage.setItem(cartKey, payload);
+    window.sessionStorage.setItem(cartKey, payload);
+  } catch {}
+}
+
+function getSavedSeatCart(tableNumber, seatNumber) {
+  if (typeof window === 'undefined') return null;
+  try {
+    const cleanTable = (tableNumber || 'A-01').trim().toUpperCase();
+    const cartKey = `thoogudeepa_cart_${cleanTable}_${seatNumber}`;
+    const stored = window.sessionStorage.getItem(cartKey) || window.localStorage.getItem(cartKey);
+    if (!stored) return null;
+    return JSON.parse(stored);
+  } catch {
+    return null;
+  }
 }
 
 function validateSeatAccess(tableNumber, seatNumber, isSeatCurrentlyOccupied, activeSeatBill = 0, activeSeatGuestName) {
@@ -191,6 +218,20 @@ assert.strictEqual(accessCheck.allowed, true);
 assert.strictEqual(accessCheck.status, 'SESSION_RESTORED');
 assert.strictEqual(accessCheck.session.accumulatedBill, 280);
 console.log('  ✔ Case 2A Passed: Returning customer instantly restored with active bill ₹280 (Zero login clicks)');
+
+// Simulate customer adding 2 items to cart, then closing browser tab
+const cartItems = [
+  { id: 'item-1', name: 'Chicken Donne Biryani', quantity: 2, price: 280, totalPrice: 560 },
+];
+saveSeatCart('A-01', 1, cartItems, [], 4);
+
+// Simulate browser closed and reopened:
+const restoredCartData = getSavedSeatCart('A-01', 1);
+assert.ok(restoredCartData, 'Saved cart must be retrieved upon tab reopen');
+assert.strictEqual(restoredCartData.cart.length, 1);
+assert.strictEqual(restoredCartData.cart[0].name, 'Chicken Donne Biryani');
+assert.strictEqual(restoredCartData.cart[0].quantity, 2);
+console.log('  ✔ Case 2B Passed: Unordered items in cart (2x Chicken Donne Biryani) 100% recovered on tab reopen');
 
 // ── Test 3: Washroom Protection / Anti-Seat Hijacking ─────────────────────────
 console.log('\n▶ Test 3: Testing Washroom Protection & Anti-Hijack Defense...');

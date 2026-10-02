@@ -13,6 +13,9 @@ export interface SeatSession {
   lastActiveAt: number;
   accumulatedBill: number;
   orderIds: string[];
+  savedCart?: any[];
+  savedItemTracking?: any[];
+  savedScreen?: number;
 }
 
 export interface HijackValidationResult {
@@ -127,10 +130,77 @@ export function clearSeatSession(tableNumber: string, seatNumber: number): void 
   try {
     const cleanTable = (tableNumber || 'A-01').trim().toUpperCase();
     const key = `${STORAGE_KEY_PREFIX}${cleanTable}_${seatNumber}`;
+    const cartKey = `thoogudeepa_cart_${cleanTable}_${seatNumber}`;
     window.localStorage.removeItem(key);
     window.sessionStorage.removeItem(key);
+    window.localStorage.removeItem(cartKey);
+    window.sessionStorage.removeItem(cartKey);
   } catch {
     // Ignore storage clear exceptions
+  }
+}
+
+/**
+ * Saves active cart and order tracking into seat session storage for 80% exit recovery
+ */
+export function saveSeatCart(
+  tableNumber: string,
+  seatNumber: number,
+  cart: any[],
+  itemTracking: any[] = [],
+  currentScreen: number = 2
+): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    const cleanTable = (tableNumber || 'A-01').trim().toUpperCase();
+    const cartKey = `thoogudeepa_cart_${cleanTable}_${seatNumber}`;
+    const payload = JSON.stringify({ cart, itemTracking, currentScreen });
+
+    window.localStorage.setItem(cartKey, payload);
+    window.sessionStorage.setItem(cartKey, payload);
+
+    const session = getLocalSession(cleanTable, seatNumber);
+    if (session) {
+      session.savedCart = cart;
+      session.savedItemTracking = itemTracking;
+      session.savedScreen = currentScreen;
+      saveSessionLocally(session);
+    }
+  } catch {
+    // Graceful fallback for restricted storage environments
+  }
+}
+
+/**
+ * Recovers saved cart and order state after tab closure or browser restart
+ */
+export function getSavedSeatCart(
+  tableNumber: string,
+  seatNumber: number
+): { cart: any[]; itemTracking: any[]; currentScreen?: number } | null {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const cleanTable = (tableNumber || 'A-01').trim().toUpperCase();
+    const cartKey = `thoogudeepa_cart_${cleanTable}_${seatNumber}`;
+    const stored = window.sessionStorage.getItem(cartKey) || window.localStorage.getItem(cartKey);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+
+    const session = getLocalSession(cleanTable, seatNumber);
+    if (session && session.savedCart && session.savedCart.length > 0) {
+      return {
+        cart: session.savedCart,
+        itemTracking: session.savedItemTracking || [],
+        currentScreen: session.savedScreen,
+      };
+    }
+
+    return null;
+  } catch {
+    return null;
   }
 }
 

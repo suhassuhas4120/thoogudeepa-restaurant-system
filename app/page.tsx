@@ -61,6 +61,10 @@ export default function CustomerJourneyPage() {
       const parsedSeat = parseInt(seatParam, 10) || 1;
       setSeatNumber(parsedSeat);
 
+      // Re-hydrate any saved cart items from previous tab session
+      useCustomerStore.getState().restoreSavedCart(tableParam, parsedSeat);
+      const restoredCart = useCustomerStore.getState().cart;
+
       // Check current seat state from shared bridge
       const bridge = useSharedBridge.getState();
       const targetTable = bridge.tables.find(
@@ -79,7 +83,12 @@ export default function CustomerJourneyPage() {
         guestName
       );
 
-      if (result.status === 'SESSION_RESTORED' || result.status === 'FINGERPRINT_RECOVERED') {
+      if (restoredCart && restoredCart.length > 0) {
+        setSessionNotice(`Welcome back! Cart with ${restoredCart.length} item${restoredCart.length > 1 ? 's' : ''} restored.`);
+        if (currentScreen === 1) {
+          setCurrentScreen(4);
+        }
+      } else if (result.status === 'SESSION_RESTORED' || result.status === 'FINGERPRINT_RECOVERED') {
         setSessionNotice(result.message);
         if (activeBill > 0 && currentScreen === 1) {
           setCurrentScreen(2);
