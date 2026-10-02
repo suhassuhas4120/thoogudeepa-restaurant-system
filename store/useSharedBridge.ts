@@ -22,6 +22,7 @@ import { MenuItem, OrderStage } from '../types/customer';
 import { validateAndCreateKOTTicket } from '../lib/validation/kotValidator';
 import { validateAndCalculateBill } from '../lib/validation/billingValidator';
 import { validateTableStateTransition } from '../lib/validation/tableValidator';
+import { TableSeat, SeatItem, createDefaultSeats, aggregateTableFromSeats } from '../lib/validation/seatValidator';
 import { dbService } from '../lib/db/databaseService';
 
 export interface WaiterProfile {
@@ -86,6 +87,7 @@ export interface SharedTable {
   kotNotes?: string;
   mergedWith?: string;
   activeItems?: SharedActiveItem[];
+  seats?: TableSeat[];
 }
 
 export const getItemPriceByName = (name: string): number => {
@@ -500,6 +502,28 @@ const freshTables: SharedTable[] = [
   { id: 't-10', number: 'C-03', section: 'FAMILY DINING', capacity: 10, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Kiran', kotCount: 0 },
 ];
 
+// Initialize physical seats for all tables
+freshTables.forEach((t) => {
+  if (!t.seats || t.seats.length === 0) {
+    const seats = createDefaultSeats(t.capacity);
+    if (t.status === 'OCCUPIED' && t.activeItems && t.activeItems.length > 0) {
+      t.activeItems.forEach((item, idx) => {
+        const seatIdx = idx % t.capacity;
+        const price = item.price || getItemPriceByName(item.name);
+        seats[seatIdx].status = 'OCCUPIED';
+        seats[seatIdx].currentBill += price * item.quantity;
+        seats[seatIdx].items.push({
+          id: `seat-it-${idx}`,
+          name: item.name,
+          quantity: item.quantity,
+          price,
+        });
+      });
+    }
+    t.seats = seats;
+  }
+});
+
 const freshKdsTickets: SharedKDSTicket[] = [
   {
     id: 'KDS-101',
@@ -584,6 +608,24 @@ interface SharedBridgeState {
       addOns: string[];
       quantity: number;
     }>
+  ) => void;
+
+  customerPlacesSeatOrder: (
+    tableNumber: string,
+    seatNumber: number,
+    guestName: string,
+    items: Array<{
+      item: MenuItem;
+      quantity: number;
+      selectedOption?: string;
+      notes?: string;
+    }>
+  ) => void;
+
+  seatSettlesBill: (
+    tableNumber: string,
+    seatNumber: number,
+    paymentMode?: 'UPI' | 'CASH' | 'POS' | 'SPLIT'
   ) => void;
 
   customerPingsWaiter: (
@@ -735,6 +777,149 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
         };
       }),
     }));
+  },
+
+  /* ─── Customer Places Seat Order (Seat-Specific Pod) ─────────── */
+  customerPlacesSeatOrder: (tableNumber, seatNumber, guestName, items) => {
+    const cleanNum = (tableNumber || '').trim();
+    const state = get();
+    const targetTable = state.tables.find(
+      (t) =>
+        t.number.toLowerCase() === cleanNum.toLowerCase() ||
+        t.number.replace(/\D/g, '') === cleanNum.replace(/\D/g, '')
+    );
+    if (!targetTable) return;
+
+    const seats = targetTable.seats && targetTable.seats.length > 0
+      ? [...targetTable.seats]
+      : createDefaultSeats(targetTable.capacity);
+
+    const seatIdx = seats.findIndex((s) => s.seatNumber === seatNumber);
+    if (seatIdx === -1) return;
+
+    let addedBill = 0;
+    const mappedItems: SeatItem[] = items.map((it, idx) => {
+      const price = it.item.price || getItemPriceByName(it.item.name);
+      const lineTotal = price * it.quantity;
+      addedBill += lineTotal;
+      return {
+        id: `seat-${seatNumber}-it-${Date.now()}-${idx}`,
+        name: it.item.name,
+        quantity: it.quantity,
+        price,
+        notes: it.notes || it.selectedOption,
+        stage: 'Pending',
+      };
+    });
+
+    const targetSeat = { ...seats[seatIdx] };
+    targetSeat.status = 'OCCUPIED';
+    targetSeat.currentBill = Math.round((targetSeat.currentBill + addedBill) * 100) / 100;
+    targetSeat.guestName = guestName || targetSeat.guestName || `Guest at Seat ${seatNumber}`;
+    targetSeat.items = [...targetSeat.items, ...mappedItems];
+    seats[seatIdx] = targetSeat;
+
+    const agg = aggregateTableFromSeats(seats);
+    const updatedTable: SharedTable = {
+      ...targetTable,
+      seats,
+      currentBill: agg.totalBill,
+      status: agg.tableStatus,
+      guestCount: Math.max(targetTable.guestCount, agg.occupiedSeats),
+      kotCount: targetTable.kotCount + 1,
+    };
+
+    const newKdsTicket: SharedKDSTicket = {
+      id: `KDS-${targetTable.number}-S${seatNumber}-${Date.now()}`,
+      tableNumber: targetTable.number,
+      serverName: guestName || `Seat ${seatNumber}`,
+      timestamp: nowTime(),
+      elapsedMinutes: 0,
+      status: 'NEW',
+      source: 'CUSTOMER',
+      items: mappedItems.map((m) => ({
+        id: m.id,
+        name: `${m.name} [Seat ${seatNumber}]`,
+        quantity: m.quantity,
+        stage: 'PLACED' as OrderStage,
+        prepMode: 'Direct Wok',
+        options: m.notes,
+      })),
+    };
+
+    set({
+      tables: state.tables.map((t) => (t.id === targetTable.id ? updatedTable : t)),
+      kdsTickets: [newKdsTicket, ...state.kdsTickets],
+    });
+
+    dbService.updateTableState(targetTable.number, updatedTable.status, updatedTable.currentBill, updatedTable.guestCount);
+    dbService.persistSeatOrder({
+      tableNumber: targetTable.number,
+      seatNumber,
+      items: mappedItems,
+      total: addedBill,
+    });
+  },
+
+  /* ─── Seat Settles Bill (Individual Chair Settle) ────────────── */
+  seatSettlesBill: (tableNumber, seatNumber, paymentMode = 'UPI') => {
+    const cleanNum = (tableNumber || '').trim();
+    const state = get();
+    const targetTable = state.tables.find(
+      (t) =>
+        t.number.toLowerCase() === cleanNum.toLowerCase() ||
+        t.number.replace(/\D/g, '') === cleanNum.replace(/\D/g, '')
+    );
+    if (!targetTable || !targetTable.seats) return;
+
+    const seats = [...targetTable.seats];
+    const seatIdx = seats.findIndex((s) => s.seatNumber === seatNumber);
+    if (seatIdx === -1) return;
+
+    const settledSeat = { ...seats[seatIdx] };
+    const paidAmount = settledSeat.currentBill;
+
+    settledSeat.status = 'VACANT';
+    settledSeat.currentBill = 0;
+    settledSeat.items = [];
+    settledSeat.guestName = undefined;
+    settledSeat.activeOrderId = undefined;
+    seats[seatIdx] = settledSeat;
+
+    const agg = aggregateTableFromSeats(seats);
+    const updatedTable: SharedTable = {
+      ...targetTable,
+      seats,
+      currentBill: agg.totalBill,
+      status: agg.tableStatus,
+      guestCount: agg.occupiedSeats,
+    };
+
+    const newRecord: SharedSettlementRecord = {
+      id: `set-seat-${Date.now()}`,
+      tableNumber: `${targetTable.number} [Seat ${seatNumber}]`,
+      section: targetTable.section,
+      serverName: targetTable.serverName,
+      amount: paidAmount,
+      tip: 0,
+      method: (paymentMode === 'SPLIT' ? 'UPI' : paymentMode) as 'CASH' | 'UPI' | 'CARD' | 'POS',
+      timestamp: nowTime(),
+    };
+
+    set({
+      tables: state.tables.map((t) => (t.id === targetTable.id ? updatedTable : t)),
+      settlementRecords: [newRecord, ...state.settlementRecords],
+      shiftStats: {
+        ...state.shiftStats,
+        tablesServed: state.shiftStats.tablesServed + (agg.occupiedSeats === 0 ? 1 : 0),
+        totalRevenue: Math.round((state.shiftStats.totalRevenue + paidAmount) * 100) / 100,
+        cashRevenue: paymentMode === 'CASH'
+          ? Math.round((state.shiftStats.cashRevenue + paidAmount) * 100) / 100
+          : state.shiftStats.cashRevenue,
+      },
+    });
+
+    dbService.updateTableState(targetTable.number, updatedTable.status, updatedTable.currentBill, updatedTable.guestCount);
   },
 
   /* ─── Customer Pings Waiter ──────────────────────────────────── */

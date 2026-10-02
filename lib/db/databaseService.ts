@@ -166,6 +166,81 @@ export class RestaurantDatabaseService {
       return false;
     }
   }
+
+  /**
+   * Updates the live physical table in Supabase 'tables' table
+   */
+  public async updateTableState(
+    tableNumber: string,
+    status: string,
+    currentBill: number,
+    guestCount?: number
+  ): Promise<boolean> {
+    if (!isSupabaseConfigured) return true;
+
+    try {
+      const updatePayload: Record<string, unknown> = {
+        status,
+        current_bill: currentBill,
+        updated_at: new Date().toISOString(),
+      };
+      if (typeof guestCount === 'number') {
+        updatePayload.guest_count = guestCount;
+      }
+
+      const { error } = await supabase
+        .from('tables')
+        .update(updatePayload)
+        .eq('number', tableNumber);
+
+      return !error;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Persists an individual seat order to Supabase 'orders' and 'kds_tickets'
+   */
+  public async persistSeatOrder(params: {
+    tableNumber: string;
+    seatNumber: number;
+    items: Array<{ id: string; name: string; quantity: number; price: number }>;
+    total: number;
+    orderId?: string;
+  }): Promise<boolean> {
+    if (!isSupabaseConfigured) return true;
+
+    try {
+      const orderId = params.orderId || `ORD-${params.tableNumber}-S${params.seatNumber}-${Date.now()}`;
+      
+      // 1. Record in orders table
+      await supabase.from('orders').insert({
+        id: orderId,
+        table_number: params.tableNumber,
+        seat_number: params.seatNumber,
+        items: params.items,
+        total_amount: params.total,
+        status: 'UNPAID',
+        created_at: new Date().toISOString(),
+      });
+
+      // 2. Dispatch to kds_tickets with clear seat tag
+      await supabase.from('kds_tickets').insert({
+        id: `KDS-${Date.now()}`,
+        table_number: params.tableNumber,
+        seat_number: params.seatNumber,
+        badge: `Table ${params.tableNumber} [Seat ${params.seatNumber}]`,
+        items: params.items,
+        status: 'NEW',
+        created_at: new Date().toISOString(),
+      });
+
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }
 
 export const dbService = RestaurantDatabaseService.getInstance();
