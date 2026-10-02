@@ -6,6 +6,8 @@ import {
   useSharedBridge,
   SharedTable,
   SharedKDSTicket,
+  matchTable,
+  normalizeTableNumber,
 } from '../../store/useSharedBridge';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
 import {
@@ -109,27 +111,11 @@ export const ScreenW2TablesFeed: React.FC = () => {
   // Helper to map tables to standard section names (Section A, B, C, D)
   const getTableSection = (table: TableView): string => {
     const num = (table.number || '').trim().toUpperCase();
-    const sec = (table.section || '').trim().toUpperCase();
-
-    if (num.startsWith('A') || sec.includes('SECTION A') || sec === 'A') {
-      return 'SECTION A';
-    }
-    if (num.startsWith('B') || sec.includes('SECTION B') || sec === 'B') {
-      return 'SECTION B';
-    }
-    if (num === 'C-01' || sec.includes('TERRACE') || sec.includes('SECTION C')) {
-      return 'SECTION C';
-    }
-    if (
-      num === 'C-02' ||
-      num === 'C-03' ||
-      sec.includes('FAMILY') ||
-      sec.includes('SECTION D') ||
-      num.startsWith('D')
-    ) {
-      return 'SECTION D';
-    }
-    return 'SECTION C';
+    if (num.startsWith('A')) return 'SECTION A';
+    if (num.startsWith('B')) return 'SECTION B';
+    if (num.startsWith('C')) return 'SECTION C';
+    if (num.startsWith('D')) return 'SECTION D';
+    return 'SECTION A';
   };
 
   // Filter tables by section
@@ -192,12 +178,8 @@ export const ScreenW2TablesFeed: React.FC = () => {
     if (e) e.stopPropagation();
     waiterMarkTableFoodServed(tableNumber);
 
-    const cleanNum = tableNumber.replace(/\D/g, '');
     kdsTickets
-      .filter((tk: KdsView) => {
-        const tkNum = (tk.tableNumber || '').replace(/\D/g, '');
-        return tk.tableNumber === tableNumber || (cleanNum && tkNum === cleanNum);
-      })
+      .filter((tk: KdsView) => matchTable(tk.tableNumber, tableNumber))
       .forEach((tk: KdsView) => {
         waiterMarkKitchenItemServed(tk.id);
       });
@@ -212,13 +194,8 @@ export const ScreenW2TablesFeed: React.FC = () => {
 
   // Helper: Check if table has ready food from KDS or active items
   const checkTableHasReadyFood = (table: TableView) => {
-    const cleanNum = table.number.replace(/\D/g, '');
     const hasReadyKds = kdsTickets.some((tk: KdsView) => {
-      const tkNum = (tk.tableNumber || '').replace(/\D/g, '');
-      return (
-        (tk.tableNumber === table.number || (cleanNum && tkNum === cleanNum)) &&
-        tk.status === 'READY'
-      );
+      return matchTable(tk.tableNumber, table.number) && tk.status === 'READY';
     });
 
     const hasReadyItem = table.activeItems?.some(

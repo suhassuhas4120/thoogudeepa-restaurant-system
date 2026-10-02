@@ -92,6 +92,29 @@ export interface SharedTable {
   seats?: TableSeat[];
 }
 
+export const normalizeTableNumber = (raw?: string): string => {
+  if (!raw) return '';
+  const trimmed = raw.trim().toUpperCase();
+  // Match section prefix (e.g., A, B, C, D) and table number (e.g. B3, B03, B-3, B-03 -> B-03)
+  const match = trimmed.match(/^([A-Z]+)\s*[-_]?\s*(\d+)$/);
+  if (match) {
+    const section = match[1];
+    const num = parseInt(match[2], 10);
+    return `${section}-${String(num).padStart(2, '0')}`;
+  }
+  // Standalone digits e.g. "3" or "03" -> default to A-03
+  const numOnly = trimmed.match(/^\d+$/);
+  if (numOnly) {
+    return `A-${trimmed.padStart(2, '0')}`;
+  }
+  return trimmed;
+};
+
+export const matchTable = (a?: string, b?: string): boolean => {
+  if (!a || !b) return false;
+  return normalizeTableNumber(a) === normalizeTableNumber(b);
+};
+
 export const getItemPriceByName = (name: string): number => {
   const clean = name.toLowerCase().trim();
   const found = INITIAL_MENU_ITEMS.find((m) =>
@@ -267,92 +290,7 @@ export const resolveWaiterProfile = (nameOrId?: string): WaiterProfile => {
   return found || SAVED_WAITERS[0];
 };
 
-export const freshSettlementRecords: SharedSettlementRecord[] = [
-  // Waiter 1 (Ramesh) - SECTION A
-  {
-    id: 'set-w1-1',
-    tableNumber: 'A-05',
-    section: 'SECTION A',
-    serverName: 'Waiter 1 (Ramesh)',
-    amount: 1120,
-    tip: 50,
-    method: 'UPI',
-    timestamp: '11:45 AM',
-  },
-  {
-    id: 'set-w1-2',
-    tableNumber: 'A-06',
-    section: 'SECTION A',
-    serverName: 'Waiter 1 (Ramesh)',
-    amount: 780,
-    tip: 30,
-    method: 'CASH',
-    timestamp: '12:15 PM',
-  },
-  // Waiter 2 (Suresh) - SECTION B
-  {
-    id: 'set-w2-1',
-    tableNumber: 'B-04',
-    section: 'SECTION B',
-    serverName: 'Waiter 2 (Suresh)',
-    amount: 1450,
-    tip: 60,
-    method: 'CARD',
-    timestamp: '11:30 AM',
-  },
-  {
-    id: 'set-w2-2',
-    tableNumber: 'B-05',
-    section: 'SECTION B',
-    serverName: 'Waiter 2 (Suresh)',
-    amount: 920,
-    tip: 40,
-    method: 'UPI',
-    timestamp: '12:05 PM',
-  },
-  // Waiter 3 (Vijay) - TERRACE
-  {
-    id: 'set-w3-1',
-    tableNumber: 'T-03',
-    section: 'TERRACE',
-    serverName: 'Waiter 3 (Vijay)',
-    amount: 1680,
-    tip: 80,
-    method: 'CARD',
-    timestamp: '11:50 AM',
-  },
-  {
-    id: 'set-w3-2',
-    tableNumber: 'T-04',
-    section: 'TERRACE',
-    serverName: 'Waiter 3 (Vijay)',
-    amount: 850,
-    tip: 40,
-    method: 'CASH',
-    timestamp: '12:25 PM',
-  },
-  // Waiter 4 (Kiran) - FAMILY DINING
-  {
-    id: 'set-w4-1',
-    tableNumber: 'FD-03',
-    section: 'FAMILY DINING',
-    serverName: 'Waiter 4 (Kiran)',
-    amount: 2150,
-    tip: 100,
-    method: 'UPI',
-    timestamp: '11:20 AM',
-  },
-  {
-    id: 'set-w4-2',
-    tableNumber: 'FD-04',
-    section: 'FAMILY DINING',
-    serverName: 'Waiter 4 (Kiran)',
-    amount: 1340,
-    tip: 50,
-    method: 'CASH',
-    timestamp: '12:10 PM',
-  },
-];
+export const freshSettlementRecords: SharedSettlementRecord[] = [];
 
 export const getWaiterShiftPerformance = (
   waiterIdentifier: string,
@@ -415,158 +353,32 @@ export const getWaiterShiftPerformance = (
   };
 };
 
-/* ── Initial Data ───────────────────────────────────────────────── */
-const freshTables: SharedTable[] = [
-  {
-    id: 't-1',
-    number: 'A-01',
-    section: 'SECTION A',
-    capacity: 4,
-    status: 'OCCUPIED',
-    guestCount: 2,
-    seatedTime: '12:45 PM',
-    currentBill: 590,
-    serverName: 'Captain Ramesh',
-    kotCount: 1,
-    activeItems: [
-      { name: 'Thoogudeepa Mutton Donne Biryani', quantity: 1, status: 'Preparing' },
-      { name: 'Gunpowder Pepper Chicken Dry', quantity: 1, status: 'Preparing' },
-    ],
-  },
-  { id: 't-2', number: 'A-02', section: 'SECTION A', capacity: 2, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Ramesh', kotCount: 0 },
-  { id: 't-3', number: 'A-03', section: 'SECTION A', capacity: 6, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Ramesh', kotCount: 0 },
-  {
-    id: 't-4',
-    number: 'A-04',
-    section: 'SECTION A',
-    capacity: 4,
-    status: 'OCCUPIED',
-    guestCount: 3,
-    seatedTime: '12:35 PM',
-    currentBill: 740,
-    kotCount: 1,
-    serverName: 'Captain Ramesh',
-    activeItems: [
-      { name: 'Special Chicken Donne Biryani', quantity: 2, status: 'Ready' },
-      { name: 'Kshatriya Chicken Kebab (Crispy)', quantity: 1, status: 'Ready' },
-    ],
-  },
-  {
-    id: 't-5',
-    number: 'B-01',
-    section: 'SECTION B',
-    capacity: 4,
-    status: 'OCCUPIED',
-    guestCount: 2,
-    seatedTime: '12:50 PM',
-    currentBill: 360,
-    kotCount: 1,
-    serverName: 'Captain Suresh',
-    kotNotes: 'Less spice for children',
-    activeItems: [
-      { name: 'Ceylon Coin Parotta (2 Pcs)', quantity: 2, status: 'Queued' },
-      { name: 'Nati Koli Saaru (Country Chicken Curry)', quantity: 1, status: 'Queued' },
-    ],
-  },
-  {
-    id: 't-6',
-    number: 'B-02',
-    section: 'SECTION B',
-    capacity: 2,
-    status: 'BILLING',
-    guestCount: 2,
-    seatedTime: '12:15 PM',
-    currentBill: 480,
-    kotCount: 1,
-    serverName: 'Captain Suresh',
-    activeItems: [
-      { name: 'Paneer Donne Biryani', quantity: 2, status: 'Served' },
-    ],
-  },
-  { id: 't-7', number: 'B-03', section: 'SECTION B', capacity: 6, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Suresh', kotCount: 0 },
-  {
-    id: 't-8',
-    number: 'C-01',
-    section: 'TERRACE',
-    capacity: 8,
-    status: 'OCCUPIED',
-    guestCount: 6,
-    seatedTime: '12:30 PM',
-    currentBill: 1420,
-    kotCount: 2,
-    serverName: 'Captain Vijay',
-    activeItems: [
-      { name: 'Thoogudeepa Mutton Donne Biryani', quantity: 3, status: 'Served' },
-      { name: 'Kshatriya Chicken Kebab (Crispy)', quantity: 2, status: 'Served' },
-    ],
-  },
-  { id: 't-9', number: 'C-02', section: 'FAMILY DINING', capacity: 6, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Kiran', kotCount: 0 },
-  { id: 't-10', number: 'C-03', section: 'FAMILY DINING', capacity: 10, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Kiran', kotCount: 0 },
+/* ── Initial Data (All 10 Real Tables from Floor QR Matrix) ───── */
+export const freshTables: SharedTable[] = [
+  // 2-Seat Tables (Section A)
+  { id: 't-1', number: 'A-01', section: 'SECTION A', capacity: 2, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Ramesh', kotCount: 0, activeItems: [] },
+  { id: 't-2', number: 'A-02', section: 'SECTION A', capacity: 2, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Ramesh', kotCount: 0, activeItems: [] },
+  // 3-Seat Tables (Section B)
+  { id: 't-3', number: 'B-01', section: 'SECTION B', capacity: 3, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Suresh', kotCount: 0, activeItems: [] },
+  { id: 't-4', number: 'B-02', section: 'SECTION B', capacity: 3, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Suresh', kotCount: 0, activeItems: [] },
+  { id: 't-5', number: 'B-03', section: 'SECTION B', capacity: 3, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Suresh', kotCount: 0, activeItems: [] },
+  // 4-Seat Tables (Section C)
+  { id: 't-6', number: 'C-01', section: 'SECTION C', capacity: 4, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Vijay', kotCount: 0, activeItems: [] },
+  { id: 't-7', number: 'C-02', section: 'SECTION C', capacity: 4, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Vijay', kotCount: 0, activeItems: [] },
+  { id: 't-8', number: 'C-03', section: 'SECTION C', capacity: 4, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Vijay', kotCount: 0, activeItems: [] },
+  // 6-Seat Tables (Section D)
+  { id: 't-9', number: 'D-01', section: 'SECTION D', capacity: 6, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Kiran', kotCount: 0, activeItems: [] },
+  { id: 't-10', number: 'D-02', section: 'SECTION D', capacity: 6, status: 'VACANT', guestCount: 0, seatedTime: '--', currentBill: 0, serverName: 'Captain Kiran', kotCount: 0, activeItems: [] },
 ];
 
-// Initialize physical seats for all tables
+// Initialize physical seats cleanly for all 10 tables
 freshTables.forEach((t) => {
   if (!t.seats || t.seats.length === 0) {
-    const seats = createDefaultSeats(t.capacity);
-    if (t.status === 'OCCUPIED' && t.activeItems && t.activeItems.length > 0) {
-      t.activeItems.forEach((item, idx) => {
-        const seatIdx = idx % t.capacity;
-        const price = item.price || getItemPriceByName(item.name);
-        seats[seatIdx].status = 'OCCUPIED';
-        seats[seatIdx].currentBill += price * item.quantity;
-        seats[seatIdx].items.push({
-          id: `seat-it-${idx}`,
-          name: item.name,
-          quantity: item.quantity,
-          price,
-        });
-      });
-    }
-    t.seats = seats;
+    t.seats = createDefaultSeats(t.capacity);
   }
 });
 
-const freshKdsTickets: SharedKDSTicket[] = [
-  {
-    id: 'KDS-101',
-    tableNumber: 'A-04',
-    serverName: 'Captain Ramesh',
-    timestamp: '12:45 PM',
-    elapsedMinutes: 14,
-    status: 'READY',
-    source: 'WAITER',
-    items: [
-      { id: 'ki-1', name: 'Special Chicken Donne Biryani', quantity: 2, stage: 'PLATED', prepMode: 'Direct Wok' },
-      { id: 'ki-2', name: 'Kshatriya Chicken Kebab (Crispy)', quantity: 1, stage: 'PLATED', prepMode: 'Deep Fry' },
-    ],
-  },
-  {
-    id: 'KDS-102',
-    tableNumber: 'A-01',
-    serverName: 'Captain Ramesh',
-    timestamp: '12:50 PM',
-    elapsedMinutes: 8,
-    status: 'PREP',
-    source: 'CUSTOMER',
-    items: [
-      { id: 'ki-3', name: 'Thoogudeepa Mutton Donne Biryani', quantity: 1, stage: 'PREP', prepMode: 'Clay Pot' },
-      { id: 'ki-4', name: 'Gunpowder Pepper Chicken Dry', quantity: 1, stage: 'PREP', prepMode: 'Tawa Toss' },
-    ],
-  },
-  {
-    id: 'KDS-103',
-    tableNumber: 'B-01',
-    serverName: 'Captain Suresh',
-    timestamp: '12:54 PM',
-    elapsedMinutes: 3,
-    status: 'NEW',
-    source: 'CUSTOMER',
-    items: [
-      { id: 'ki-5', name: 'Ceylon Coin Parotta (2 Pcs)', quantity: 2, stage: 'PLACED', prepMode: 'Tawa Ghee Roast' },
-      { id: 'ki-6', name: 'Nati Koli Saaru (Country Chicken Curry)', quantity: 1, stage: 'PLACED', prepMode: 'Clay Pot Simmer' },
-    ],
-  },
-];
+const freshKdsTickets: SharedKDSTicket[] = [];
 
 const freshPings: SharedPing[] = [];
 
@@ -764,9 +576,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
     set((state) => ({
       kdsTickets: [...state.kdsTickets, ticket],
       tables: state.tables.map((t) => {
-        const tblNum = (t.number || '').replace(/\D/g, '');
-        const isMatch = t.number === tableNumber || (cleanNum && tblNum === cleanNum);
-        if (!isMatch) return t;
+        if (!matchTable(t.number, tableNumber)) return t;
         const updatedItems: SharedActiveItem[] = [...(t.activeItems || []), ...newItems];
         return {
           ...t,
@@ -783,21 +593,32 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
 
   /* ─── Customer Places Seat Order (Seat-Specific Pod) ─────────── */
   customerPlacesSeatOrder: (tableNumber, seatNumber, guestName, items) => {
-    const cleanNum = (tableNumber || '').trim();
+    const normTarget = normalizeTableNumber(tableNumber);
     const state = get();
     const targetTable = state.tables.find(
-      (t) =>
-        t.number.toLowerCase() === cleanNum.toLowerCase() ||
-        t.number.replace(/\D/g, '') === cleanNum.replace(/\D/g, '')
+      (t) => matchTable(t.number, normTarget)
     );
-    if (!targetTable) return;
+    if (!targetTable) {
+      console.warn(`[customerPlacesSeatOrder] Target table ${tableNumber} (${normTarget}) not found!`);
+      return;
+    }
 
     const seats = targetTable.seats && targetTable.seats.length > 0
       ? [...targetTable.seats]
       : createDefaultSeats(targetTable.capacity);
 
-    const seatIdx = seats.findIndex((s) => s.seatNumber === seatNumber);
-    if (seatIdx === -1) return;
+    let seatIdx = seats.findIndex((s) => s.seatNumber === seatNumber);
+    if (seatIdx === -1) {
+      while (seats.length < seatNumber) {
+        seats.push({
+          seatNumber: seats.length + 1,
+          status: 'VACANT',
+          currentBill: 0,
+          items: [],
+        });
+      }
+      seatIdx = seatNumber - 1;
+    }
 
     let addedBill = 0;
     const mappedItems: SeatItem[] = items.map((it, idx) => {
@@ -817,7 +638,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
     const targetSeat = { ...seats[seatIdx] };
     targetSeat.status = 'OCCUPIED';
     targetSeat.currentBill = Math.round((targetSeat.currentBill + addedBill) * 100) / 100;
-    targetSeat.guestName = guestName || targetSeat.guestName || `Guest at Seat ${seatNumber}`;
+    targetSeat.guestName = guestName || targetSeat.guestName || `Seat ${seatNumber}`;
     targetSeat.items = [...targetSeat.items, ...mappedItems];
     seats[seatIdx] = targetSeat;
 
@@ -829,6 +650,17 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
       status: agg.tableStatus,
       guestCount: Math.max(targetTable.guestCount, agg.occupiedSeats),
       kotCount: targetTable.kotCount + 1,
+      seatedTime: targetTable.seatedTime === '--' ? nowTime() : targetTable.seatedTime,
+      activeItems: [
+        ...(targetTable.activeItems || []),
+        ...mappedItems.map((m) => ({
+          id: m.id,
+          name: `${m.name} [Seat ${seatNumber}]`,
+          quantity: m.quantity,
+          price: m.price,
+          status: 'Received',
+        })),
+      ],
     };
 
     const newKdsTicket: SharedKDSTicket = {
@@ -865,12 +697,10 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
 
   /* ─── Seat Settles Bill (Individual Chair Settle) ────────────── */
   seatSettlesBill: (tableNumber, seatNumber, paymentMode = 'UPI') => {
-    const cleanNum = (tableNumber || '').trim();
+    const normTarget = normalizeTableNumber(tableNumber);
     const state = get();
     const targetTable = state.tables.find(
-      (t) =>
-        t.number.toLowerCase() === cleanNum.toLowerCase() ||
-        t.number.replace(/\D/g, '') === cleanNum.replace(/\D/g, '')
+      (t) => matchTable(t.number, normTarget)
     );
     if (!targetTable || !targetTable.seats) return;
 
@@ -1249,7 +1079,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
     set((state) => ({
       kdsTickets: [...state.kdsTickets, ticket],
       tables: state.tables.map((t) => {
-        if (t.number !== tableNumber) return t;
+        if (!matchTable(t.number, tableNumber)) return t;
         const newActiveItems: SharedActiveItem[] = [...(t.activeItems || []), ...kotItems];
         return {
           ...t,
@@ -1266,7 +1096,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
   waiterSeatsGuests: (tableNumber, guestCount, captainName) => {
     set((state) => ({
       tables: state.tables.map((t) =>
-        t.number === tableNumber
+        matchTable(t.number, tableNumber)
           ? {
               ...t,
               status: 'OCCUPIED',
@@ -1285,7 +1115,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
       const timeStr = nowTime();
       return {
         tables: state.tables.map((t) =>
-          t.number === tableNumber
+          matchTable(t.number, tableNumber)
             ? {
                 ...t,
                 status: 'OCCUPIED' as const,
@@ -1416,7 +1246,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
         : 'POS';
 
     set((state) => {
-      const targetTbl = state.tables.find((t) => t.number === tableNumber);
+      const targetTbl = state.tables.find((t) => matchTable(t.number, tableNumber));
       const partner = targetTbl?.mergedWith;
       const assignedServer = effectiveServer || targetTbl?.serverName || 'Waiter 1';
 
@@ -1451,7 +1281,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
 
       return {
         tables: state.tables.map((t) =>
-          t.number === tableNumber || (partner && t.number === partner)
+          matchTable(t.number, tableNumber) || (partner && matchTable(t.number, partner))
             ? { ...t, status: 'BILLING' }
             : t
         ),
@@ -1484,7 +1314,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
   /* ─── Waiter Vacates Table ───────────────────────────────────── */
   waiterVacatesTable: (tableNumber) => {
     set((state) => {
-      const targetTbl = state.tables.find((t) => t.number === tableNumber);
+      const targetTbl = state.tables.find((t) => matchTable(t.number, tableNumber));
       if (targetTbl) {
         const transition = validateTableStateTransition(targetTbl.status, 'VACANT', targetTbl.currentBill);
         if (!transition.allowed) {
@@ -1494,7 +1324,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
       const partner = targetTbl?.mergedWith;
       return {
         tables: state.tables.map((t) =>
-          t.number === tableNumber || (partner && t.number === partner)
+          matchTable(t.number, tableNumber) || (partner && matchTable(t.number, partner))
             ? {
                 ...t,
                 status: 'VACANT',
@@ -1510,8 +1340,8 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
         kdsTickets: state.kdsTickets.filter(
           (tk) =>
             !(
-              (tk.tableNumber === tableNumber ||
-                (partner && tk.tableNumber === partner)) &&
+              (matchTable(tk.tableNumber, tableNumber) ||
+                (partner && matchTable(tk.tableNumber, partner))) &&
               tk.status === 'COMPLETED'
             )
         ),
@@ -1525,7 +1355,6 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
       const targetTicket = state.kdsTickets.find((t) => t.id === ticketId);
       const ticketDishNames = targetTicket?.items.map((i) => i.name) || [];
       const tableNumber = targetTicket?.tableNumber;
-      const cleanNum = (tableNumber || '').replace(/\D/g, '');
 
       const updatedTickets = state.kdsTickets.map((t) => {
         if (t.id !== ticketId) return t;
@@ -1537,11 +1366,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
       });
 
       const updatedTables = state.tables.map((tbl) => {
-        const tblNum = (tbl.number || '').replace(/\D/g, '');
-        const isMatch = tableNumber && (
-          tbl.number === tableNumber ||
-          (cleanNum && tblNum === cleanNum)
-        );
+        const isMatch = tableNumber && matchTable(tbl.number, tableNumber);
         if (!isMatch) return tbl;
         return {
           ...tbl,
@@ -1566,10 +1391,8 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
   /* ─── Waiter Marks Table Food Served ─────────────────────────── */
   waiterMarkTableFoodServed: (tableNumber) => {
     set((state) => {
-      const cleanNum = (tableNumber || '').replace(/\D/g, '');
       const updatedTickets = state.kdsTickets.map((t) => {
-        const tNum = (t.tableNumber || '').replace(/\D/g, '');
-        const isMatch = t.tableNumber === tableNumber || (cleanNum && tNum === cleanNum);
+        const isMatch = matchTable(t.tableNumber, tableNumber);
         if (!isMatch) return t;
         const newItems = t.items.map((it) => ({
           ...it,
@@ -1583,8 +1406,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
       });
 
       const updatedTables = state.tables.map((tbl) => {
-        const tblNum = (tbl.number || '').replace(/\D/g, '');
-        const isMatch = tbl.number === tableNumber || (cleanNum && tblNum === cleanNum);
+        const isMatch = matchTable(tbl.number, tableNumber);
         if (!isMatch) return tbl;
         return {
           ...tbl,
@@ -1614,8 +1436,9 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
     if (typeof window !== 'undefined') {
       try {
         localStorage.removeItem('thoogudeepa_bridge_live');
-        localStorage.removeItem('thoogudeepa_bridge_v2');
         localStorage.removeItem('thoogudeepa_bridge_v1');
+        localStorage.removeItem('thoogudeepa_bridge_v2');
+        localStorage.removeItem('thoogudeepa_bridge_v3');
       } catch {}
     }
     set({
@@ -1632,7 +1455,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
         taxCollected: 0,
         cashExpenses: 0,
         tipsEarned: 0,
-        avgTurnaroundMinutes: 38,
+        avgTurnaroundMinutes: 30,
       },
       waiterAlerts: [],
     });
@@ -1642,28 +1465,19 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
 /* ── Real-Time Cross-Tab & Multi-Device Synchronization ─────────── */
 
 if (typeof window !== 'undefined') {
-  // 0. Rehydrate from localStorage if available
+  // Purge legacy storage with old dummy/mock tickets
   try {
-    const saved =
-      localStorage.getItem('thoogudeepa_bridge_v2') ||
-      localStorage.getItem('thoogudeepa_bridge_live');
+    localStorage.removeItem('thoogudeepa_bridge_live');
+    localStorage.removeItem('thoogudeepa_bridge_v1');
+    localStorage.removeItem('thoogudeepa_bridge_v2');
+  } catch {}
+
+  // 0. Rehydrate from localStorage if available (v3 clean storage)
+  try {
+    const saved = localStorage.getItem('thoogudeepa_bridge_v3');
     if (saved) {
       const parsed = JSON.parse(saved);
       if (parsed && Array.isArray(parsed.tables) && parsed.tables.length >= 10) {
-        const seenTicketIds = new Set<string>();
-        const sanitizedKdsTickets = (parsed.kdsTickets || []).map(
-          (tk: SharedKDSTicket, idx: number) => {
-            if (!tk || !tk.id) return tk;
-            if (!seenTicketIds.has(tk.id)) {
-              seenTicketIds.add(tk.id);
-              return tk;
-            }
-            const uniqueId = `KDS-${String(200 + idx).padStart(3, '0')}`;
-            seenTicketIds.add(uniqueId);
-            return { ...tk, id: uniqueId };
-          }
-        );
-
         useSharedBridge.setState({
           ...parsed,
           shiftStats: {
@@ -1674,13 +1488,10 @@ if (typeof window !== 'undefined') {
             taxCollected: parsed.shiftStats?.taxCollected || 0,
             cashExpenses: parsed.shiftStats?.cashExpenses || 0,
             tipsEarned: parsed.shiftStats?.tipsEarned || 0,
-            avgTurnaroundMinutes: parsed.shiftStats?.avgTurnaroundMinutes || 38,
+            avgTurnaroundMinutes: parsed.shiftStats?.avgTurnaroundMinutes || 30,
           },
-          kdsTickets: sanitizedKdsTickets,
-          settlementRecords:
-            Array.isArray(parsed.settlementRecords) && parsed.settlementRecords.length > 0
-              ? parsed.settlementRecords
-              : freshSettlementRecords,
+          kdsTickets: Array.isArray(parsed.kdsTickets) ? parsed.kdsTickets : [],
+          settlementRecords: Array.isArray(parsed.settlementRecords) ? parsed.settlementRecords : [],
           waiterAlerts: Array.isArray(parsed.waiterAlerts) ? parsed.waiterAlerts : [],
         });
       }
@@ -1704,7 +1515,7 @@ if (typeof window !== 'undefined') {
       // Save state to localStorage for refresh persistence
       try {
         localStorage.setItem(
-          'thoogudeepa_bridge_v2',
+          'thoogudeepa_bridge_v3',
           JSON.stringify({
             tables: state.tables,
             kdsTickets: state.kdsTickets,

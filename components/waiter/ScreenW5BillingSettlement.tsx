@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useWaiterStore, formatCaptainName } from '../../store/useWaiterStore';
-import { useSharedBridge, getTableBillBreakdown } from '../../store/useSharedBridge';
+import { useSharedBridge, getTableBillBreakdown, matchTable, normalizeTableNumber } from '../../store/useSharedBridge';
 import { WaiterTabletHousing } from './WaiterTabletHousing';
 import {
   ArrowLeft,
@@ -27,15 +27,11 @@ export const ScreenW5BillingSettlement: React.FC = () => {
 
   const { tables, waiterRecordsPayment, waiterVacatesTable } = useSharedBridge();
 
-  const cleanSelected = (selectedTableNumber || '').replace(/\D/g, '');
+  const normSelected = normalizeTableNumber(selectedTableNumber);
   const activeTable =
-    tables.find((t) => t.number === selectedTableNumber) ||
-    tables.find((t) => {
-      const cleanT = t.number.replace(/\D/g, '');
-      return cleanSelected !== '' && cleanT !== '' && cleanSelected === cleanT;
-    }) ||
+    tables.find((t) => matchTable(t.number, normSelected)) ||
     tables[0];
-  const currentTableNum = activeTable?.number || selectedTableNumber || 'A-02';
+  const currentTableNum = activeTable?.number || selectedTableNumber || 'A-01';
 
   // Zero tip: bill is strictly Subtotal + 5% GST
   const breakdown = getTableBillBreakdown(activeTable, 0);

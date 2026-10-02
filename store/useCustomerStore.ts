@@ -9,7 +9,7 @@ import {
   WaiterPingType,
 } from '../types/customer';
 import { INITIAL_MENU_ITEMS } from '../data/menuItems';
-import { useSharedBridge } from './useSharedBridge';
+import { useSharedBridge, normalizeTableNumber } from './useSharedBridge';
 import { saveSeatCart, getSavedSeatCart, clearSeatSession } from '../lib/session/seatSessionManager';
 
 interface CustomerStoreState {
@@ -122,7 +122,7 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
 
   setViewMode: (mode) => set({ viewMode: mode }),
   setGuestName: (guestName) => set({ guestName }),
-  setTableNumber: (tableNumber) => set({ tableNumber }),
+  setTableNumber: (tableNumber) => set({ tableNumber: normalizeTableNumber(tableNumber) }),
   setSeatNumber: (seatNumber) => set({ seatNumber }),
   setSelectedDetailItem: (selectedDetailItem) => set({ selectedDetailItem }),
 
@@ -249,9 +249,10 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
 
       // Push only newlyAddedItems to shared bridge → Kitchen KDS + Waiter table updates
       const bridge = useSharedBridge.getState();
+      const normTable = normalizeTableNumber(state.tableNumber);
       if (state.seatNumber) {
         bridge.customerPlacesSeatOrder(
-          state.tableNumber,
+          normTable,
           state.seatNumber,
           state.guestName || `Seat ${state.seatNumber}`,
           newlyAddedItems.map((c) => ({
@@ -263,7 +264,7 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
         );
       } else {
         bridge.customerPlacesOrder(
-          state.tableNumber,
+          normTable,
           state.guestName || 'Guest',
           1, // at least 1 guest
           newlyAddedItems.map((c) => ({

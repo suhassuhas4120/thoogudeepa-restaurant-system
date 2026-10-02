@@ -7,6 +7,8 @@ import {
   SharedTable,
   SharedPing,
   SharedKDSTicket,
+  matchTable,
+  normalizeTableNumber,
 } from '../../../store/useSharedBridge';
 import { WaiterTabletLandscapeHousing } from './WaiterTabletLandscapeHousing';
 import {
@@ -91,28 +93,13 @@ export const TabletScreen2TablesFeed: React.FC = () => {
   };
 
   const filteredTables = tables.filter((table: SharedTable) => {
-    if (selectedSection === 'ALL') {
-      return true;
-    }
-
-    const tableSec = (table.section || '').trim().toUpperCase();
-    const filterSec = selectedSection.trim().toUpperCase();
-
-    if (filterSec === 'SECTION C') {
-      return (
-        tableSec === 'SECTION C' ||
-        tableSec.includes('SECTION C')
-      );
-    }
-
-    if (filterSec === 'SECTION D') {
-      return (
-        tableSec === 'SECTION D' ||
-        tableSec.includes('SECTION D')
-      );
-    }
-
-    return tableSec === filterSec;
+    if (selectedSection === 'ALL') return true;
+    const num = (table.number || '').trim().toUpperCase();
+    if (selectedSection === 'SECTION A') return num.startsWith('A');
+    if (selectedSection === 'SECTION B') return num.startsWith('B');
+    if (selectedSection === 'SECTION C') return num.startsWith('C');
+    if (selectedSection === 'SECTION D') return num.startsWith('D');
+    return true;
   });
 
   const activeKdsTickets = kdsTickets
@@ -160,17 +147,8 @@ export const TabletScreen2TablesFeed: React.FC = () => {
 
     waiterMarkTableFoodServed(tableNumber);
 
-    const cleanNum = tableNumber.replace(/\D/g, '');
-
     kdsTickets
-      .filter((tk) => {
-        const tkNum = (tk.tableNumber || '').replace(/\D/g, '');
-
-        return (
-          tk.tableNumber === tableNumber ||
-          (cleanNum && tkNum === cleanNum)
-        );
-      })
+      .filter((tk) => matchTable(tk.tableNumber, tableNumber))
       .forEach((tk) => {
         waiterMarkKitchenItemServed(tk.id);
       });
