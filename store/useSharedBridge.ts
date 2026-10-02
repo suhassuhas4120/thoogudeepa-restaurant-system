@@ -513,6 +513,174 @@ interface SharedBridgeState {
   resetToFreshDemoState: () => void;
 }
 
+/* ── Real-Time Synchronization Engine & CRDT State Merger ────── */
+
+export const CLIENT_ID = typeof window !== 'undefined'
+  ? 'cl_' + Math.random().toString(36).substring(2, 9)
+  : 'srv';
+
+let activeSyncChannel: BroadcastChannel | null = null;
+let activeCloudChannel: any = null;
+
+export const broadcastBridgeAction = (action: string, data: any) => {
+  if (typeof window === 'undefined') return;
+  const payload = {
+    senderId: CLIENT_ID,
+    action,
+    data,
+  };
+  try {
+    if (activeSyncChannel) {
+      activeSyncChannel.postMessage({ type: 'ACTION_EVENT', payload });
+    }
+  } catch {}
+  try {
+    if (activeCloudChannel) {
+      activeCloudChannel.send({
+        type: 'broadcast',
+        event: 'ACTION_EVENT',
+        payload,
+      }).catch(() => {});
+    }
+  } catch {}
+};
+
+export function mergeBridgeState(
+  current: SharedBridgeState,
+  incoming: Partial<SharedBridgeState>
+): Partial<SharedBridgeState> {
+  const result: Partial<SharedBridgeState> = {};
+
+  // 1. Merge kdsTickets: Deduplicate by id, preserve all tickets across all devices
+  if (incoming.kdsTickets && Array.isArray(incoming.kdsTickets)) {
+    const ticketMap = new Map<string, SharedKDSTicket>();
+    current.kdsTickets.forEach((t) => ticketMap.set(t.id, t));
+    incoming.kdsTickets.forEach((inc) => {
+      const existing = ticketMap.get(inc.id);
+      if (!existing) {
+        ticketMap.set(inc.id, inc);
+      } else {
+        const rank = (s: string) => (s === 'COMPLETED' ? 4 : s === 'READY' ? 3 : s === 'PREP' ? 2 : 1);
+        const chosen = rank(inc.status) >= rank(existing.status) ? inc : existing;
+        ticketMap.set(inc.id, chosen);
+      }
+    });
+    result.kdsTickets = Array.from(ticketMap.values()).sort(
+      (a, b) => (b.timestamp || '').localeCompare(a.timestamp || '')
+    );
+  }
+
+  // 2. Merge tables: Table-by-table, seat-by-seat union
+  if (incoming.tables && Array.isArray(incoming.tables)) {
+    result.tables = current.tables.map((curTable) => {
+      const incTable = incoming.tables!.find((t) => matchTable(t.number, curTable.number));
+      if (!incTable) return curTable;
+
+      const curSeats = curTable.seats && curTable.seats.length > 0
+        ? curTable.seats
+        : createDefaultSeats(curTable.capacity);
+      const incSeats = incTable.seats && incTable.seats.length > 0
+        ? incTable.seats
+        : createDefaultSeats(incTable.capacity);
+
+      const maxSeats = Math.max(curTable.capacity, incTable.capacity, curSeats.length, incSeats.length);
+      const mergedSeats: TableSeat[] = [];
+
+      for (let sNum = 1; sNum <= maxSeats; sNum++) {
+        const curS = curSeats.find((s) => s.seatNumber === sNum);
+        const incS = incSeats.find((s) => s.seatNumber === sNum);
+
+        if (!curS && !incS) continue;
+        if (!curS) {
+          mergedSeats.push(incS!);
+          continue;
+        }
+        if (!incS) {
+          mergedSeats.push(curS);
+          continue;
+        }
+
+        // An occupied seat from either client is preserved
+        if (curS.status === 'OCCUPIED' && incS.status === 'VACANT') {
+          mergedSeats.push(curS);
+        } else if (incS.status === 'OCCUPIED' && curS.status === 'VACANT') {
+          mergedSeats.push(incS);
+        } else if (curS.status === 'OCCUPIED' && incS.status === 'OCCUPIED') {
+          const itemMap = new Map<string, SeatItem>();
+          curS.items.forEach((it) => itemMap.set(it.id, it));
+          incS.items.forEach((it) => itemMap.set(it.id, it));
+          const mergedItems = Array.from(itemMap.values());
+          const mergedBill = mergedItems.reduce((acc, it) => acc + (it.price * it.quantity), 0);
+          mergedSeats.push({
+            ...curS,
+            items: mergedItems,
+            currentBill: mergedBill,
+            guestName: incS.guestName || curS.guestName,
+          });
+        } else {
+          mergedSeats.push(curS);
+        }
+      }
+
+      const agg = aggregateTableFromSeats(mergedSeats);
+      return {
+        ...curTable,
+        seats: mergedSeats,
+        currentBill: agg.totalBill,
+        guestCount: agg.occupiedSeats,
+        status: agg.tableStatus,
+        seatedTime: curTable.seatedTime !== '--' ? curTable.seatedTime : (incTable.seatedTime || '--'),
+        kotCount: Math.max(curTable.kotCount, incTable.kotCount),
+        activeItems: mergedSeats.flatMap((s) =>
+          s.items.map((it) => ({
+            id: it.id,
+            name: `${it.name} [Seat ${s.seatNumber}]`,
+            quantity: it.quantity,
+            price: it.price,
+            status: it.stage || 'Received',
+          }))
+        ),
+      };
+    });
+  }
+
+  // 3. Merge pings
+  if (incoming.pings && Array.isArray(incoming.pings)) {
+    const pingMap = new Map<string, SharedPing>();
+    current.pings.forEach((p) => pingMap.set(p.id, p));
+    incoming.pings.forEach((p) => {
+      const ex = pingMap.get(p.id);
+      if (!ex || p.status !== 'PENDING') {
+        pingMap.set(p.id, p);
+      }
+    });
+    result.pings = Array.from(pingMap.values());
+  }
+
+  // 4. Merge inventory86
+  if (incoming.inventory86 && Array.isArray(incoming.inventory86)) {
+    const invMap = new Map<string, any>();
+    current.inventory86.forEach((i) => invMap.set(i.id, i));
+    incoming.inventory86.forEach((i) => {
+      const ex = invMap.get(i.id);
+      if (!ex || i.is86) {
+        invMap.set(i.id, i);
+      }
+    });
+    result.inventory86 = Array.from(invMap.values());
+  }
+
+  // 5. Merge settlementRecords
+  if (incoming.settlementRecords && Array.isArray(incoming.settlementRecords)) {
+    const setMap = new Map<string, SharedSettlementRecord>();
+    current.settlementRecords.forEach((r) => setMap.set(r.id, r));
+    incoming.settlementRecords.forEach((r) => setMap.set(r.id, r));
+    result.settlementRecords = Array.from(setMap.values());
+  }
+
+  return result;
+}
+
 /* ── Store Implementation ───────────────────────────────────────── */
 
 export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
@@ -693,6 +861,13 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
       items: mappedItems,
       total: addedBill,
     });
+    broadcastBridgeAction('SEAT_ORDER', {
+      tableNumber: targetTable.number,
+      seatNumber,
+      guestName: guestName || `Seat ${seatNumber}`,
+      items: mappedItems,
+      newKdsTicket,
+    });
   },
 
   /* ─── Seat Settles Bill (Individual Chair Settle) ────────────── */
@@ -753,6 +928,11 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
 
     dbService.updateTableState(targetTable.number, updatedTable.status, updatedTable.currentBill, updatedTable.guestCount);
     clearSeatSession(targetTable.number, seatNumber);
+    broadcastBridgeAction('SEAT_SETTLE', {
+      tableNumber: targetTable.number,
+      seatNumber,
+      record: newRecord,
+    });
   },
 
   /* ─── Customer Pings Waiter ──────────────────────────────────── */
@@ -776,6 +956,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
       guestName,
     };
     set((state) => ({ pings: [...state.pings, ping] }));
+    broadcastBridgeAction('PING', { ping });
   },
 
   /* ─── Kitchen Bumps Item Stage ───────────────────────────────── */
@@ -891,6 +1072,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
 
       return { kdsTickets: newTickets, tables: updatedTables };
     });
+    broadcastBridgeAction('ITEM_STAGE', { ticketId, itemId, stage });
   },
 
   /* ─── Kitchen Sets Bulk Item Stage ───────────────────────────── */
@@ -986,15 +1168,23 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
 
       return { kdsTickets: newTickets, tables: updatedTables };
     });
+    broadcastBridgeAction('BUMP_TABLE', { ticketId });
   },
 
   /* ─── Kitchen Toggle 86 ──────────────────────────────────────── */
   kitchenToggle86: (itemId) => {
-    set((state) => ({
-      inventory86: state.inventory86.map((item) =>
-        item.id === itemId ? { ...item, is86: !item.is86 } : item
-      ),
-    }));
+    let newIs86 = false;
+    set((state) => {
+      const updated = state.inventory86.map((item) => {
+        if (item.id === itemId) {
+          newIs86 = !item.is86;
+          return { ...item, is86: newIs86 };
+        }
+        return item;
+      });
+      return { inventory86: updated };
+    });
+    broadcastBridgeAction('TOGGLE_86', { itemId, is86: newIs86 });
   },
 
   /* ─── Kitchen Update Prep Delay ──────────────────────────────── */
@@ -1223,6 +1413,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
     set((state) => ({
       pings: state.pings.filter((p) => p.id !== pingId),
     }));
+    broadcastBridgeAction('RESOLVE_PING', { pingId });
   },
 
   /* ─── Waiter Records Payment ─────────────────────────────────── */
@@ -1347,6 +1538,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
         ),
       };
     });
+    broadcastBridgeAction('VACATE_TABLE', { tableNumber });
   },
 
   /* ─── Waiter Marks Kitchen Item Served ───────────────────────── */
@@ -1498,15 +1690,187 @@ if (typeof window !== 'undefined') {
     }
   } catch {}
 
+  // Define action processor for multi-device live events
+  const handleIncomingAction = (payload: any) => {
+    if (!payload || payload.senderId === CLIENT_ID) return;
+    const { action, data } = payload;
+    const state = useSharedBridge.getState();
+
+    switch (action) {
+      case 'SEAT_ORDER': {
+        const { tableNumber, seatNumber, guestName, items, newKdsTicket } = data;
+        const targetTable = state.tables.find((t) => matchTable(t.number, tableNumber));
+        if (!targetTable) return;
+
+        const hasTicket = state.kdsTickets.some((t) => t.id === newKdsTicket.id);
+        const seats = targetTable.seats && targetTable.seats.length > 0
+          ? [...targetTable.seats]
+          : createDefaultSeats(targetTable.capacity);
+
+        let sIdx = seats.findIndex((s) => s.seatNumber === seatNumber);
+        if (sIdx === -1) {
+          while (seats.length < seatNumber) {
+            seats.push({ seatNumber: seats.length + 1, status: 'VACANT', currentBill: 0, items: [] });
+          }
+          sIdx = seatNumber - 1;
+        }
+
+        const targetSeat = { ...seats[sIdx] };
+        targetSeat.status = 'OCCUPIED';
+        const addedBill = items.reduce((acc: number, it: any) => acc + (it.price * it.quantity), 0);
+        targetSeat.currentBill = Math.round((targetSeat.currentBill + addedBill) * 100) / 100;
+        targetSeat.guestName = guestName || targetSeat.guestName || `Seat ${seatNumber}`;
+
+        const existingIds = new Set(targetSeat.items.map((i: any) => i.id));
+        const newItems = items.filter((i: any) => !existingIds.has(i.id));
+        targetSeat.items = [...targetSeat.items, ...newItems];
+        seats[sIdx] = targetSeat;
+
+        const agg = aggregateTableFromSeats(seats);
+        const updatedTable: SharedTable = {
+          ...targetTable,
+          seats,
+          currentBill: agg.totalBill,
+          status: agg.tableStatus,
+          guestCount: Math.max(targetTable.guestCount, agg.occupiedSeats),
+          kotCount: targetTable.kotCount + 1,
+          seatedTime: targetTable.seatedTime === '--' ? nowTime() : targetTable.seatedTime,
+          activeItems: [
+            ...(targetTable.activeItems || []),
+            ...newItems.map((m: any) => ({
+              id: m.id,
+              name: `${m.name} [Seat ${seatNumber}]`,
+              quantity: m.quantity,
+              price: m.price,
+              status: 'Received',
+            })),
+          ],
+        };
+
+        useSharedBridge.setState({
+          tables: state.tables.map((t) => (t.id === targetTable.id ? updatedTable : t)),
+          kdsTickets: hasTicket ? state.kdsTickets : [newKdsTicket, ...state.kdsTickets],
+        });
+        break;
+      }
+
+      case 'ITEM_STAGE': {
+        const { ticketId, itemId, stage } = data;
+        useSharedBridge.setState({
+          kdsTickets: state.kdsTickets.map((t) => {
+            if (t.id !== ticketId) return t;
+            return {
+              ...t,
+              items: t.items.map((it) => (it.id === itemId ? { ...it, stage } : it)),
+            };
+          }),
+        });
+        break;
+      }
+
+      case 'BUMP_TABLE': {
+        const { ticketId } = data;
+        useSharedBridge.setState({
+          kdsTickets: state.kdsTickets.map((t) => {
+            if (t.id !== ticketId) return t;
+            return {
+              ...t,
+              status: 'READY' as const,
+              items: t.items.map((i) => ({ ...i, stage: 'PLATED' as OrderStage })),
+            };
+          }),
+        });
+        break;
+      }
+
+      case 'TOGGLE_86': {
+        const { itemId, is86 } = data;
+        useSharedBridge.setState({
+          inventory86: state.inventory86.map((i) => (i.id === itemId ? { ...i, is86 } : i)),
+        });
+        break;
+      }
+
+      case 'PING': {
+        const { ping } = data;
+        const exists = state.pings.some((p) => p.id === ping.id);
+        if (!exists) {
+          useSharedBridge.setState({ pings: [ping, ...state.pings] });
+        }
+        break;
+      }
+
+      case 'RESOLVE_PING': {
+        const { pingId } = data;
+        useSharedBridge.setState({
+          pings: state.pings.filter((p) => p.id !== pingId),
+        });
+        break;
+      }
+
+      case 'SEAT_SETTLE': {
+        const { tableNumber, seatNumber, record } = data;
+        const targetTable = state.tables.find((t) => matchTable(t.number, tableNumber));
+        if (!targetTable || !targetTable.seats) return;
+
+        const seats = targetTable.seats.map((s) => (s.seatNumber === seatNumber ? {
+          ...s,
+          status: 'VACANT' as const,
+          currentBill: 0,
+          items: [],
+          guestName: undefined,
+          activeOrderId: undefined,
+        } : s));
+        const agg = aggregateTableFromSeats(seats);
+        useSharedBridge.setState({
+          tables: state.tables.map((t) => (t.id === targetTable.id ? {
+            ...t,
+            seats,
+            currentBill: agg.totalBill,
+            status: agg.tableStatus,
+            guestCount: agg.occupiedSeats,
+          } : t)),
+          settlementRecords: record ? [record, ...state.settlementRecords] : state.settlementRecords,
+        });
+        break;
+      }
+
+      case 'VACATE_TABLE': {
+        const { tableNumber } = data;
+        useSharedBridge.setState({
+          tables: state.tables.map((t) => matchTable(t.number, tableNumber) ? {
+            ...t,
+            status: 'VACANT' as const,
+            currentBill: 0,
+            guestCount: 0,
+            kotCount: 0,
+            seatedTime: '--',
+            activeItems: [],
+            mergedWith: undefined,
+            seats: createDefaultSeats(t.capacity),
+          } : t),
+          kdsTickets: state.kdsTickets.filter((tk) => !matchTable(tk.tableNumber, tableNumber) || tk.status !== 'COMPLETED'),
+        });
+        break;
+      }
+    }
+  };
+
   // 1. Native Cross-Tab Sync via BroadcastChannel (0ms latency, zero dependencies)
   if ('BroadcastChannel' in window) {
     const syncChannel = new BroadcastChannel('thoogudeepa_bridge_sync');
+    activeSyncChannel = syncChannel;
     let isBroadcasting = false;
 
     syncChannel.onmessage = (event) => {
-      if (event.data?.type === 'SYNC_STATE' && event.data.payload) {
+      if (event.data?.type === 'ACTION_EVENT' && event.data.payload) {
+        handleIncomingAction(event.data.payload);
+      } else if (event.data?.type === 'SYNC_STATE' && event.data.payload) {
+        if (event.data.payload.senderId === CLIENT_ID) return;
         isBroadcasting = true;
-        useSharedBridge.setState(event.data.payload);
+        const current = useSharedBridge.getState();
+        const merged = mergeBridgeState(current, event.data.payload);
+        useSharedBridge.setState(merged);
         isBroadcasting = false;
       }
     };
@@ -1534,6 +1898,7 @@ if (typeof window !== 'undefined') {
         syncChannel.postMessage({
           type: 'SYNC_STATE',
           payload: {
+            senderId: CLIENT_ID,
             tables: state.tables,
             kdsTickets: state.kdsTickets,
             pings: state.pings,
@@ -1547,98 +1912,64 @@ if (typeof window !== 'undefined') {
     });
   }
 
-  // 2. Optional WebSocket client for multi-device sync (when server.js is running)
+  // 2. Multi-Device Real-Time Cloud Sync via Supabase Realtime WebSockets
   try {
-    const wsHost = window.location.hostname || 'localhost';
-    const wsUrl = `ws://${wsHost}:3000`;
-    let socket: WebSocket | null = null;
-    let wsBroadcasting = false;
+    let isCloudBroadcasting = false;
+    const cloudChannel = supabase.channel('thoogudeepa_cloud_sync', {
+      config: { broadcast: { self: false } },
+    });
+    activeCloudChannel = cloudChannel;
 
-    const connectWS = () => {
-      socket = new WebSocket(wsUrl);
-      socket.onmessage = (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-          if (msg.type === 'SYNC_STATE' && msg.payload) {
-            wsBroadcasting = true;
-            useSharedBridge.setState(msg.payload);
-            wsBroadcasting = false;
-          }
-        } catch {}
-      };
-      socket.onclose = () => {
-        setTimeout(connectWS, 3000);
-      };
-    };
-
-    connectWS();
+    cloudChannel
+      .on('broadcast', { event: 'ACTION_EVENT' }, ({ payload }) => {
+        handleIncomingAction(payload);
+      })
+      .on('broadcast', { event: 'SYNC_BRIDGE' }, ({ payload }) => {
+        if (payload && payload.senderId !== CLIENT_ID) {
+          isCloudBroadcasting = true;
+          const current = useSharedBridge.getState();
+          const merged = mergeBridgeState(current, payload);
+          useSharedBridge.setState(merged);
+          isCloudBroadcasting = false;
+        }
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tables' }, (change: any) => {
+        if (change?.new && change.new.number) {
+          const state = useSharedBridge.getState();
+          const updated = state.tables.map((t) => {
+            if (t.number === change.new.number) {
+              return {
+                ...t,
+                status: change.new.status,
+                currentBill: Number(change.new.current_bill) || t.currentBill,
+                guestCount: Number(change.new.guest_count) || t.guestCount,
+              };
+            }
+            return t;
+          });
+          useSharedBridge.setState({ tables: updated });
+        }
+      })
+      .subscribe();
 
     useSharedBridge.subscribe((state) => {
-      if (wsBroadcasting || !socket || socket.readyState !== WebSocket.OPEN) return;
+      if (isCloudBroadcasting) return;
       try {
-        socket.send(
-          JSON.stringify({
-            type: 'SYNC_STATE',
-            payload: state,
-          })
-        );
+        cloudChannel.send({
+          type: 'broadcast',
+          event: 'SYNC_BRIDGE',
+          payload: {
+            senderId: CLIENT_ID,
+            tables: state.tables,
+            kdsTickets: state.kdsTickets,
+            pings: state.pings,
+            inventory86: state.inventory86,
+            shiftStats: state.shiftStats,
+            settlementRecords: state.settlementRecords,
+            waiterAlerts: state.waiterAlerts,
+          },
+        }).catch(() => {});
       } catch {}
     });
   } catch {}
-
-  // 3. Multi-Device Real-Time Cloud Sync via Supabase Realtime WebSockets
-  if (typeof window !== 'undefined') {
-    try {
-      let isCloudBroadcasting = false;
-      const cloudChannel = supabase.channel('thoogudeepa_cloud_sync', {
-        config: { broadcast: { self: false } },
-      });
-
-      cloudChannel
-        .on('broadcast', { event: 'SYNC_BRIDGE' }, ({ payload }) => {
-          if (payload) {
-            isCloudBroadcasting = true;
-            useSharedBridge.setState(payload);
-            isCloudBroadcasting = false;
-          }
-        })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'tables' }, (change: any) => {
-          if (change?.new && change.new.number) {
-            const state = useSharedBridge.getState();
-            const updated = state.tables.map((t) => {
-              if (t.number === change.new.number) {
-                return {
-                  ...t,
-                  status: change.new.status,
-                  currentBill: Number(change.new.current_bill) || t.currentBill,
-                  guestCount: Number(change.new.guest_count) || t.guestCount,
-                };
-              }
-              return t;
-            });
-            useSharedBridge.setState({ tables: updated });
-          }
-        })
-        .subscribe();
-
-      useSharedBridge.subscribe((state) => {
-        if (isCloudBroadcasting) return;
-        try {
-          cloudChannel.send({
-            type: 'broadcast',
-            event: 'SYNC_BRIDGE',
-            payload: {
-              tables: state.tables,
-              kdsTickets: state.kdsTickets,
-              pings: state.pings,
-              inventory86: state.inventory86,
-              shiftStats: state.shiftStats,
-              settlementRecords: state.settlementRecords,
-              waiterAlerts: state.waiterAlerts,
-            },
-          }).catch(() => {});
-        } catch {}
-      });
-    } catch {}
-  }
 }

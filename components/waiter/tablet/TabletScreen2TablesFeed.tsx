@@ -382,46 +382,44 @@ export const TabletScreen2TablesFeed: React.FC = () => {
 
                         <div className="flex flex-col gap-1">
 
-                          {table.activeItems
-                            .slice(0, 2)
-                            .map(
-                              (
-                                item: any,
-                                idx: number
-                              ) => {
+                          {table.activeItems.map(
+                            (
+                              item: any,
+                              idx: number
+                            ) => {
 
-                                const statusName =
-                                  getStatusName(item.status);
+                              const statusName =
+                                getStatusName(item.status);
 
-                                return (
-                                  <div
-                                    key={idx}
-                                    className="flex justify-between items-center gap-1"
+                              return (
+                                <div
+                                  key={idx}
+                                  className="flex justify-between items-center gap-1"
+                                >
+
+                                  <span className="truncate">
+                                    {item.quantity}x{' '}
+                                    {item.name}
+                                  </span>
+
+                                  <span
+                                    className={`text-[8px] font-bold px-1 py-0.5 rounded shrink-0 ${
+                                      statusName === 'Served'
+                                        ? 'bg-slate-100 text-slate-500'
+                                        : statusName === 'Ready'
+                                        ? 'bg-emerald-100 text-emerald-800'
+                                        : statusName === 'Preparing'
+                                        ? 'bg-orange-100 text-orange-800'
+                                        : 'bg-blue-100 text-blue-800'
+                                    }`}
                                   >
+                                    {statusName}
+                                  </span>
 
-                                    <span className="truncate">
-                                      {item.quantity}x{' '}
-                                      {item.name}
-                                    </span>
-
-                                    <span
-                                      className={`text-[8px] font-bold px-1 py-0.5 rounded shrink-0 ${
-                                        statusName === 'Served'
-                                          ? 'bg-slate-100 text-slate-500'
-                                          : statusName === 'Ready'
-                                          ? 'bg-emerald-100 text-emerald-800'
-                                          : statusName === 'Preparing'
-                                          ? 'bg-orange-100 text-orange-800'
-                                          : 'bg-blue-100 text-blue-800'
-                                      }`}
-                                    >
-                                      {statusName}
-                                    </span>
-
-                                  </div>
-                                );
-                              }
-                            )}
+                                </div>
+                              );
+                            }
+                          )}
 
                         </div>
 
@@ -664,13 +662,8 @@ export const TabletScreen2TablesFeed: React.FC = () => {
                         <div className="flex-1 min-w-0">
 
                           <strong className="text-[10px] font-black text-slate-900 block truncate">
-
-                            Table {item.tableNumber}:{' '}
-
-                            {totalQty}x{' '}
-
-                            {dishTitle}
-
+                            Table {item.tableNumber} • {item.serverName || 'Seat'}:{' '}
+                            {item.items.map((it: any) => `${it.quantity}x ${it.name.replace(/\s*\[Seat\s*\d+\]/i, '')}`).join(' • ')}
                           </strong>
 
                           <span className="text-[9px] text-slate-500 font-bold block mt-1 truncate">

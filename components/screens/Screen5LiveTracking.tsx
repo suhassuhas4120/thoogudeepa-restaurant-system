@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useCustomer } from '../../context/CustomerContext';
-import { useSharedBridge } from '../../store/useSharedBridge';
+import { useSharedBridge, matchTable } from '../../store/useSharedBridge';
 import { ScreenHousing } from '../ui/ScreenHousing';
 import { WireHeader } from '../ui/WireHeader';
 import { StickyBottomBar } from '../ui/StickyBottomBar';
@@ -18,10 +18,26 @@ export const Screen5LiveTracking: React.FC = () => {
     setOrderStage,
     itemTracking,
     tableNumber,
+    seatNumber,
   } = useCustomer();
 
   const { kdsTickets } = useSharedBridge();
-  const myTicket = kdsTickets.find((t) => t.tableNumber === tableNumber);
+  
+  // Find all tickets placed for THIS specific seat
+  const myTickets = kdsTickets.filter((t) => {
+    if (!matchTable(t.tableNumber, tableNumber)) return false;
+    if (seatNumber) {
+      return (
+        t.id.includes(`-S${seatNumber}-`) ||
+        t.serverName === `Seat ${seatNumber}` ||
+        t.serverName?.toLowerCase().includes(`seat ${seatNumber}`)
+      );
+    }
+    return true;
+  });
+
+  const myTicket = myTickets[0];
+  const myTicketItems = myTickets.flatMap((t) => t.items);
 
   // Derive live stage directly from kitchen KDS ticket if available!
   const currentStage: OrderStage = myTicket
@@ -133,9 +149,10 @@ export const Screen5LiveTracking: React.FC = () => {
 
         <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm space-y-3">
           <div className="space-y-2.5">
-            {myTicket && myTicket.items.length > 0 ? (
-              myTicket.items.map((it) => {
+            {myTicketItems.length > 0 ? (
+              myTicketItems.map((it) => {
                 const displayStage = it.stage === 'PLATED' ? 'READY' : it.stage;
+                const cleanName = it.name.replace(/\s*\[Seat\s*\d+\]/i, '');
                 return (
                   <div
                     key={it.id}
@@ -143,7 +160,7 @@ export const Screen5LiveTracking: React.FC = () => {
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-xs font-black text-slate-900 truncate">
-                        {it.quantity}x {it.name}
+                        {it.quantity}x {cleanName}
                       </span>
                       <span className={`rounded-md border px-2 py-0.5 font-mono text-[9px] font-bold whitespace-nowrap ${
                         displayStage === 'SERVED'
