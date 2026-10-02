@@ -35,7 +35,33 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CustomerJourneyPage() {
-  const { currentScreen, setCurrentScreen, viewMode, setViewMode } = useCustomer();
+  const {
+    currentScreen,
+    setCurrentScreen,
+    viewMode,
+    setViewMode,
+    tableNumber,
+    seatNumber,
+    setTableNumber,
+    setSeatNumber,
+  } = useCustomer();
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tableParam = params.get('table');
+      const seatParam = params.get('seat');
+      if (tableParam) {
+        setTableNumber(tableParam);
+      }
+      if (seatParam) {
+        const parsedSeat = parseInt(seatParam, 10);
+        if (!isNaN(parsedSeat)) {
+          setSeatNumber(parsedSeat);
+        }
+      }
+    }
+  }, [setTableNumber, setSeatNumber]);
 
   const screens = [
     { id: 1 as ScreenId, name: '1. Welcome & Wi-Fi', icon: <Crown className="h-3.5 w-3.5 text-orange-500" />, comp: <Screen1Welcome /> },
@@ -91,9 +117,14 @@ export default function CustomerJourneyPage() {
                 TAILWIND CSS • FRAMER MOTION • LUCIDE • ZUSTAND • TANSTACK QUERY
               </span>
             </div>
-            <h1 className="text-sm font-black tracking-tight text-slate-900 mt-0.5">
-              CUSTOMER JOURNEY SKELETON ARCHITECTURE
-            </h1>
+            <div className="flex items-center gap-2 mt-0.5">
+              <h1 className="text-sm font-black tracking-tight text-slate-900">
+                CUSTOMER JOURNEY SKELETON ARCHITECTURE
+              </h1>
+              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-100 border border-emerald-300 px-2 py-0.5 text-[11px] font-black text-emerald-800 font-mono shadow-xs">
+                🪑 TABLE {tableNumber} {seatNumber ? `• SEAT ${seatNumber}` : ''}
+              </span>
+            </div>
           </div>
         </div>
 

@@ -17,6 +17,7 @@ interface CustomerStoreState {
   viewMode: 'single' | 'all';
   guestName: string;
   tableNumber: string;
+  seatNumber: number | null;
   venueName: string;
   selectedDetailItem: MenuItem;
   cart: CartItem[];
@@ -31,6 +32,7 @@ interface CustomerStoreState {
   setViewMode: (mode: 'single' | 'all') => void;
   setGuestName: (name: string) => void;
   setTableNumber: (table: string) => void;
+  setSeatNumber: (seat: number | null) => void;
   setSelectedDetailItem: (item: MenuItem) => void;
   addToCart: (
     item: MenuItem,
@@ -94,7 +96,8 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
   previousScreen: 1,
   viewMode: 'single',
   guestName: '',
-  tableNumber: 'A-04',
+  tableNumber: 'A-01',
+  seatNumber: 1,
   venueName: 'Thoogudeepa donne biryani mane',
   selectedDetailItem: INITIAL_MENU_ITEMS[0],
   cart: [],
@@ -118,6 +121,7 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
   setViewMode: (mode) => set({ viewMode: mode }),
   setGuestName: (guestName) => set({ guestName }),
   setTableNumber: (tableNumber) => set({ tableNumber }),
+  setSeatNumber: (seatNumber) => set({ seatNumber }),
   setSelectedDetailItem: (selectedDetailItem) => set({ selectedDetailItem }),
 
   addToCart: (
@@ -238,17 +242,31 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
 
       // Push only newlyAddedItems to shared bridge → Kitchen KDS + Waiter table updates
       const bridge = useSharedBridge.getState();
-      bridge.customerPlacesOrder(
-        state.tableNumber,
-        state.guestName || 'Guest',
-        1, // at least 1 guest
-        newlyAddedItems.map((c) => ({
-          item: c.menuItem,
-          selectedOption: c.selectedOption,
-          addOns: c.selectedAddOns,
-          quantity: c.quantity,
-        }))
-      );
+      if (state.seatNumber) {
+        bridge.customerPlacesSeatOrder(
+          state.tableNumber,
+          state.seatNumber,
+          state.guestName || `Seat ${state.seatNumber}`,
+          newlyAddedItems.map((c) => ({
+            item: c.menuItem,
+            selectedOption: c.selectedOption,
+            notes: c.selectedAddOns?.join(', '),
+            quantity: c.quantity,
+          }))
+        );
+      } else {
+        bridge.customerPlacesOrder(
+          state.tableNumber,
+          state.guestName || 'Guest',
+          1, // at least 1 guest
+          newlyAddedItems.map((c) => ({
+            item: c.menuItem,
+            selectedOption: c.selectedOption,
+            addOns: c.selectedAddOns,
+            quantity: c.quantity,
+          }))
+        );
+      }
 
       const newTracking: IndividualItemTracking[] = newlyAddedItems.map((c) => ({
         id: 'track-' + c.cartItemId,
@@ -322,9 +340,13 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
   confirmAndPay: () => {
     const randomTxn = '#TXN-' + Math.floor(100000 + Math.random() * 900000);
     set((state) => {
-      // Record payment in bridge → updates waiter shift stats + table to BILLING
+      // Record payment in bridge → updates waiter shift stats + table to BILLING / settled
       const bridge = useSharedBridge.getState();
-      bridge.waiterRecordsPayment(state.tableNumber, state.payment.paymentMethod, state.payment.totalAmount);
+      if (state.seatNumber) {
+        bridge.seatSettlesBill(state.tableNumber, state.seatNumber, (state.payment.paymentMethod === 'NET_BANKING' ? 'UPI' : state.payment.paymentMethod) as any);
+      } else {
+        bridge.waiterRecordsPayment(state.tableNumber, state.payment.paymentMethod, state.payment.totalAmount);
+      }
 
       return {
         previousScreen: state.currentScreen,
