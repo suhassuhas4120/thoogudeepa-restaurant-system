@@ -24,6 +24,7 @@ import { validateAndCalculateBill } from '../lib/validation/billingValidator';
 import { validateTableStateTransition } from '../lib/validation/tableValidator';
 import { TableSeat, SeatItem, createDefaultSeats, aggregateTableFromSeats } from '../lib/validation/seatValidator';
 import { dbService } from '../lib/db/databaseService';
+import { clearSeatSession } from '../lib/session/seatSessionManager';
 
 export interface WaiterProfile {
   id: string;
@@ -920,6 +921,7 @@ export const useSharedBridge = create<SharedBridgeState>((set, get) => ({
     });
 
     dbService.updateTableState(targetTable.number, updatedTable.status, updatedTable.currentBill, updatedTable.guestCount);
+    clearSeatSession(targetTable.number, seatNumber);
   },
 
   /* ─── Customer Pings Waiter ──────────────────────────────────── */

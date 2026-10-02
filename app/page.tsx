@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useCustomer } from '../context/CustomerContext';
+import { useCustomer, useCustomerStore } from '../context/CustomerContext';
 import { ScreenId } from '../types/customer';
 import { Screen1Welcome } from '../components/screens/Screen1Welcome';
 import { Screen2Menu } from '../components/screens/Screen2Menu';
@@ -31,8 +31,11 @@ import {
   UserCheck,
   Utensils,
   Briefcase,
+  ShieldCheck,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { validateSeatAccess } from '../lib/session/seatSessionManager';
+import { useSharedBridge } from '../store/useSharedBridge';
 
 export default function CustomerJourneyPage() {
   const {
@@ -46,19 +49,43 @@ export default function CustomerJourneyPage() {
     setSeatNumber,
   } = useCustomer();
 
+  const [sessionNotice, setSessionNotice] = React.useState<string | null>(null);
+  const [conflictWarning, setConflictWarning] = React.useState<string | null>(null);
+
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      const tableParam = params.get('table');
-      const seatParam = params.get('seat');
-      if (tableParam) {
-        setTableNumber(tableParam);
-      }
-      if (seatParam) {
-        const parsedSeat = parseInt(seatParam, 10);
-        if (!isNaN(parsedSeat)) {
-          setSeatNumber(parsedSeat);
+      const tableParam = params.get('table') || 'A-01';
+      const seatParam = params.get('seat') || '1';
+      setTableNumber(tableParam);
+      const parsedSeat = parseInt(seatParam, 10) || 1;
+      setSeatNumber(parsedSeat);
+
+      // Check current seat state from shared bridge
+      const bridge = useSharedBridge.getState();
+      const targetTable = bridge.tables.find(
+        (t) => t.number.toLowerCase() === tableParam.toLowerCase()
+      );
+      const targetSeat = targetTable?.seats?.find((s) => s.seatNumber === parsedSeat);
+      const isOccupied = targetSeat ? targetSeat.status === 'OCCUPIED' : false;
+      const activeBill = targetSeat?.currentBill || 0;
+      const guestName = targetSeat?.guestName;
+
+      const result = validateSeatAccess(
+        tableParam,
+        parsedSeat,
+        isOccupied,
+        activeBill,
+        guestName
+      );
+
+      if (result.status === 'SESSION_RESTORED' || result.status === 'FINGERPRINT_RECOVERED') {
+        setSessionNotice(result.message);
+        if (activeBill > 0 && currentScreen === 1) {
+          setCurrentScreen(2);
         }
+      } else if (result.status === 'SEAT_OCCUPIED_CONFLICT') {
+        setConflictWarning(result.message);
       }
     }
   }, [setTableNumber, setSeatNumber]);
@@ -185,6 +212,52 @@ export default function CustomerJourneyPage() {
         </div>
         </div>
       </header>
+
+      {/* Session Restored Notice Banner */}
+      {sessionNotice && (
+        <div className="bg-emerald-50 border-b border-emerald-200 px-6 py-2.5 text-xs font-bold text-emerald-800 flex items-center justify-between shadow-xs">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+            <span>{sessionNotice}</span>
+          </div>
+          <button
+            onClick={() => setSessionNotice(null)}
+            className="text-emerald-700 hover:text-emerald-900 font-mono text-xs px-2 py-0.5 rounded bg-emerald-100 hover:bg-emerald-200 transition"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Anti-Hijack Conflict Dialog (Washroom Protection) */}
+      {conflictWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl border border-rose-200">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 mb-3">
+              <ShieldCheck className="h-6 w-6 stroke-[2.2]" />
+            </div>
+            <h3 className="text-base font-extrabold text-slate-900">Seat Currently In Use</h3>
+            <p className="mt-2 text-xs text-slate-600 leading-relaxed">{conflictWarning}</p>
+            <div className="mt-5 flex flex-col gap-2">
+              <button
+                onClick={() => setConflictWarning(null)}
+                className="w-full rounded-xl bg-orange-600 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-orange-700 transition"
+              >
+                I am Returning to My Seat
+              </button>
+              <button
+                onClick={() => {
+                  useCustomerStore.getState().pingWaiter('GENERAL CALL', 'Table conflict: please clear or reassign chair');
+                  setConflictWarning(null);
+                }}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition"
+              >
+                New Diner (Ask Captain to Clear)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Screen Navigation Tabs */}
       <nav className="w-full max-w-7xl mx-auto flex gap-2 overflow-x-auto px-6 py-3 scrollbar-none">
