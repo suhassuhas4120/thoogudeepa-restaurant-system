@@ -13,5 +13,5 @@ class FakeWebSocket {
 vi.stubGlobal('WebSocket', FakeWebSocket);
 
 afterEach(() => {
-  localStorage.clear();
+  if (typeof localStorage !== 'undefined') localStorage.clear();
 });
