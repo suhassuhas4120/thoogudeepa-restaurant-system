@@ -17,6 +17,7 @@ interface CustomerStoreState {
   previousScreen: ScreenId;
   viewMode: 'single' | 'all';
   guestName: string;
+  guestPhone: string;
   tableNumber: string;
   seatNumber: number | null;
   venueName: string;
@@ -32,6 +33,7 @@ interface CustomerStoreState {
   navigateTo: (screen: ScreenId) => void;
   setViewMode: (mode: 'single' | 'all') => void;
   setGuestName: (name: string) => void;
+  setGuestPhone: (phone: string) => void;
   setTableNumber: (table: string) => void;
   setSeatNumber: (seat: number | null) => void;
   setSelectedDetailItem: (item: MenuItem) => void;
@@ -98,6 +100,7 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
   previousScreen: 1,
   viewMode: 'single',
   guestName: '',
+  guestPhone: '',
   tableNumber: 'A-01',
   seatNumber: 1,
   venueName: 'Thoogudeepa donne biryani mane',
@@ -122,6 +125,7 @@ export const useCustomerStore = create<CustomerStoreState>((set) => ({
 
   setViewMode: (mode) => set({ viewMode: mode }),
   setGuestName: (guestName) => set({ guestName }),
+  setGuestPhone: (guestPhone) => set({ guestPhone }),
   setTableNumber: (tableNumber) => set({ tableNumber: normalizeTableNumber(tableNumber) }),
   setSeatNumber: (seatNumber) => set({ seatNumber }),
   setSelectedDetailItem: (selectedDetailItem) => set({ selectedDetailItem }),

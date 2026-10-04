@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { validateSeatAccess } from '../lib/session/seatSessionManager';
-import { useSharedBridge } from '../store/useSharedBridge';
+import { useSharedBridge, matchTable, normalizeTableNumber } from '../store/useSharedBridge';
 
 export default function CustomerJourneyPage() {
   const {
@@ -55,28 +55,44 @@ export default function CustomerJourneyPage() {
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      const tableParam = params.get('table') || 'A-01';
-      const seatParam = params.get('seat') || '1';
-      setTableNumber(tableParam);
-      const parsedSeat = parseInt(seatParam, 10) || 1;
-      setSeatNumber(parsedSeat);
+      const tableParam = params.get('table') || params.get('t') || 'A-01';
+      const seatParam = params.get('seat') || params.get('chair') || params.get('s') || '1';
+      const guestParam = params.get('guest') || params.get('name') || '';
+      const phoneParam = params.get('phone') || '';
 
-      // Re-hydrate any saved cart items from previous tab session
-      useCustomerStore.getState().restoreSavedCart(tableParam, parsedSeat);
-      const restoredCart = useCustomerStore.getState().cart;
-
-      // Check current seat state from shared bridge
       const bridge = useSharedBridge.getState();
       const targetTable = bridge.tables.find(
-        (t) => t.number.toLowerCase() === tableParam.toLowerCase()
+        (t) => matchTable(t.number, tableParam)
       );
+
+      const resolvedTable = targetTable ? targetTable.number : normalizeTableNumber(tableParam);
+      setTableNumber(resolvedTable);
+
+      let parsedSeat = parseInt(seatParam, 10);
+      if (isNaN(parsedSeat) || parsedSeat < 1) parsedSeat = 1;
+      if (targetTable && targetTable.capacity) {
+        parsedSeat = Math.min(parsedSeat, targetTable.capacity);
+      }
+      setSeatNumber(parsedSeat);
+
+      if (guestParam) {
+        useCustomerStore.getState().setGuestName(guestParam);
+      }
+      if (phoneParam) {
+        useCustomerStore.getState().setGuestPhone(phoneParam);
+      }
+
+      // Re-hydrate any saved cart items from previous tab session
+      useCustomerStore.getState().restoreSavedCart(resolvedTable, parsedSeat);
+      const restoredCart = useCustomerStore.getState().cart;
+
       const targetSeat = targetTable?.seats?.find((s) => s.seatNumber === parsedSeat);
       const isOccupied = targetSeat ? targetSeat.status === 'OCCUPIED' : false;
       const activeBill = targetSeat?.currentBill || 0;
-      const guestName = targetSeat?.guestName;
+      const guestName = targetSeat?.guestName || guestParam;
 
       const result = validateSeatAccess(
-        tableParam,
+        resolvedTable,
         parsedSeat,
         isOccupied,
         activeBill,
